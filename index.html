@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Wanderlog — Islanda</title>
+<title>RoadTrip</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --ink:#1a1410;--paper:#f5f0e8;--cream:#faf7f2;
@@ -20,10 +21,38 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
 
+/* ── AUTH SCREEN ── */
+.auth-screen{position:fixed;inset:0;z-index:9000;background:var(--ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:1.5rem}
+.auth-screen.hidden{display:none}
+.auth-logo{font-family:'Playfair Display',serif;font-style:italic;font-size:2.5rem;color:var(--amber-l)}
+.auth-sub{font-size:.85rem;color:rgba(255,255,255,.5);text-align:center;line-height:1.6;max-width:300px}
+.auth-form{width:100%;max-width:320px;display:flex;flex-direction:column;gap:.75rem}
+.auth-input{width:100%;padding:.75rem 1rem;border-radius:10px;border:1.5px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.08);color:var(--cream);font-family:'DM Sans',sans-serif;font-size:.95rem;outline:none}
+.auth-input:focus{border-color:var(--amber)}
+.auth-input::placeholder{color:rgba(255,255,255,.3)}
+.auth-btn{width:100%;padding:.78rem;border-radius:10px;border:none;background:var(--amber);
+  color:var(--ink);font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .18s}
+.auth-btn:hover{background:var(--amber-l)}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed}
+.auth-msg{font-size:.8rem;text-align:center;color:rgba(255,255,255,.6);line-height:1.5}
+.auth-msg.ok{color:#6dbb6d}
+.auth-msg.err{color:#e06060}
+
+/* ── LOADING SCREEN ── */
+.app-loading{position:fixed;inset:0;z-index:8000;background:var(--paper);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
+.app-loading.hidden{display:none}
+.app-loading .logo{font-family:'Playfair Display',serif;font-style:italic;font-size:2rem;color:var(--amber)}
+.app-loading .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--amber);
+  border-radius:50%;animation:spin .8s linear infinite}
+
 /* HEADER */
 .hdr{position:fixed;inset:0 0 auto;height:var(--hh);z-index:1000;background:var(--ink);
   display:flex;align-items:center;justify-content:space-between;padding:0 1rem 0 1.25rem;box-shadow:var(--sm)}
 .logo{font-family:'Playfair Display',serif;font-style:italic;font-size:1.3rem;color:var(--amber-l);flex-shrink:0}
+.hdr-right{display:flex;align-items:center;gap:.5rem}
 .dnav{display:none;gap:.15rem}
 .dnav-btn{background:none;border:none;color:var(--cream);opacity:.45;padding:.35rem .8rem;cursor:pointer;
   font-family:'DM Sans',sans-serif;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;
@@ -32,7 +61,9 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .dnav-btn.active{opacity:1;background:var(--amber);color:var(--ink)}
 .trip-chip{display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.09);
   border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.28rem .65rem;cursor:pointer}
-.trip-chip-name{font-size:.78rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.trip-chip-name{font-size:.78rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+.logout-btn{background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:1.1rem;padding:.3rem;transition:color .15s}
+.logout-btn:hover{color:rgba(255,255,255,.8)}
 
 /* TAB BAR */
 .tbar{position:fixed;inset:auto 0 0;z-index:1000;height:calc(var(--tbh) + env(safe-area-inset-bottom,0px));
@@ -104,8 +135,6 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .itin-body{padding:.9rem .95rem 1.5rem}
 .sec-ttl{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;display:flex;align-items:center;gap:.45rem}
 .sec-ttl::after{content:'';flex:1;height:1px;background:var(--border)}
-
-/* DAY BLOCK */
 .day-block{margin-bottom:1.15rem;animation:fu .3s ease both}
 @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .day-hdr{display:flex;align-items:center;gap:.55rem;margin-bottom:.55rem}
@@ -115,8 +144,6 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .day-name{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .day-date{font-size:.65rem;color:var(--muted)}
 .day-km{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--amber);background:var(--amber-pale);padding:.17rem .48rem;border-radius:20px;white-space:nowrap;flex-shrink:0}
-
-/* STOP CARD */
 .stop{position:relative;padding-left:.95rem;margin-bottom:.38rem}
 .stop::before{content:'';position:absolute;left:.26rem;top:1.25rem;bottom:-.38rem;width:1px;background:var(--border)}
 .stop:last-child::before{display:none}
@@ -128,9 +155,9 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .sc{background:white;border:1px solid var(--border);border-radius:10px;padding:.62rem .85rem;
   transition:all .18s;box-shadow:var(--ss);-webkit-user-select:none;user-select:none}
 .sc.active{border-color:var(--amber);background:#fffdf8;box-shadow:0 0 0 3px var(--amber-pale)}
-.sc-top{display:flex;align-items:flex-start;gap:.45rem;margin-bottom:.18rem}
-.sc-ico{font-size:.9rem;flex-shrink:0;cursor:pointer}
-.sc-name{font-weight:600;font-size:.82rem;flex:1;line-height:1.3;cursor:pointer}
+.sc-top{display:flex;align-items:flex-start;gap:.45rem;margin-bottom:.18rem;cursor:pointer}
+.sc-ico{font-size:.9rem;flex-shrink:0}
+.sc-name{font-weight:600;font-size:.82rem;flex:1;line-height:1.3}
 .sc-time{font-family:'DM Mono',monospace;font-size:.64rem;color:var(--muted);white-space:nowrap}
 .sc-cat{font-size:.65rem;color:var(--muted);margin-bottom:.3rem}
 .sc-actions{display:flex;gap:.3rem;margin-top:.5rem;padding-top:.4rem;border-top:1px dashed var(--border)}
@@ -152,8 +179,6 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .act-t{font-size:.76rem;flex:1;line-height:1.3}
 .act-t.done{text-decoration:line-through;color:var(--muted)}
 .act-h{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);white-space:nowrap}
-
-/* ADD STOP BUTTON */
 .add-stop-btn{display:flex;align-items:center;justify-content:center;gap:.4rem;
   width:100%;padding:.6rem;border:1.5px dashed var(--border);border-radius:10px;
   background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.78rem;
@@ -170,63 +195,59 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .tc-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:.28rem}
 .tc-meta{font-size:.72rem;color:var(--muted);display:flex;gap:.65rem;flex-wrap:wrap}
 
-/* ════════════════════════════════
-   MODAL — add/edit stop
-════════════════════════════════ */
+/* saving indicator */
+.save-toast{position:fixed;bottom:calc(var(--tbh) + env(safe-area-inset-bottom,0px) + .75rem);
+  left:50%;transform:translateX(-50%);z-index:5000;
+  background:var(--ink);color:var(--cream);border-radius:20px;
+  padding:.4rem 1rem;font-size:.75rem;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+.save-toast.show{opacity:1}
+
+/* MODAL */
 .modal-overlay{position:fixed;inset:0;z-index:2000;background:rgba(26,20,16,.6);
-  display:flex;align-items:flex-end;justify-content:center;padding:0;
+  display:flex;align-items:flex-end;justify-content:center;
   opacity:0;pointer-events:none;transition:opacity .22s}
 .modal-overlay.open{opacity:1;pointer-events:all}
 @media(min-width:480px){.modal-overlay{align-items:center;padding:1rem}}
 .modal{background:var(--cream);border-radius:20px 20px 0 0;width:100%;max-width:480px;
   padding:1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom,0px));
-  transform:translateY(30px);transition:transform .25s;max-height:90vh;overflow-y:auto}
+  transform:translateY(30px);transition:transform .25s;max-height:92vh;overflow-y:auto}
 @media(min-width:480px){.modal{border-radius:16px;transform:translateY(0) scale(.97);max-height:80vh}}
 .modal-overlay.open .modal{transform:translateY(0) scale(1)}
 .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 1rem;display:block}
 @media(min-width:480px){.modal-handle{display:none}}
 .modal-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;margin-bottom:1rem}
 .modal-field{margin-bottom:.85rem}
-.modal-field label{display:block;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--muted);font-weight:600;margin-bottom:.3rem}
-.modal-field input,.modal-field select,.modal-field textarea{
-  width:100%;padding:.6rem .75rem;border:1.5px solid var(--border);border-radius:8px;
-  font-family:'DM Sans',sans-serif;font-size:.88rem;background:white;color:var(--ink);
-  outline:none;transition:border-color .15s}
-.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--amber)}
-.modal-field textarea{resize:vertical;min-height:60px}
+.modal-field label{display:block;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:.3rem}
+.modal-field input,.modal-field select{width:100%;padding:.6rem .75rem;border:1.5px solid var(--border);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;background:white;color:var(--ink);outline:none;transition:border-color .15s}
+.modal-field input:focus,.modal-field select:focus{border-color:var(--amber)}
 .modal-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
 .modal-actions{display:flex;gap:.5rem;margin-top:1.1rem}
-.modal-btn{flex:1;padding:.7rem;border-radius:9px;font-family:'DM Sans',sans-serif;
-  font-size:.85rem;font-weight:600;border:none;cursor:pointer;transition:all .18s}
+.modal-btn{flex:1;padding:.7rem;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;border:none;cursor:pointer;transition:all .18s}
 .modal-btn.cancel{background:var(--paper);color:var(--muted)}
 .modal-btn.cancel:hover{background:var(--border)}
 .modal-btn.save{background:var(--amber);color:var(--ink)}
 .modal-btn.save:hover{background:var(--amber-l)}
-
-/* search results dropdown */
+.modal-btn:disabled{opacity:.5;cursor:not-allowed}
 .search-wrap{position:relative}
 .search-results{position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;
   border:1.5px solid var(--border);border-radius:8px;box-shadow:var(--sm);z-index:10;
   max-height:200px;overflow-y:auto;display:none}
 .search-results.open{display:block}
-.sr-item{padding:.6rem .75rem;cursor:pointer;font-size:.84rem;border-bottom:1px solid var(--paper-dark,#ede6d6);transition:background .12s}
+.sr-item{padding:.6rem .75rem;cursor:pointer;font-size:.84rem;border-bottom:1px solid var(--paper);transition:background .12s}
 .sr-item:last-child{border-bottom:none}
 .sr-item:hover{background:var(--amber-pale)}
-.sr-item .sr-main{font-weight:500}
-.sr-item .sr-sub{font-size:.7rem;color:var(--muted);margin-top:.1rem}
-
-/* POSITION PICKER inside modal */
-.pos-picker{display:flex;flex-direction:column;gap:.3rem;max-height:150px;overflow-y:auto;
+.sr-main{font-weight:500}
+.sr-sub{font-size:.7rem;color:var(--muted);margin-top:.1rem}
+.pos-picker{display:flex;flex-direction:column;gap:0;max-height:150px;overflow-y:auto;
   border:1.5px solid var(--border);border-radius:8px;background:white}
 .pos-item{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;cursor:pointer;
-  font-size:.82rem;transition:background .12s;border-bottom:1px solid var(--paper,#f5f0e8)}
+  font-size:.82rem;transition:background .12s;border-bottom:1px solid var(--paper)}
 .pos-item:last-child{border-bottom:none}
 .pos-item:hover{background:var(--amber-pale)}
 .pos-item.selected{background:var(--amber-pale);font-weight:600}
-.pos-ico{font-size:.85rem}
 
-/* CONFIRM DELETE */
+/* CONFIRM */
 .confirm-overlay{position:fixed;inset:0;z-index:3000;background:rgba(26,20,16,.65);
   display:flex;align-items:center;justify-content:center;padding:1.5rem;
   opacity:0;pointer-events:none;transition:opacity .18s}
@@ -235,11 +256,9 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .confirm-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin-bottom:.4rem}
 .confirm-sub{font-size:.8rem;color:var(--muted);margin-bottom:1.1rem;line-height:1.5}
 .confirm-acts{display:flex;gap:.5rem}
-.confirm-btn{flex:1;padding:.65rem;border-radius:9px;border:none;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-weight:600;font-size:.85rem;transition:all .18s}
+.confirm-btn{flex:1;padding:.65rem;border-radius:9px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.85rem;transition:all .18s}
 .confirm-btn.no{background:var(--paper);color:var(--muted)}
 .confirm-btn.yes{background:var(--red);color:white}
-.confirm-btn.yes:hover{background:#a02010}
 
 /* DESKTOP */
 @media(min-width:720px){
@@ -256,22 +275,42 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 </head>
 <body>
 
+<!-- AUTH SCREEN -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-logo">RoadTrip</div>
+  <div class="auth-sub">Inserisci la tua email per accedere. Ti invieremo un link magico.</div>
+  <div class="auth-form">
+    <input class="auth-input" type="email" id="authEmail" placeholder="la-tua@email.com">
+    <button class="auth-btn" id="authBtn" onclick="sendMagicLink()">Invia link di accesso</button>
+    <div class="auth-msg" id="authMsg"></div>
+  </div>
+</div>
+
+<!-- APP LOADING -->
+<div class="app-loading" id="appLoading">
+  <div class="logo">RoadTrip</div>
+  <div class="spinner"></div>
+</div>
+
+<!-- HEADER -->
 <header class="hdr">
-  <div class="logo">Wanderlog</div>
-  <nav class="dnav" id="dnav">
-    <button class="dnav-btn" onclick="dv('overview')">🗂 Viaggi</button>
-    <button class="dnav-btn active" onclick="dv('split')">⊞ Split</button>
-    <button class="dnav-btn" onclick="dv('map')">◎ Mappa</button>
-    <button class="dnav-btn" onclick="dv('list')">☰ Itinerario</button>
-  </nav>
-  <div class="trip-chip" onclick="mtab('overview')">
-    <span class="trip-chip-name" id="chipName">Islanda — Road Trip</span>
-    <span style="color:var(--amber-l);font-size:.7rem">▾</span>
+  <div class="logo">RoadTrip</div>
+  <div class="hdr-right">
+    <nav class="dnav" id="dnav">
+      <button class="dnav-btn" onclick="dv('overview')">🗂 Viaggi</button>
+      <button class="dnav-btn active" onclick="dv('split')">⊞ Split</button>
+      <button class="dnav-btn" onclick="dv('map')">◎ Mappa</button>
+      <button class="dnav-btn" onclick="dv('list')">☰ Itinerario</button>
+    </nav>
+    <div class="trip-chip" onclick="mtab('overview')">
+      <span class="trip-chip-name" id="chipName">—</span>
+      <span style="color:var(--amber-l);font-size:.7rem">▾</span>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Esci">⎋</button>
   </div>
 </header>
 
 <div class="content vs" id="content">
-  <!-- MAP -->
   <div class="panel on" id="pMap">
     <div class="map-daybar" id="mapDaybar"></div>
     <div id="gmap"></div>
@@ -280,8 +319,6 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
       <div class="loading-txt">Calcolo percorsi stradali…</div>
     </div>
   </div>
-
-  <!-- ITINERARY -->
   <div class="panel on" id="pItin">
     <div class="hero">
       <div class="hero-lbl">Prossimo viaggio</div>
@@ -300,12 +337,10 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
     </div>
     <div class="itin-body" id="itinBody"></div>
   </div>
-
-  <!-- OVERVIEW -->
   <div class="panel" id="pOver">
     <div class="hero">
       <div class="hero-lbl">I tuoi viaggi</div>
-      <div class="hero-title">Wanderlog</div>
+      <div class="hero-title">RoadTrip</div>
     </div>
     <div class="over-body" id="overBody"></div>
   </div>
@@ -317,13 +352,13 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   <button class="tb" id="tbMap" onclick="mtab('map')"><span class="tb-ico">🗺</span><span class="tb-lbl">Mappa</span></button>
 </nav>
 
-<!-- ADD / EDIT STOP MODAL -->
+<div class="save-toast" id="saveToast">💾 Salvato</div>
+
+<!-- MODAL ADD/EDIT -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <span class="modal-handle"></span>
     <div class="modal-title" id="modalTitle">Aggiungi tappa</div>
-
-    <!-- Search -->
     <div class="modal-field">
       <label>Cerca luogo</label>
       <div class="search-wrap">
@@ -331,14 +366,10 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
         <div class="search-results" id="searchResults"></div>
       </div>
     </div>
-
-    <!-- Name -->
     <div class="modal-field">
       <label>Nome tappa</label>
       <input type="text" id="fName" placeholder="Nome visualizzato">
     </div>
-
-    <!-- Category + Time -->
     <div class="modal-row">
       <div class="modal-field">
         <label>Categoria</label>
@@ -349,20 +380,14 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
         <input type="time" id="fTime" value="10:00">
       </div>
     </div>
-
-    <!-- Day selector -->
     <div class="modal-field">
       <label>Giorno</label>
       <select id="fDay" onchange="renderPosPicker()"></select>
     </div>
-
-    <!-- Position picker -->
-    <div class="modal-field" id="posPickerWrap">
+    <div class="modal-field">
       <label>Posizione nell'itinerario</label>
       <div class="pos-picker" id="posPicker"></div>
     </div>
-
-    <!-- Transit -->
     <div class="modal-field">
       <label>Tratta dalla tappa precedente</label>
       <div class="modal-row">
@@ -370,10 +395,9 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
         <input type="text" id="fDur" placeholder="Es. 40min">
       </div>
     </div>
-
     <div class="modal-actions">
       <button class="modal-btn cancel" onclick="closeModal()">Annulla</button>
-      <button class="modal-btn save" onclick="saveStop()">Salva tappa</button>
+      <button class="modal-btn save" id="modalSaveBtn" onclick="saveStop()">Salva tappa</button>
     </div>
   </div>
 </div>
@@ -382,7 +406,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
     <div class="confirm-title">Elimina tappa</div>
-    <div class="confirm-sub" id="confirmSub">Sei sicuro di voler eliminare questa tappa?</div>
+    <div class="confirm-sub" id="confirmSub">Sei sicuro?</div>
     <div class="confirm-acts">
       <button class="confirm-btn no" onclick="closeConfirm()">Annulla</button>
       <button class="confirm-btn yes" onclick="doDelete()">Elimina</button>
@@ -394,104 +418,256 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 /* ═══════════════════════════════════════
    CONFIG
 ═══════════════════════════════════════ */
-const GMAPS_KEY = "AIzaSyAml2Wk2YmqYeNNbEAb1OF0ZytWY6ueBLo";
+const SUPABASE_URL  = 'https://mqizkhertrnrswjhyltj.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xaXpraGVydHJucnN3amh5bHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MjEzNDUsImV4cCI6MjA5NDQ5NzM0NX0.ZOd4g8-6xc2KsQgoa9Y8nA4r9FtufCUyGomREg6nTFU';
+const GMAPS_KEY     = 'AIzaSyAml2Wk2YmqYeNNbEAb1OF0ZytWY6ueBLo';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 /* ═══════════════════════════════════════
-   TRIP DATA
+   AUTH
 ═══════════════════════════════════════ */
-const TRIPS = [{
-  id:0, title:"Islanda — Road Trip", dates:"2–7 Gen 2026",
-  persons:"2 persone", totalKm:"1.596 km", totalTime:"22h 29min",
-  days:[
-    { name:"Golden Circle & Arrivo", date:"Ven 2 Gen", dayKm:184, dayTime:"2h 42min", stops:[
-      {id:"d1s0",name:"Aeroporto di Keflavik",icon:"✈️",cat:"Aeroporto",lat:63.985,lng:-22.606,time:"12:00",transit:null,acts:[]},
-      {id:"d1s1",name:"Öxarárfoss",icon:"💧",cat:"Cascata — Þingvellir",lat:64.266,lng:-21.12,time:"13:20",transit:{km:"92 km",dur:"1h 20min"},acts:[]},
-      {id:"d1s3",name:"Kerið",icon:"🌋",cat:"Cratere vulcanico",lat:64.042,lng:-20.886,time:"15:27",transit:{km:"40 km",dur:"37min"},acts:[]},
-      {id:"d1s5",name:"Geysir",icon:"💨",cat:"Area geotermica",lat:64.312,lng:-20.302,time:"16:35",transit:{km:"46 km",dur:"38min"},acts:[]},
-      {id:"d1s7",name:"Brù Hoserfarm",icon:"🏡",cat:"Sosta",lat:64.315,lng:-20.28,time:"17:23",transit:{km:"3 km",dur:"3min"},acts:[]},
-      {id:"d1s9",name:"Myrkholt Cabin",icon:"🏕️",cat:"Pernottamento",lat:64.32,lng:-20.26,time:"18:12",transit:{km:"3 km",dur:"4min"},acts:[]}
-    ]},
-    { name:"Costa Sud — Cascate & Spiagge Nere", date:"Sab 3 Gen", dayKm:306, dayTime:"4h 27min", stops:[
-      {id:"d2s0",name:"Myrkholt Cabin",icon:"🏕️",cat:"Partenza",lat:64.32,lng:-20.26,time:"08:30",transit:null,acts:[]},
-      {id:"d2s1",name:"Gullfoss",icon:"💧",cat:"Cascata",lat:64.327,lng:-20.121,time:"08:38",transit:{km:"6 km",dur:"8min"},acts:[]},
-      {id:"d2s3",name:"Skogafoss",icon:"💧",cat:"Cascata",lat:63.532,lng:-19.512,time:"11:38",transit:{km:"145 km",dur:"2h"},acts:[]},
-      {id:"d2s5",name:"Kvernufoss",icon:"💧",cat:"Cascata nascosta",lat:63.53,lng:-19.499,time:"12:43",transit:{km:"2 km",dur:"5min"},acts:[]},
-      {id:"d2s7",name:"The Plane Wreck",icon:"🛩️",cat:"Relitto DC-3",lat:63.484,lng:-19.362,time:"13:52",transit:{km:"9 km",dur:"9min"},acts:[]},
-      {id:"d2s9",name:"Dyrhólaey",icon:"🦅",cat:"Promontorio & arco di roccia",lat:63.402,lng:-19.129,time:"15:09",transit:{km:"18 km",dur:"17min"},acts:[]},
-      {id:"d2s11",name:"Reynisfjara",icon:"🖤",cat:"Spiaggia nera",lat:63.406,lng:-19.044,time:"16:12",transit:{km:"20 km",dur:"23min"},acts:[]},
-      {id:"d2s13",name:"Fosshotel Nupar",icon:"🏨",cat:"Pernottamento",lat:63.519,lng:-18.262,time:"18:22",transit:{km:"106 km",dur:"1h 25min"},acts:[]}
-    ]},
-    { name:"Ghiacciai & Lagune del Sud-Est", date:"Dom 4 Gen", dayKm:369, dayTime:"4h 50min", stops:[
-      {id:"d3s0",name:"Fosshotel Nupar",icon:"🏨",cat:"Partenza",lat:63.519,lng:-18.262,time:"08:30",transit:null,acts:[]},
-      {id:"d3s1",name:"Svartifoss",icon:"💧",cat:"Cascata basaltica",lat:64.027,lng:-16.975,time:"09:03",transit:{km:"45 km",dur:"33min"},acts:[]},
-      {id:"d3s3",name:"Fjallsárlón",icon:"🧊",cat:"Laguna glaciale",lat:64.017,lng:-16.417,time:"11:28",transit:{km:"47 km",dur:"40min"},acts:[]},
-      {id:"d3s5",name:"Jökulsárlón",icon:"🧊",cat:"Laguna glaciale",lat:64.078,lng:-16.231,time:"12:38",transit:{km:"11 km",dur:"10min"},acts:[]},
-      {id:"d3s7",name:"Diamond Beach",icon:"💎",cat:"Spiaggia nera con iceberg",lat:64.066,lng:-16.23,time:"13:40",transit:{km:"1 km",dur:"2min"},acts:[]},
-      {id:"d3s9",name:"Fjaðrárgljúfur",icon:"🏔️",cat:"Canyon",lat:63.777,lng:-18.172,time:"15:50",transit:{km:"130 km",dur:"1h 40min"},acts:[]},
-      {id:"d3s11",name:"Hotel Selja",icon:"🏨",cat:"Pernottamento",lat:63.53,lng:-19.47,time:"19:05",transit:{km:"135 km",dur:"1h 45min"},acts:[]}
-    ]},
-    { name:"Penisola di Snæfellsnes", date:"Lun 5 Gen", dayKm:384, dayTime:"5h 21min", stops:[
-      {id:"d4s0",name:"Hotel Selja",icon:"🏨",cat:"Partenza",lat:63.53,lng:-19.47,time:"08:30",transit:null,acts:[]},
-      {id:"d4s1",name:"Seljalandfoss",icon:"💧",cat:"Cascata (percorribile dietro)",lat:63.616,lng:-19.989,time:"08:39",transit:{km:"8 km",dur:"9min"},acts:[]},
-      {id:"d4s3",name:"Gljúfrabúi",icon:"💧",cat:"Cascata nascosta",lat:63.622,lng:-19.987,time:"09:29",transit:{km:"1 km",dur:"10min"},acts:[]},
-      {id:"d4s5",name:"Ytri Tunga",icon:"🦭",cat:"Spiaggia delle foche",lat:64.847,lng:-22.574,time:"13:39",transit:{km:"270 km",dur:"3h 30min"},acts:[]},
-      {id:"d4s7",name:"Búðakirkja",icon:"⛪",cat:"Chiesa nera",lat:64.813,lng:-23.386,time:"14:18",transit:{km:"20 km",dur:"19min"},acts:[]},
-      {id:"d4s9",name:"Kirkjufell",icon:"⛰️",cat:"Montagna iconica",lat:64.941,lng:-23.305,time:"15:11",transit:{km:"35 km",dur:"33min"},acts:[]},
-      {id:"d4s11",name:"Arnarstapi Hotel",icon:"🏨",cat:"Pernottamento",lat:64.767,lng:-23.624,time:"17:21",transit:{km:"50 km",dur:"40min"},acts:[]}
-    ]},
-    { name:"Fagradalsfjall & Rientro Reykjavik", date:"Mar 6 Gen", dayKm:303, dayTime:"4h 17min", stops:[
-      {id:"d5s0",name:"Arnarstapi Hotel",icon:"🏨",cat:"Partenza",lat:64.767,lng:-23.624,time:"08:30",transit:null,acts:[]},
-      {id:"d5s1",name:"Fagradalsfjall",icon:"🌋",cat:"Zona vulcanica",lat:63.897,lng:-22.271,time:"11:47",transit:{km:"243 km",dur:"3h 17min"},acts:[]},
-      {id:"d5s3",name:"Hotel Von",icon:"🏨",cat:"Pernottamento",lat:64.133,lng:-21.894,time:"16:47",transit:{km:"60 km",dur:"1h"},acts:[]}
-    ]},
-    { name:"Rientro all'Aeroporto", date:"Mer 7 Gen", dayKm:50, dayTime:"52min", stops:[
-      {id:"d6s0",name:"Hotel Von",icon:"🏨",cat:"Partenza",lat:64.133,lng:-21.894,time:"08:00",transit:null,acts:[]},
-      {id:"d6s1",name:"Aeroporto di Keflavik",icon:"✈️",cat:"Aeroporto",lat:63.985,lng:-22.606,time:"08:52",transit:{km:"50 km",dur:"52min"},acts:[]}
-    ]}
-  ]
-}];
+async function sendMagicLink(){
+  const email = document.getElementById('authEmail').value.trim();
+  if(!email){ showAuthMsg('Inserisci una email valida.','err'); return; }
+  const btn = document.getElementById('authBtn');
+  btn.disabled = true; btn.textContent = 'Invio…';
+  const {error} = await sb.auth.signInWithOtp({
+    email,
+    options:{ emailRedirectTo: window.location.href }
+  });
+  btn.disabled = false; btn.textContent = 'Invia link di accesso';
+  if(error) showAuthMsg('Errore: '+error.message,'err');
+  else showAuthMsg('✓ Link inviato! Controlla la tua email e clicca il link.','ok');
+}
+
+function showAuthMsg(msg, type){
+  const el = document.getElementById('authMsg');
+  el.textContent = msg; el.className = 'auth-msg '+(type||'');
+}
+
+async function logout(){
+  await sb.auth.signOut();
+  location.reload();
+}
 
 /* ═══════════════════════════════════════
    STATE
 ═══════════════════════════════════════ */
-let ti=0, activeId=null, dayF='all';
-let gmap=null, iw=null, markers={}, polylines=[];
-let directionsService=null, autocompleteService=null, placesService=null;
-let searchTimer=null;
-// modal state
-let modalMode='add'; // 'add' | 'edit'
-let modalDayIdx=0, modalStopIdx=-1, modalPosIdx=-1;
-let pendingLat=null, pendingLng=null;
-let pendingDeleteDi=null, pendingDeleteSi=null;
-const DAY_COLORS=['#e07820','#1a8040','#b02010','#1040c0','#906010'];
+let currentUser = null;
+let TRIPS = [];
+let ti = 0, activeId = null, dayF = 'all';
+let gmap = null, iw = null, markers = {}, polylines = [];
+let directionsService = null, autocompleteService = null, placesService = null;
+let searchTimer = null;
+let modalMode = 'add';
+let modalDayIdx = 0, modalStopIdx = -1, modalPosIdx = -1;
+let pendingLat = null, pendingLng = null;
+let pendingDeleteDi = null, pendingDeleteSi = null;
+const DAY_COLORS = ['#e07820','#1a8040','#b02010','#1040c0','#906010'];
 
 /* ═══════════════════════════════════════
-   ICONS
+   SUPABASE — LOAD DATA
+═══════════════════════════════════════ */
+async function loadTrips(){
+  const {data: trips, error} = await sb.from('trips')
+    .select(`*, days(*, stops(*))`)
+    .eq('user_id', currentUser.id)
+    .order('created_at');
+
+  if(error){ console.error(error); return; }
+
+  TRIPS = trips.map(t=>({
+    id: t.id,
+    title: t.title,
+    dates: t.dates||'',
+    persons: t.persons||'',
+    totalKm: t.total_km||'—',
+    totalTime: t.total_time||'—',
+    days: (t.days||[])
+      .sort((a,b)=>a.position-b.position)
+      .map(d=>({
+        id: d.id,
+        name: d.name,
+        date: d.date||'',
+        dayKm: d.day_km||0,
+        dayTime: d.day_time||'',
+        stops: (d.stops||[])
+          .sort((a,b)=>a.position-b.position)
+          .map(s=>({
+            id: s.id,
+            name: s.name,
+            icon: s.icon||'📍',
+            cat: s.cat||'',
+            lat: s.lat,
+            lng: s.lng,
+            time: s.time||'',
+            transit: (s.transit_km||s.transit_dur)?{km:s.transit_km||'',dur:s.transit_dur||''}:null,
+            acts: []
+          }))
+      }))
+  }));
+}
+
+/* ═══════════════════════════════════════
+   SUPABASE — SEED ICELAND DATA (first login)
+═══════════════════════════════════════ */
+const ICELAND_SEED = {
+  title:"Islanda — Road Trip", dates:"2–7 Gen 2026",
+  persons:"2 persone", total_km:"1.596 km", total_time:"22h 29min",
+  days:[
+    {name:"Golden Circle & Arrivo",date:"Ven 2 Gen",day_km:184,day_time:"2h 42min",position:0,stops:[
+      {name:"Aeroporto di Keflavik",icon:"✈️",cat:"Aeroporto",lat:63.985,lng:-22.606,time:"12:00",transit_km:null,transit_dur:null,position:0},
+      {name:"Öxarárfoss",icon:"💧",cat:"Cascata — Þingvellir",lat:64.266,lng:-21.12,time:"13:20",transit_km:"92 km",transit_dur:"1h 20min",position:1},
+      {name:"Kerið",icon:"🌋",cat:"Cratere vulcanico",lat:64.042,lng:-20.886,time:"15:27",transit_km:"40 km",transit_dur:"37min",position:2},
+      {name:"Geysir",icon:"💨",cat:"Area geotermica",lat:64.312,lng:-20.302,time:"16:35",transit_km:"46 km",transit_dur:"38min",position:3},
+      {name:"Brù Hoserfarm",icon:"🏡",cat:"Sosta",lat:64.315,lng:-20.28,time:"17:23",transit_km:"3 km",transit_dur:"3min",position:4},
+      {name:"Myrkholt Cabin",icon:"🏕️",cat:"Pernottamento",lat:64.32,lng:-20.26,time:"18:12",transit_km:"3 km",transit_dur:"4min",position:5}
+    ]},
+    {name:"Costa Sud — Cascate & Spiagge Nere",date:"Sab 3 Gen",day_km:306,day_time:"4h 27min",position:1,stops:[
+      {name:"Myrkholt Cabin",icon:"🏕️",cat:"Partenza",lat:64.32,lng:-20.26,time:"08:30",transit_km:null,transit_dur:null,position:0},
+      {name:"Gullfoss",icon:"💧",cat:"Cascata",lat:64.327,lng:-20.121,time:"08:38",transit_km:"6 km",transit_dur:"8min",position:1},
+      {name:"Skogafoss",icon:"💧",cat:"Cascata",lat:63.532,lng:-19.512,time:"11:38",transit_km:"145 km",transit_dur:"2h",position:2},
+      {name:"Kvernufoss",icon:"💧",cat:"Cascata nascosta",lat:63.53,lng:-19.499,time:"12:43",transit_km:"2 km",transit_dur:"5min",position:3},
+      {name:"The Plane Wreck",icon:"🛩️",cat:"Relitto DC-3",lat:63.484,lng:-19.362,time:"13:52",transit_km:"9 km",transit_dur:"9min",position:4},
+      {name:"Dyrhólaey",icon:"🦅",cat:"Promontorio",lat:63.402,lng:-19.129,time:"15:09",transit_km:"18 km",transit_dur:"17min",position:5},
+      {name:"Reynisfjara",icon:"🖤",cat:"Spiaggia nera",lat:63.406,lng:-19.044,time:"16:12",transit_km:"20 km",transit_dur:"23min",position:6},
+      {name:"Fosshotel Nupar",icon:"🏨",cat:"Pernottamento",lat:63.519,lng:-18.262,time:"18:22",transit_km:"106 km",transit_dur:"1h 25min",position:7}
+    ]},
+    {name:"Ghiacciai & Lagune del Sud-Est",date:"Dom 4 Gen",day_km:369,day_time:"4h 50min",position:2,stops:[
+      {name:"Fosshotel Nupar",icon:"🏨",cat:"Partenza",lat:63.519,lng:-18.262,time:"08:30",transit_km:null,transit_dur:null,position:0},
+      {name:"Svartifoss",icon:"💧",cat:"Cascata basaltica",lat:64.027,lng:-16.975,time:"09:03",transit_km:"45 km",transit_dur:"33min",position:1},
+      {name:"Fjallsárlón",icon:"🧊",cat:"Laguna glaciale",lat:64.017,lng:-16.417,time:"11:28",transit_km:"47 km",transit_dur:"40min",position:2},
+      {name:"Jökulsárlón",icon:"🧊",cat:"Laguna glaciale",lat:64.078,lng:-16.231,time:"12:38",transit_km:"11 km",transit_dur:"10min",position:3},
+      {name:"Diamond Beach",icon:"💎",cat:"Spiaggia nera con iceberg",lat:64.066,lng:-16.23,time:"13:40",transit_km:"1 km",transit_dur:"2min",position:4},
+      {name:"Fjaðrárgljúfur",icon:"🏔️",cat:"Canyon",lat:63.777,lng:-18.172,time:"15:50",transit_km:"130 km",transit_dur:"1h 40min",position:5},
+      {name:"Hotel Selja",icon:"🏨",cat:"Pernottamento",lat:63.53,lng:-19.47,time:"19:05",transit_km:"135 km",transit_dur:"1h 45min",position:6}
+    ]},
+    {name:"Penisola di Snæfellsnes",date:"Lun 5 Gen",day_km:384,day_time:"5h 21min",position:3,stops:[
+      {name:"Hotel Selja",icon:"🏨",cat:"Partenza",lat:63.53,lng:-19.47,time:"08:30",transit_km:null,transit_dur:null,position:0},
+      {name:"Seljalandfoss",icon:"💧",cat:"Cascata",lat:63.616,lng:-19.989,time:"08:39",transit_km:"8 km",transit_dur:"9min",position:1},
+      {name:"Gljúfrabúi",icon:"💧",cat:"Cascata nascosta",lat:63.622,lng:-19.987,time:"09:29",transit_km:"1 km",transit_dur:"10min",position:2},
+      {name:"Ytri Tunga",icon:"🦭",cat:"Spiaggia delle foche",lat:64.847,lng:-22.574,time:"13:39",transit_km:"270 km",transit_dur:"3h 30min",position:3},
+      {name:"Búðakirkja",icon:"⛪",cat:"Chiesa nera",lat:64.813,lng:-23.386,time:"14:18",transit_km:"20 km",transit_dur:"19min",position:4},
+      {name:"Kirkjufell",icon:"⛰️",cat:"Montagna iconica",lat:64.941,lng:-23.305,time:"15:11",transit_km:"35 km",transit_dur:"33min",position:5},
+      {name:"Arnarstapi Hotel",icon:"🏨",cat:"Pernottamento",lat:64.767,lng:-23.624,time:"17:21",transit_km:"50 km",transit_dur:"40min",position:6}
+    ]},
+    {name:"Fagradalsfjall & Rientro Reykjavik",date:"Mar 6 Gen",day_km:303,day_time:"4h 17min",position:4,stops:[
+      {name:"Arnarstapi Hotel",icon:"🏨",cat:"Partenza",lat:64.767,lng:-23.624,time:"08:30",transit_km:null,transit_dur:null,position:0},
+      {name:"Fagradalsfjall",icon:"🌋",cat:"Zona vulcanica",lat:63.897,lng:-22.271,time:"11:47",transit_km:"243 km",transit_dur:"3h 17min",position:1},
+      {name:"Hotel Von",icon:"🏨",cat:"Pernottamento",lat:64.133,lng:-21.894,time:"16:47",transit_km:"60 km",transit_dur:"1h",position:2}
+    ]},
+    {name:"Rientro all'Aeroporto",date:"Mer 7 Gen",day_km:50,day_time:"52min",position:5,stops:[
+      {name:"Hotel Von",icon:"🏨",cat:"Partenza",lat:64.133,lng:-21.894,time:"08:00",transit_km:null,transit_dur:null,position:0},
+      {name:"Aeroporto di Keflavik",icon:"✈️",cat:"Aeroporto",lat:63.985,lng:-22.606,time:"08:52",transit_km:"50 km",transit_dur:"52min",position:1}
+    ]}
+  ]
+};
+
+async function seedIceland(){
+  // Insert trip
+  const {data: trip, error: te} = await sb.from('trips').insert({
+    user_id: currentUser.id,
+    title: ICELAND_SEED.title,
+    dates: ICELAND_SEED.dates,
+    persons: ICELAND_SEED.persons,
+    total_km: ICELAND_SEED.total_km,
+    total_time: ICELAND_SEED.total_time
+  }).select().single();
+  if(te){ console.error(te); return; }
+
+  for(const day of ICELAND_SEED.days){
+    const {data: d, error: de} = await sb.from('days').insert({
+      trip_id: trip.id,
+      name: day.name, date: day.date,
+      day_km: day.day_km, day_time: day.day_time,
+      position: day.position
+    }).select().single();
+    if(de){ console.error(de); continue; }
+
+    for(const stop of day.stops){
+      await sb.from('stops').insert({
+        day_id: d.id,
+        name: stop.name, icon: stop.icon, cat: stop.cat,
+        lat: stop.lat, lng: stop.lng, time: stop.time,
+        transit_km: stop.transit_km, transit_dur: stop.transit_dur,
+        position: stop.position
+      });
+    }
+  }
+}
+
+/* ═══════════════════════════════════════
+   SUPABASE — SAVE STOP
+═══════════════════════════════════════ */
+async function dbSaveStop(stop, dayId, position){
+  const payload = {
+    day_id: dayId,
+    name: stop.name, icon: stop.icon, cat: stop.cat,
+    lat: stop.lat, lng: stop.lng, time: stop.time,
+    transit_km: stop.transit?.km||null,
+    transit_dur: stop.transit?.dur||null,
+    position
+  };
+  if(stop.id && !stop.id.startsWith('_new_')){
+    const {error} = await sb.from('stops').update(payload).eq('id', stop.id);
+    if(error) console.error(error);
+  } else {
+    const {data, error} = await sb.from('stops').insert(payload).select().single();
+    if(error){ console.error(error); return null; }
+    return data.id;
+  }
+  return stop.id;
+}
+
+async function dbDeleteStop(stopId){
+  const {error} = await sb.from('stops').delete().eq('id', stopId);
+  if(error) console.error(error);
+}
+
+async function dbReorderStops(dayId, stops){
+  for(let i=0;i<stops.length;i++){
+    await sb.from('stops').update({position:i, day_id:dayId}).eq('id', stops[i].id);
+  }
+}
+
+function showToast(msg='💾 Salvato'){
+  const t = document.getElementById('saveToast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2000);
+}
+
+/* ═══════════════════════════════════════
+   HELPERS
 ═══════════════════════════════════════ */
 function guessIcon(name,cat){
   const n=(name+' '+cat).toLowerCase();
   if(n.includes('aeroporto')||n.includes('airport')) return '✈️';
   if(n.includes('hotel')||n.includes('pernottamento')||n.includes('cabin')||n.includes('hostel')) return '🏨';
   if(n.includes('foss')||n.includes('cascata')||n.includes('waterfall')) return '💧';
-  if(n.includes('beach')||n.includes('spiaggia')||n.includes('reynis')||n.includes('diamond')) return '🏖️';
-  if(n.includes('jökul')||n.includes('fjalls')||n.includes('glaci')) return '🧊';
+  if(n.includes('beach')||n.includes('spiaggia')) return '🏖️';
+  if(n.includes('jökul')||n.includes('glaci')) return '🧊';
   if(n.includes('geysir')||n.includes('geyser')) return '💨';
-  if(n.includes('volcano')||n.includes('vulcan')||n.includes('fagradals')||n.includes('kerid')) return '🌋';
+  if(n.includes('vulcan')||n.includes('fagradals')||n.includes('kerid')) return '🌋';
   if(n.includes('mountain')||n.includes('montagna')||n.includes('kirkjufell')) return '⛰️';
   if(n.includes('church')||n.includes('chiesa')||n.includes('kirkja')) return '⛪';
-  if(n.includes('ristorante')||n.includes('restaurant')||n.includes('cena')) return '🍽️';
-  if(n.includes('museum')||n.includes('museo')) return '🏛️';
+  if(n.includes('ristorante')||n.includes('restaurant')) return '🍽️';
   if(n.includes('canyon')||n.includes('gjúfur')) return '🏔️';
   if(n.includes('seal')||n.includes('foca')) return '🦭';
-  if(n.includes('plane')||n.includes('wreck')||n.includes('relitto')) return '🛩️';
-  if(n.includes('laguna')||n.includes('lagoon')) return '🏞️';
+  if(n.includes('plane')||n.includes('wreck')) return '🛩️';
   return '📍';
 }
 
-function mkId(){ return 'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
+function findStop(id){ for(const d of TRIPS[ti].days) for(const s of d.stops) if(s.id===id) return s; return null; }
+function findStopIdx(id){
+  for(let di=0;di<TRIPS[ti].days.length;di++)
+    for(let si=0;si<TRIPS[ti].days[di].stops.length;si++)
+      if(TRIPS[ti].days[di].stops[si].id===id) return {di,si};
+  return {di:-1,si:-1};
+}
 
 /* ═══════════════════════════════════════
-   GOOGLE MAPS INIT
+   GOOGLE MAPS
 ═══════════════════════════════════════ */
 window.initGoogleMaps = function(){
   gmap = new google.maps.Map(document.getElementById('gmap'),{
@@ -503,12 +679,9 @@ window.initGoogleMaps = function(){
   directionsService = new google.maps.DirectionsService();
   autocompleteService = new google.maps.places.AutocompleteService();
   placesService = new google.maps.places.PlacesService(gmap);
-  renderMap();
+  if(TRIPS.length) renderMap();
 };
 
-/* ═══════════════════════════════════════
-   MARKER ICON
-═══════════════════════════════════════ */
 function markerIcon(stop, active){
   const size=active?42:34;
   const bg=active?'#c8853a':'rgba(20,14,10,.88)';
@@ -520,9 +693,6 @@ function markerIcon(stop, active){
     scaledSize:new google.maps.Size(size,size),anchor:new google.maps.Point(size/2,size/2)};
 }
 
-/* ═══════════════════════════════════════
-   INFOWINDOW CONTENT
-═══════════════════════════════════════ */
 function iwContent(stop, di, si){
   const gdir=`https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`;
   const meta=stop.transit?`<div class="iw-meta"><span>📍 ${stop.transit.km}</span><span>⏱ ${stop.transit.dur}</span></div>`:'';
@@ -533,26 +703,20 @@ function iwContent(stop, di, si){
     <div class="iw-btns">
       <a href="${gdir}" target="_blank" class="iw-btn pri">🧭 Indicazioni</a>
       <button class="iw-btn sec" onclick="openEditModal(${di},${si})">✏️ Modifica</button>
-      <button class="iw-btn danger" onclick="askDelete(${di},${si})">🗑 Elimina</button>
+      <button class="iw-btn danger" onclick="askDelete(${di},${si})">🗑</button>
     </div>
   </div>`;
 }
 
-/* ═══════════════════════════════════════
-   RENDER MAP
-═══════════════════════════════════════ */
 function renderMap(){
-  if(!gmap) return;
+  if(!gmap||!TRIPS.length) return;
   Object.values(markers).forEach(m=>m.setMap(null)); markers={};
   polylines.forEach(p=>p.setMap(null)); polylines=[];
   iw.close();
   const trip=TRIPS[ti];
   const bounds=new google.maps.LatLngBounds();
   let done=0, total=0;
-  trip.days.forEach((day,di)=>{
-    if(dayF!=='all'&&dayF!==di) return;
-    total+=Math.max(0,day.stops.length-1);
-  });
+  trip.days.forEach((day,di)=>{ if(dayF!=='all'&&dayF!==di) return; total+=Math.max(0,day.stops.length-1); });
   document.getElementById('mapLoading').classList.remove('hidden');
 
   trip.days.forEach((day,di)=>{
@@ -561,16 +725,11 @@ function renderMap(){
     day.stops.forEach((stop,si)=>{
       const ll=new google.maps.LatLng(stop.lat,stop.lng);
       bounds.extend(ll);
-      const active=stop.id===activeId;
       const marker=new google.maps.Marker({
-        position:ll, map:gmap, icon:markerIcon(stop,active),
-        zIndex:active?10:1, title:stop.name
+        position:ll, map:gmap, icon:markerIcon(stop,stop.id===activeId),
+        zIndex:stop.id===activeId?10:1, title:stop.name
       });
-      marker.addListener('click',()=>{
-        focusStop(stop.id,false);
-        iw.setContent(iwContent(stop,di,si));
-        iw.open(gmap,marker);
-      });
+      marker.addListener('click',()=>{ focusStop(stop.id,false); iw.setContent(iwContent(stop,di,si)); iw.open(gmap,marker); });
       markers[stop.id]=marker;
     });
     day.stops.forEach((stop,si)=>{
@@ -582,11 +741,10 @@ function renderMap(){
         travelMode:google.maps.TravelMode.DRIVING
       },(result,status)=>{
         if(status==='OK'){
-          const poly=new google.maps.Polyline({
+          polylines.push(new google.maps.Polyline({
             path:result.routes[0].overview_path,
             geodesic:false, strokeColor:color, strokeOpacity:.85, strokeWeight:3.5, map:gmap
-          });
-          polylines.push(poly);
+          }));
         }
         done++;
         if(done>=total) document.getElementById('mapLoading').classList.add('hidden');
@@ -597,12 +755,9 @@ function renderMap(){
   if(!bounds.isEmpty()) gmap.fitBounds(bounds,{padding:50});
 }
 
-/* ═══════════════════════════════════════
-   DAY BAR
-═══════════════════════════════════════ */
 function renderDayBar(){
-  const bar=document.getElementById('mapDaybar');
-  bar.innerHTML='';
+  if(!TRIPS.length) return;
+  const bar=document.getElementById('mapDaybar'); bar.innerHTML='';
   const trip=TRIPS[ti];
   const make=(v,lbl)=>{
     const b=document.createElement('button');
@@ -615,35 +770,20 @@ function renderDayBar(){
   trip.days.forEach((_,i)=>make(i,`G${i+1}`));
 }
 
-/* ═══════════════════════════════════════
-   FOCUS STOP
-═══════════════════════════════════════ */
 function focusStop(id, scroll){
   activeId=id;
   document.querySelectorAll('.sc').forEach(e=>e.classList.remove('active'));
   const card=document.getElementById('c-'+id);
   if(card){card.classList.add('active');if(scroll)card.scrollIntoView({behavior:'smooth',block:'nearest'});}
   Object.entries(markers).forEach(([mid,m])=>m.setIcon(markerIcon(findStop(mid),mid===id)));
-  if(markers[id]){
-    const s=findStop(id);
-    const {di,si}=findStopIdx(id);
-    iw.setContent(iwContent(s,di,si));
-    iw.open(gmap,markers[id]);
-  }
-}
-
-function findStop(id){ for(const d of TRIPS[ti].days) for(const s of d.stops) if(s.id===id) return s; return null; }
-function findStopIdx(id){
-  for(let di=0;di<TRIPS[ti].days.length;di++)
-    for(let si=0;si<TRIPS[ti].days[di].stops.length;si++)
-      if(TRIPS[ti].days[di].stops[si].id===id) return {di,si};
-  return {di:-1,si:-1};
+  if(markers[id]){ const s=findStop(id); const {di,si}=findStopIdx(id); iw.setContent(iwContent(s,di,si)); iw.open(gmap,markers[id]); }
 }
 
 /* ═══════════════════════════════════════
-   ITINERARY RENDER
+   ITINERARY
 ═══════════════════════════════════════ */
 function renderItin(){
+  if(!TRIPS.length){ document.getElementById('itinBody').innerHTML='<div style="padding:2rem;text-align:center;color:var(--muted)">Nessun viaggio trovato.</div>'; return; }
   const trip=TRIPS[ti];
   const body=document.getElementById('itinBody');
   body.innerHTML='<div class="sec-ttl">Itinerario dettagliato</div>';
@@ -658,12 +798,6 @@ function renderItin(){
     </div>`;
     day.stops.forEach((stop,si)=>{
       const tr=stop.transit?`<div class="transit">🚗 ${stop.transit.km} · ${stop.transit.dur}</div>`:'';
-      const actsH=stop.acts.map((a,ai)=>`
-        <div class="act">
-          <div class="ach ${a.done?'chk':''}" onclick="togAct(${ti},${di},${si},${ai})"><div class="ach-i"></div></div>
-          <span class="act-t ${a.done?'done':''}">${a.t}</span>
-          <span class="act-h">${a.h}</span>
-        </div>`).join('');
       const se=document.createElement('div');
       se.className='stop';
       se.innerHTML=`${tr}
@@ -674,7 +808,6 @@ function renderItin(){
             <span class="sc-time">${stop.time}</span>
           </div>
           <div class="sc-cat">${stop.cat}</div>
-          ${stop.acts.length?`<div class="acts">${actsH}</div>`:''}
           <div class="sc-actions">
             <button class="sc-btn edit" onclick="openEditModal(${di},${si})">✏️ Modifica</button>
             <button class="sc-btn del" onclick="askDelete(${di},${si})">🗑 Elimina</button>
@@ -683,7 +816,6 @@ function renderItin(){
         </div>`;
       el.appendChild(se);
     });
-    // Add stop button per day
     const addBtn=document.createElement('button');
     addBtn.className='add-stop-btn';
     addBtn.innerHTML='+ Aggiungi tappa';
@@ -693,18 +825,11 @@ function renderItin(){
   });
 }
 
-function togAct(ti2,di,si,ai){
-  TRIPS[ti2].days[di].stops[si].acts[ai].done^=true;
-  renderItin(); updStats();
-}
-
 /* ═══════════════════════════════════════
-   MODAL — OPEN ADD
+   MODAL
 ═══════════════════════════════════════ */
 function openAddModal(di){
-  modalMode='add';
-  modalDayIdx=di;
-  modalStopIdx=-1;
+  modalMode='add'; modalDayIdx=di; modalStopIdx=-1;
   pendingLat=null; pendingLng=null;
   document.getElementById('modalTitle').textContent='Aggiungi tappa';
   document.getElementById('searchInput').value='';
@@ -715,17 +840,14 @@ function openAddModal(di){
   document.getElementById('fDur').value='';
   document.getElementById('searchResults').classList.remove('open');
   populateDaySelect(di);
-  renderPosPicker(); // default: bottom of day
+  modalPosIdx = TRIPS[ti].days[di].stops.length;
+  renderPosPicker();
   document.getElementById('modalOverlay').classList.add('open');
   setTimeout(()=>document.getElementById('searchInput').focus(),300);
 }
 
-/* ═══════════════════════════════════════
-   MODAL — OPEN EDIT
-═══════════════════════════════════════ */
 function openEditModal(di,si){
-  modalMode='edit';
-  modalDayIdx=di; modalStopIdx=si;
+  modalMode='edit'; modalDayIdx=di; modalStopIdx=si;
   const stop=TRIPS[ti].days[di].stops[si];
   pendingLat=stop.lat; pendingLng=stop.lng;
   document.getElementById('modalTitle').textContent='Modifica tappa';
@@ -737,19 +859,14 @@ function openEditModal(di,si){
   document.getElementById('fDur').value=stop.transit?.dur||'';
   document.getElementById('searchResults').classList.remove('open');
   populateDaySelect(di);
-  // position: current index
   modalPosIdx=si;
   renderPosPicker();
   document.getElementById('modalOverlay').classList.add('open');
   iw && iw.close();
 }
 
-/* ═══════════════════════════════════════
-   MODAL — DAY SELECT + POSITION PICKER
-═══════════════════════════════════════ */
 function populateDaySelect(selectedDi){
-  const sel=document.getElementById('fDay');
-  sel.innerHTML='';
+  const sel=document.getElementById('fDay'); sel.innerHTML='';
   TRIPS[ti].days.forEach((day,i)=>{
     const opt=document.createElement('option');
     opt.value=i; opt.textContent=`G${i+1} — ${day.name}`;
@@ -762,42 +879,27 @@ function populateDaySelect(selectedDi){
 function renderPosPicker(){
   modalDayIdx=parseInt(document.getElementById('fDay').value);
   const day=TRIPS[ti].days[modalDayIdx];
-  const picker=document.getElementById('posPicker');
-  picker.innerHTML='';
-  // "In fondo" = after last stop
-  const positions=[];
-  day.stops.forEach((s,i)=>{
-    positions.push({label:`Dopo: ${s.icon} ${s.name}`, idx:i+1});
-  });
-  // Also "Prima di tutto"
-  positions.unshift({label:'In cima al giorno', idx:0});
-  if(modalPosIdx<0) modalPosIdx=positions[positions.length-1].idx; // default: bottom
-
+  const picker=document.getElementById('posPicker'); picker.innerHTML='';
+  const positions=[{label:'In cima al giorno', idx:0}];
+  day.stops.forEach((s,i)=>positions.push({label:`Dopo: ${s.icon} ${s.name}`, idx:i+1}));
+  if(modalPosIdx<0) modalPosIdx=positions[positions.length-1].idx;
   positions.forEach(p=>{
     const row=document.createElement('div');
     row.className='pos-item'+(p.idx===modalPosIdx?' selected':'');
-    row.innerHTML=`<span>${p.label}</span>`;
-    row.onclick=()=>{
-      modalPosIdx=p.idx;
-      picker.querySelectorAll('.pos-item').forEach(r=>r.classList.remove('selected'));
-      row.classList.add('selected');
-    };
+    row.innerHTML=p.label;
+    row.onclick=()=>{ modalPosIdx=p.idx; picker.querySelectorAll('.pos-item').forEach(r=>r.classList.remove('selected')); row.classList.add('selected'); };
     picker.appendChild(row);
   });
 }
 
-/* ═══════════════════════════════════════
-   PLACES AUTOCOMPLETE
-═══════════════════════════════════════ */
 function onSearchInput(){
   clearTimeout(searchTimer);
   const q=document.getElementById('searchInput').value.trim();
   if(q.length<3){ document.getElementById('searchResults').classList.remove('open'); return; }
   searchTimer=setTimeout(()=>{
     autocompleteService.getPlacePredictions({input:q,language:'it'},(predictions,status)=>{
-      const box=document.getElementById('searchResults');
-      box.innerHTML='';
-      if(status!==google.maps.places.PlacesServiceStatus.OK||!predictions){box.classList.remove('open');return;}
+      const box=document.getElementById('searchResults'); box.innerHTML='';
+      if(status!==google.maps.places.PlacesServiceStatus.OK||!predictions){ box.classList.remove('open'); return; }
       predictions.slice(0,5).forEach(p=>{
         const item=document.createElement('div');
         item.className='sr-item';
@@ -807,15 +909,12 @@ function onSearchInput(){
           box.classList.remove('open');
           document.getElementById('searchInput').value=p.description;
           document.getElementById('fName').value=p.structured_formatting.main_text;
-          // Get details for lat/lng
           placesService.getDetails({placeId:p.place_id,fields:['geometry','name','types']},(place,s)=>{
             if(s===google.maps.places.PlacesServiceStatus.OK){
               pendingLat=place.geometry.location.lat();
               pendingLng=place.geometry.location.lng();
-              if(!document.getElementById('fCat').value){
-                const t=place.types?.[0]||'';
-                document.getElementById('fCat').value=t.replace(/_/g,' ');
-              }
+              if(!document.getElementById('fCat').value)
+                document.getElementById('fCat').value=(place.types?.[0]||'').replace(/_/g,' ');
             }
           });
         };
@@ -826,50 +925,58 @@ function onSearchInput(){
   },300);
 }
 
-/* ═══════════════════════════════════════
-   MODAL — SAVE
-═══════════════════════════════════════ */
-function saveStop(){
+async function saveStop(){
   const name=document.getElementById('fName').value.trim();
-  if(!name){alert('Inserisci il nome della tappa.');return;}
-  if(!pendingLat||!pendingLng){alert('Seleziona un luogo dalla lista di ricerca.');return;}
-
+  if(!name){ alert('Inserisci il nome della tappa.'); return; }
+  if(!pendingLat||!pendingLng){ alert('Seleziona un luogo dalla lista di ricerca.'); return; }
   const cat=document.getElementById('fCat').value.trim()||'Tappa';
   const time=document.getElementById('fTime').value||'00:00';
   const km=document.getElementById('fKm').value.trim();
   const dur=document.getElementById('fDur').value.trim();
   const transit=(km||dur)?{km:km||'—',dur:dur||'—'}:null;
   const icon=guessIcon(name,cat);
+  const btn=document.getElementById('modalSaveBtn');
+  btn.disabled=true; btn.textContent='Salvataggio…';
+
+  const targetDi=parseInt(document.getElementById('fDay').value);
+  const targetDay=TRIPS[ti].days[targetDi];
+  const pos=modalPosIdx>=0?modalPosIdx:targetDay.stops.length;
 
   if(modalMode==='add'){
-    const stop={id:mkId(),name,icon,cat,lat:pendingLat,lng:pendingLng,time,transit,acts:[]};
-    const targetDi=parseInt(document.getElementById('fDay').value);
-    const pos=modalPosIdx>=0?modalPosIdx:TRIPS[ti].days[targetDi].stops.length;
-    TRIPS[ti].days[targetDi].stops.splice(pos,0,stop);
+    const stop={id:'_new_', name, icon, cat, lat:pendingLat, lng:pendingLng, time, transit, acts:[]};
+    targetDay.stops.splice(pos,0,stop);
+    // save to DB
+    const newId=await dbSaveStop(stop, targetDay.id, pos);
+    if(newId) stop.id=newId;
+    // reorder remaining
+    for(let i=pos+1;i<targetDay.stops.length;i++)
+      await sb.from('stops').update({position:i}).eq('id',targetDay.stops[i].id);
     activeId=stop.id;
   } else {
-    // edit
     const stop=TRIPS[ti].days[modalDayIdx].stops[modalStopIdx];
-    const newDi=parseInt(document.getElementById('fDay').value);
     stop.name=name; stop.icon=icon; stop.cat=cat;
     stop.lat=pendingLat; stop.lng=pendingLng;
     stop.time=time; stop.transit=transit;
-    // move to different day/position if changed
-    if(newDi!==modalDayIdx||modalPosIdx!==modalStopIdx){
+    // move if day/position changed
+    if(targetDi!==modalDayIdx||pos!==modalStopIdx){
       TRIPS[ti].days[modalDayIdx].stops.splice(modalStopIdx,1);
-      const insertIdx=modalPosIdx>modalStopIdx?modalPosIdx-1:modalPosIdx;
-      TRIPS[ti].days[newDi].stops.splice(Math.max(0,insertIdx),0,stop);
+      TRIPS[ti].days[targetDi].stops.splice(pos>modalStopIdx?pos-1:pos,0,stop);
+      await sb.from('stops').update({day_id:targetDay.id}).eq('id',stop.id);
+      await dbReorderStops(targetDay.id, TRIPS[ti].days[targetDi].stops);
+      if(targetDi!==modalDayIdx)
+        await dbReorderStops(TRIPS[ti].days[modalDayIdx].id, TRIPS[ti].days[modalDayIdx].stops);
     }
+    await dbSaveStop(stop, targetDay.id, pos);
+    activeId=stop.id;
   }
 
+  btn.disabled=false; btn.textContent='Salva tappa';
   closeModal();
   renderAll();
+  showToast('💾 Tappa salvata');
   setTimeout(()=>focusStop(activeId,true),200);
 }
 
-/* ═══════════════════════════════════════
-   MODAL — CLOSE
-═══════════════════════════════════════ */
 function closeModal(e){
   if(e&&e.target!==document.getElementById('modalOverlay')) return;
   document.getElementById('modalOverlay').classList.remove('open');
@@ -882,26 +989,27 @@ function closeModal(e){
 function askDelete(di,si){
   pendingDeleteDi=di; pendingDeleteSi=si;
   const stop=TRIPS[ti].days[di].stops[si];
-  document.getElementById('confirmSub').textContent=`Vuoi eliminare "${stop.name}"? L'azione non è reversibile.`;
+  document.getElementById('confirmSub').textContent=`Vuoi eliminare "${stop.name}"?`;
   document.getElementById('confirmOverlay').classList.add('open');
   iw && iw.close();
 }
-
 function closeConfirm(){ document.getElementById('confirmOverlay').classList.remove('open'); }
-
-function doDelete(){
+async function doDelete(){
   if(pendingDeleteDi===null) return;
   const stop=TRIPS[ti].days[pendingDeleteDi].stops[pendingDeleteSi];
   if(activeId===stop.id) activeId=null;
   TRIPS[ti].days[pendingDeleteDi].stops.splice(pendingDeleteSi,1);
   closeConfirm();
+  await dbDeleteStop(stop.id);
+  showToast('🗑 Tappa eliminata');
   renderAll();
 }
 
 /* ═══════════════════════════════════════
-   STATS
+   STATS / OVERVIEW
 ═══════════════════════════════════════ */
 function updStats(){
+  if(!TRIPS.length) return;
   const trip=TRIPS[ti];
   document.getElementById('hTitle').textContent=trip.title;
   document.getElementById('hDates').textContent=trip.dates;
@@ -910,19 +1018,13 @@ function updStats(){
   document.getElementById('sKm').textContent=trip.totalKm;
   document.getElementById('sTime').textContent=trip.totalTime;
   document.getElementById('chipName').textContent=trip.title;
-  const acts=trip.days.flatMap(d=>d.stops.flatMap(s=>s.acts));
-  const done=acts.filter(a=>a.done).length;
-  const pct=acts.length?Math.round(done/acts.length*100):0;
-  document.getElementById('progFill').style.width=pct+'%';
-  document.getElementById('sDone').textContent=pct+'%';
+  document.getElementById('sDone').textContent='0%';
 }
 
-/* ═══════════════════════════════════════
-   OVERVIEW
-═══════════════════════════════════════ */
 function renderOver(){
   const body=document.getElementById('overBody');
   body.innerHTML='<div class="sec-ttl" style="margin-top:.2rem">I tuoi viaggi</div>';
+  if(!TRIPS.length){ body.innerHTML+='<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:2rem">Nessun viaggio trovato.</div>'; return; }
   TRIPS.forEach((trip,i)=>{
     const c=document.createElement('div');
     c.className='trip-card'+(i===ti?' active':'');
@@ -960,22 +1062,55 @@ function dv(mode){
   if(gmap) setTimeout(()=>google.maps.event.trigger(gmap,'resize'),80);
 }
 
-/* ═══════════════════════════════════════
-   RENDER ALL
-═══════════════════════════════════════ */
 function renderAll(){ updStats(); renderItin(); renderDayBar(); renderOver(); renderMap(); }
 
 /* ═══════════════════════════════════════
    BOOT
 ═══════════════════════════════════════ */
-window.addEventListener('DOMContentLoaded',()=>{
+async function startApp(user){
+  currentUser = user;
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('appLoading').classList.remove('hidden');
+
+  await loadTrips();
+
+  // First login: seed Iceland data
+  if(TRIPS.length === 0){
+    await seedIceland();
+    await loadTrips();
+  }
+
+  document.getElementById('appLoading').classList.add('hidden');
+
   if(window.innerWidth>=720) dv('split'); else mtab('itinerary');
   updStats(); renderItin(); renderDayBar(); renderOver();
+
+  // Load Google Maps
   const script=document.createElement('script');
   script.src=`https://maps.googleapis.com/maps/api/js?key=${GMAPS_KEY}&callback=initGoogleMaps&libraries=places`;
   script.async=true; script.defer=true;
   document.head.appendChild(script);
+
   window.addEventListener('resize',()=>{ if(gmap) google.maps.event.trigger(gmap,'resize'); });
+}
+
+window.addEventListener('DOMContentLoaded', async ()=>{
+  // Handle magic link redirect
+  const {data:{session}, error} = await sb.auth.getSession();
+
+  if(session?.user){
+    startApp(session.user);
+  } else {
+    document.getElementById('appLoading').classList.add('hidden');
+    document.getElementById('authScreen').classList.remove('hidden');
+  }
+
+  // Listen for auth changes (magic link click)
+  sb.auth.onAuthStateChange((_event, session)=>{
+    if(session?.user && !currentUser){
+      startApp(session.user);
+    }
+  });
 });
 </script>
 </body>

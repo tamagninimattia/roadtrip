@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Wanderlog — Islanda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* ── TOKENS ── */
+:root {
+  --ink:#1a1410; --paper:#f5f0e8; --cream:#faf7f2;
+  --amber:#c8853a; --amber-l:#e8a85a; --amber-pale:#f5e6cc;
+  --sage:#4e7050; --muted:#8a7a6a; --border:#d8cdb8;
+  --ss:0 1px 4px rgba(26,20,16,.10);
+  --sm:0 4px 16px rgba(26,20,16,.14);
+  --sl:0 8px 32px rgba(26,20,16,.22);
+  --hh:52px; --tbh:64px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ── */
+.hdr{position:fixed;inset:0 0 auto;height:var(--hh);z-index:1000;background:var(--ink);
+  display:flex;align-items:center;justify-content:space-between;padding:0 1rem 0 1.25rem;
+  box-shadow:var(--sm)}
+.logo{font-family:'Playfair Display',serif;font-style:italic;font-size:1.3rem;color:var(--amber-l);flex-shrink:0}
+.dnav{display:none;gap:.15rem}
+.dnav-btn{background:none;border:none;color:var(--cream);opacity:.45;padding:.35rem .8rem;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;
+  border-radius:5px;transition:all .18s}
+.dnav-btn:hover{opacity:.8;background:rgba(255,255,255,.08)}
+.dnav-btn.active{opacity:1;background:var(--amber);color:var(--ink)}
+.trip-chip{display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.28rem .65rem;cursor:pointer}
+.trip-chip-name{font-size:.78rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+
+/* ── BOTTOM TAB BAR (mobile) ── */
+.tbar{position:fixed;inset:auto 0 0;z-index:1000;
+  height:calc(var(--tbh) + env(safe-area-inset-bottom,0px));
+  background:var(--ink);display:flex;align-items:flex-start;justify-content:space-around;padding-top:6px;
+  border-top:1px solid rgba(255,255,255,.07);box-shadow:0 -2px 20px rgba(26,20,16,.25)}
+.tb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;
+  cursor:pointer;padding:6px 0;color:rgba(255,255,255,.4);transition:color .18s}
+.tb.active{color:var(--amber-l)}
+.tb-ico{font-size:1.25rem;line-height:1}
+.tb-lbl{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+
+/* ── CONTENT AREA ── */
+.content{
+  position:fixed;top:var(--hh);left:0;right:0;
+  bottom:calc(var(--tbh) + env(safe-area-inset-bottom,0px));
+  display:flex;overflow:hidden;
+}
+
+/* ── PANELS ── */
+.panel{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden}
+.panel.on{display:flex}
+
+/* ── MAP PANEL ── */
+#pMap{z-index:1}
+#leaflet-map{flex:1;width:100%;min-height:0}
+
+/* Leaflet popup overrides */
+.leaflet-popup-content-wrapper{
+  background:var(--ink)!important;color:var(--cream)!important;
+  border-radius:14px!important;box-shadow:var(--sl)!important;
+  font-family:'DM Sans',sans-serif!important;
+  border:1px solid rgba(255,255,255,.1)!important;
+}
+.leaflet-popup-tip{background:var(--ink)!important}
+.leaflet-popup-content{margin:14px 16px 16px!important}
+.lp-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;margin-bottom:.2rem;line-height:1.25}
+.lp-sub{font-size:.7rem;opacity:.5;margin-bottom:.45rem}
+.lp-meta{font-family:'DM Mono',monospace;font-size:.67rem;color:var(--amber-l);margin-bottom:.65rem;display:flex;gap:.65rem;flex-wrap:wrap}
+.lp-acts{display:flex;gap:.4rem;flex-wrap:wrap}
+.lp-btn{flex:1;min-width:90px;display:inline-flex;align-items:center;justify-content:center;gap:.3rem;
+  padding:.5rem .5rem;border-radius:8px;font-weight:600;font-size:.72rem;text-decoration:none;transition:all .15s;cursor:pointer}
+.lp-btn.pri{background:var(--amber);color:var(--ink)}
+.lp-btn.pri:hover{background:var(--amber-l)}
+.lp-btn.sec{background:rgba(255,255,255,.12);color:var(--cream)}
+.lp-btn.sec:hover{background:rgba(255,255,255,.22)}
+
+/* day filter bar on map */
+.map-daybar{
+  position:absolute;top:.7rem;left:.7rem;right:.7rem;z-index:800;
+  display:flex;gap:.35rem;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;pointer-events:all;
+}
+.map-daybar::-webkit-scrollbar{display:none}
+.mdb{flex-shrink:0;background:rgba(255,255,255,.93);border:1px solid var(--border);border-radius:20px;
+  padding:.35rem .8rem;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;
+  white-space:nowrap;box-shadow:var(--ss);transition:all .15s;backdrop-filter:blur(4px)}
+.mdb.active{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+
+/* ── ITINERARY PANEL ── */
+#pItin{background:var(--cream);overflow-y:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+#pItin::-webkit-scrollbar{width:3px}
+#pItin::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.hero{background:linear-gradient(135deg,var(--ink) 0%,#2d2318 100%);color:var(--cream);
+  padding:1.2rem 1.2rem .95rem;position:relative;overflow:hidden;flex-shrink:0}
+.hero::after{content:'🧊';position:absolute;right:.8rem;top:50%;transform:translateY(-50%);
+  font-size:4.5rem;opacity:.07;pointer-events:none}
+.hero-lbl{font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--amber-l);margin-bottom:.22rem}
+.hero-title{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;margin-bottom:.5rem}
+.hero-meta{display:flex;gap:.85rem;flex-wrap:wrap}
+.hm{font-size:.73rem;opacity:.68;display:flex;align-items:center;gap:.28rem}
+
+.prog-wrap{height:3px;background:var(--border);flex-shrink:0}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--amber-l));transition:width .4s}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);flex-shrink:0;background:var(--cream)}
+.st{padding:.72rem .5rem;text-align:center;border-right:1px solid var(--border)}
+.st:last-child{border-right:none}
+.st-v{font-family:'DM Mono',monospace;font-size:.92rem;font-weight:500;color:var(--amber)}
+.st-l{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:.08rem}
+
+.itin-body{padding:.9rem .95rem 1.5rem}
+.sec-ttl{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;
+  display:flex;align-items:center;gap:.45rem}
+.sec-ttl::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.day-block{margin-bottom:1.15rem;animation:fu .3s ease both}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.day-hdr{display:flex;align-items:center;gap:.55rem;margin-bottom:.55rem}
+.day-n{width:27px;height:27px;border-radius:50%;background:var(--ink);color:var(--amber-l);
+  display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.65rem;flex-shrink:0}
+.day-info{flex:1;min-width:0}
+.day-name{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.day-date{font-size:.65rem;color:var(--muted)}
+.day-km{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--amber);background:var(--amber-pale);
+  padding:.17rem .48rem;border-radius:20px;white-space:nowrap;flex-shrink:0}
+
+.stop{position:relative;padding-left:.95rem;margin-bottom:.38rem}
+.stop::before{content:'';position:absolute;left:.26rem;top:1.25rem;bottom:-.38rem;width:1px;background:var(--border)}
+.stop:last-child::before{display:none}
+.stop::after{content:'';position:absolute;left:.04rem;top:.5rem;width:.4rem;height:.4rem;border-radius:50%;
+  background:var(--amber);border:2px solid var(--cream);box-shadow:0 0 0 1px var(--amber)}
+
+.transit{display:inline-flex;align-items:center;gap:.22rem;padding:.16rem .48rem;border-radius:20px;
+  font-size:.62rem;font-family:'DM Mono',monospace;margin-bottom:.32rem;margin-left:.1rem;border:1px solid;
+  background:#eef2fa;border-color:#b8c8e8;color:#4a6090}
+
+.sc{background:white;border:1px solid var(--border);border-radius:10px;padding:.62rem .85rem;cursor:pointer;
+  transition:all .18s;box-shadow:var(--ss);-webkit-user-select:none;user-select:none}
+.sc:active{transform:scale(.985)}
+.sc.active{border-color:var(--amber);background:#fffdf8;box-shadow:0 0 0 3px var(--amber-pale)}
+.sc-top{display:flex;align-items:flex-start;gap:.45rem;margin-bottom:.18rem}
+.sc-ico{font-size:.9rem;flex-shrink:0}
+.sc-name{font-weight:600;font-size:.82rem;flex:1;line-height:1.3}
+.sc-time{font-family:'DM Mono',monospace;font-size:.64rem;color:var(--muted);white-space:nowrap}
+.sc-cat{font-size:.65rem;color:var(--muted);margin-bottom:.3rem}
+.acts{border-top:1px dashed var(--border);padding-top:.35rem;margin-top:.32rem;display:flex;flex-direction:column;gap:.25rem}
+.act{display:flex;align-items:center;gap:.45rem;min-height:26px}
+.ach{width:26px;height:26px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ach-i{width:16px;height:16px;border:1.5px solid var(--border);border-radius:4px;display:flex;align-items:center;
+  justify-content:center;transition:all .15s;background:white}
+.ach:hover .ach-i{border-color:var(--amber)}
+.ach.chk .ach-i{background:var(--sage);border-color:var(--sage)}
+.ach.chk .ach-i::after{content:'✓';font-size:.6rem;color:white;font-weight:700}
+.act-t{font-size:.76rem;flex:1;line-height:1.3}
+.act-t.done{text-decoration:line-through;color:var(--muted)}
+.act-h{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);white-space:nowrap}
+.gml{display:inline-flex;align-items:center;gap:.22rem;font-size:.67rem;color:var(--amber);text-decoration:none;
+  font-weight:600;margin-top:.45rem;opacity:.82;transition:opacity .15s}
+.gml:hover{opacity:1}
+
+/* ── OVERVIEW PANEL ── */
+#pOver{background:var(--cream);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.over-body{padding:.9rem .95rem 1.5rem}
+.trip-card{background:white;border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;
+  margin-bottom:.65rem;cursor:pointer;transition:all .18s;box-shadow:var(--ss)}
+.trip-card:active{transform:scale(.98)}
+.trip-card.active{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-pale)}
+.tc-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:.28rem}
+.tc-meta{font-size:.72rem;color:var(--muted);display:flex;gap:.65rem;flex-wrap:wrap}
+
+/* ── DESKTOP ≥720px ── */
+@media(min-width:720px){
+  .tbar{display:none}
+  .dnav{display:flex}
+  .content{bottom:0;flex-direction:row}
+
+  /* split: sidebar left, map right */
+  .content.vs .panel#pItin{display:flex;position:relative;width:390px;min-width:390px;border-right:1px solid var(--border);flex-shrink:0}
+  .content.vs .panel#pMap{display:flex;position:relative;flex:1}
+  .content.vm .panel#pMap{display:flex;position:relative;flex:1}
+  .content.vl .panel#pItin{display:flex;position:relative;flex:1}
+  .content.vo .panel#pOver{display:flex;position:relative;flex:1}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="logo">Wanderlog</div>
+  <nav class="dnav" id="dnav">
+    <button class="dnav-btn" onclick="dv('overview')">🗂 Viaggi</button>
+    <button class="dnav-btn active" onclick="dv('split')">⊞ Split</button>
+    <button class="dnav-btn" onclick="dv('map')">◎ Mappa</button>
+    <button class="dnav-btn" onclick="dv('list')">☰ Itinerario</button>
+  </nav>
+  <div class="trip-chip" onclick="mtab('overview')">
+    <span class="trip-chip-name" id="chipName">Islanda — Road Trip</span>
+    <span style="color:var(--amber-l);font-size:.7rem">▾</span>
+  </div>
+</header>
+
+<!-- CONTENT -->
+<div class="content vs" id="content">
+
+  <!-- MAP PANEL -->
+  <div class="panel on" id="pMap">
+    <div class="map-daybar" id="mapDaybar"></div>
+    <div id="leaflet-map"></div>
+  </div>
+
+  <!-- ITINERARY PANEL -->
+  <div class="panel on" id="pItin">
+    <div class="hero">
+      <div class="hero-lbl">Prossimo viaggio</div>
+      <div class="hero-title" id="hTitle">—</div>
+      <div class="hero-meta">
+        <span class="hm">📅 <span id="hDates"></span></span>
+        <span class="hm">👥 <span id="hPersons"></span></span>
+        <span class="hm">📍 <span id="hStops"></span></span>
+      </div>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="stats">
+      <div class="st"><div class="st-v" id="sKm">—</div><div class="st-l">km totali</div></div>
+      <div class="st"><div class="st-v" id="sTime">—</div><div class="st-l">in viaggio</div></div>
+      <div class="st"><div class="st-v" id="sDone">0%</div><div class="st-l">completato</div></div>
+    </div>
+    <div class="itin-body" id="itinBody"></div>
+  </div>
+
+  <!-- OVERVIEW PANEL -->
+  <div class="panel" id="pOver">
+    <div class="hero">
+      <div class="hero-lbl">I tuoi viaggi</div>
+      <div class="hero-title">Wanderlog</div>
+    </div>
+    <div class="over-body" id="overBody"></div>
+  </div>
+
+</div>
+
+<!-- BOTTOM TAB BAR -->
+<nav class="tbar">
+  <button class="tb" id="tbOver" onclick="mtab('overview')"><span class="tb-ico">🗂</span><span class="tb-lbl">Viaggi</span></button>
+  <button class="tb active" id="tbItin" onclick="mtab('itinerary')"><span class="tb-ico">📋</span><span class="tb-lbl">Itinerario</span></button>
+  <button class="tb" id="tbMap" onclick="mtab('map')"><span class="tb-ico">🗺</span><span class="tb-lbl">Mappa</span></button>
+</nav>
+
+<script>
+/* ═══════════════════════════════════════
+   ROAD WAYPOINTS  (Ring Road + secondary)
+═══════════════════════════════════════ */
+const ROADS = {
+  "d1s0->d1s1":[[63.985,-22.606],[63.993,-22.556],[64.012,-22.423],[64.045,-22.302],[64.088,-22.145],[64.12,-21.94],[64.175,-21.68],[64.22,-21.45],[64.255,-21.265],[64.266,-21.12]],
+  "d1s1->d1s3":[[64.266,-21.12],[64.22,-21.05],[64.18,-20.98],[64.12,-20.95],[64.06,-20.92],[64.042,-20.886]],
+  "d1s3->d1s5":[[64.042,-20.886],[64.08,-20.75],[64.12,-20.62],[64.18,-20.52],[64.25,-20.42],[64.3,-20.34],[64.312,-20.302]],
+  "d1s5->d1s7":[[64.312,-20.302],[64.313,-20.29],[64.315,-20.28]],
+  "d1s7->d1s9":[[64.315,-20.28],[64.318,-20.27],[64.32,-20.26]],
+  "d2s0->d2s1":[[64.32,-20.26],[64.325,-20.2],[64.327,-20.121]],
+  "d2s1->d2s3":[[64.327,-20.121],[64.28,-20.05],[64.18,-19.98],[64.05,-19.9],[63.98,-19.82],[63.86,-19.78],[63.76,-19.7],[63.65,-19.62],[63.57,-19.56],[63.532,-19.512]],
+  "d2s3->d2s5":[[63.532,-19.512],[63.53,-19.499]],
+  "d2s5->d2s7":[[63.53,-19.499],[63.51,-19.46],[63.49,-19.4],[63.484,-19.362]],
+  "d2s7->d2s9":[[63.484,-19.362],[63.46,-19.28],[63.42,-19.22],[63.402,-19.129]],
+  "d2s9->d2s11":[[63.402,-19.129],[63.404,-19.09],[63.406,-19.044]],
+  "d2s11->d2s13":[[63.406,-19.044],[63.44,-18.9],[63.47,-18.75],[63.49,-18.6],[63.5,-18.45],[63.51,-18.35],[63.519,-18.262]],
+  "d3s0->d3s1":[[63.519,-18.262],[63.6,-17.8],[63.7,-17.5],[63.8,-17.2],[63.9,-17.05],[64.0,-16.99],[64.027,-16.975]],
+  "d3s1->d3s3":[[64.027,-16.975],[64.03,-16.8],[64.022,-16.62],[64.017,-16.417]],
+  "d3s3->d3s5":[[64.017,-16.417],[64.04,-16.36],[64.06,-16.3],[64.078,-16.231]],
+  "d3s5->d3s7":[[64.078,-16.231],[64.07,-16.23],[64.066,-16.23]],
+  "d3s7->d3s9":[[64.066,-16.23],[63.98,-16.8],[63.9,-17.2],[63.85,-17.6],[63.81,-18.0],[63.78,-18.172]],
+  "d3s9->d3s11":[[63.78,-18.172],[63.72,-18.4],[63.68,-18.7],[63.65,-19.0],[63.62,-19.2],[63.59,-19.35],[63.53,-19.47]],
+  "d4s0->d4s1":[[63.53,-19.47],[63.56,-19.7],[63.59,-19.85],[63.616,-19.989]],
+  "d4s1->d4s3":[[63.616,-19.989],[63.622,-19.987]],
+  "d4s3->d4s5":[[63.622,-19.987],[63.7,-20.2],[63.85,-20.6],[64.0,-21.0],[64.15,-21.4],[64.3,-21.7],[64.45,-21.9],[64.58,-22.1],[64.68,-22.35],[64.847,-22.574]],
+  "d4s5->d4s7":[[64.847,-22.574],[64.84,-22.7],[64.83,-22.9],[64.82,-23.1],[64.813,-23.386]],
+  "d4s7->d4s9":[[64.813,-23.386],[64.84,-23.35],[64.87,-23.32],[64.9,-23.31],[64.941,-23.305]],
+  "d4s9->d4s11":[[64.941,-23.305],[64.92,-23.38],[64.89,-23.45],[64.86,-23.52],[64.83,-23.58],[64.767,-23.624]],
+  "d5s0->d5s1":[[64.767,-23.624],[64.7,-23.4],[64.6,-23.0],[64.45,-22.7],[64.3,-22.5],[64.15,-22.4],[64.0,-22.35],[63.95,-22.3],[63.897,-22.271]],
+  "d5s1->d5s3":[[63.897,-22.271],[63.95,-22.2],[64.0,-22.1],[64.05,-22.0],[64.1,-21.95],[64.133,-21.894]],
+  "d6s0->d6s1":[[64.133,-21.894],[64.08,-21.9],[64.02,-21.95],[63.99,-22.1],[63.985,-22.4],[63.985,-22.606]]
+};
+
+/* ═══════════════════════════════════════
+   TRIP DATA
+═══════════════════════════════════════ */
+const TRIPS = [{
+  id:0, title:"Islanda — Road Trip", dates:"2–7 Gen 2026",
+  persons:"2 persone", totalKm:"1.596 km", totalTime:"22h 29min",
+  days:[
+    { name:"Golden Circle & Arrivo", date:"Ven 2 Gen", dayKm:184, dayTime:"2h 42min", stops:[
+      {id:"d1s0",name:"Aeroporto di Keflavik",icon:"✈️",cat:"Aeroporto",lat:63.985,lng:-22.606,time:"12:00",transit:null,acts:[]},
+      {id:"d1s1",name:"Öxarárfoss",icon:"💧",cat:"Cascata — Þingvellir",lat:64.266,lng:-21.12,time:"13:20",transit:{km:"92 km",dur:"1h 20min"},acts:[]},
+      {id:"d1s3",name:"Kerið",icon:"🌋",cat:"Cratere vulcanico",lat:64.042,lng:-20.886,time:"15:27",transit:{km:"40 km",dur:"37min"},acts:[]},
+      {id:"d1s5",name:"Geysir",icon:"💨",cat:"Area geotermica",lat:64.312,lng:-20.302,time:"16:35",transit:{km:"46 km",dur:"38min"},acts:[]},
+      {id:"d1s7",name:"Brù Hoserfarm",icon:"🏡",cat:"Sosta",lat:64.315,lng:-20.28,time:"17:23",transit:{km:"3 km",dur:"3min"},acts:[]},
+      {id:"d1s9",name:"Myrkholt Cabin",icon:"🏕️",cat:"Pernottamento",lat:64.32,lng:-20.26,time:"18:12",transit:{km:"3 km",dur:"4min"},acts:[]}
+    ]},
+    { name:"Costa Sud — Cascate & Spiagge Nere", date:"Sab 3 Gen", dayKm:306, dayTime:"4h 27min", stops:[
+      {id:"d2s0",name:"Myrkholt Cabin",icon:"🏕️",cat:"Partenza",lat:64.32,lng:-20.26,time:"08:30",transit:null,acts:[]},
+      {id:"d2s1",name:"Gullfoss",icon:"💧",cat:"Cascata",lat:64.327,lng:-20.121,time:"08:38",transit:{km:"6 km",dur:"8min"},acts:[]},
+      {id:"d2s3",name:"Skogafoss",icon:"💧",cat:"Cascata",lat:63.532,lng:-19.512,time:"11:38",transit:{km:"145 km",dur:"2h"},acts:[]},
+      {id:"d2s5",name:"Kvernufoss",icon:"💧",cat:"Cascata nascosta",lat:63.53,lng:-19.499,time:"12:43",transit:{km:"2 km",dur:"5min"},acts:[]},
+      {id:"d2s7",name:"The Plane Wreck",icon:"🛩️",cat:"Relitto DC-3",lat:63.484,lng:-19.362,time:"13:52",transit:{km:"9 km",dur:"9min"},acts:[]},
+      {id:"d2s9",name:"Dyrhólaey",icon:"🦅",cat:"Promontorio & arco di roccia",lat:63.402,lng:-19.129,time:"15:09",transit:{km:"18 km",dur:"17min"},acts:[]},
+      {id:"d2s11",name:"Reynisfjara",icon:"🖤",cat:"Spiaggia nera",lat:63.406,lng:-19.044,time:"16:12",transit:{km:"20 km",dur:"23min"},acts:[]},
+      {id:"d2s13",name:"Fosshotel Nupar",icon:"🏨",cat:"Pernottamento",lat:63.519,lng:-18.262,time:"18:22",transit:{km:"106 km",dur:"1h 25min"},acts:[]}
+    ]},
+    { name:"Ghiacciai & Lagune del Sud-Est", date:"Dom 4 Gen", dayKm:369, dayTime:"4h 50min", stops:[
+      {id:"d3s0",name:"Fosshotel Nupar",icon:"🏨",cat:"Partenza",lat:63.519,lng:-18.262,time:"08:30",transit:null,acts:[]},
+      {id:"d3s1",name:"Svartifoss",icon:"💧",cat:"Cascata basaltica",lat:64.027,lng:-16.975,time:"09:03",transit:{km:"45 km",dur:"33min"},acts:[]},
+      {id:"d3s3",name:"Fjallsárlón",icon:"🧊",cat:"Laguna glaciale",lat:64.017,lng:-16.417,time:"11:28",transit:{km:"47 km",dur:"40min"},acts:[]},
+      {id:"d3s5",name:"Jökulsárlón",icon:"🧊",cat:"Laguna glaciale",lat:64.078,lng:-16.231,time:"12:38",transit:{km:"11 km",dur:"10min"},acts:[]},
+      {id:"d3s7",name:"Diamond Beach",icon:"💎",cat:"Spiaggia nera con iceberg",lat:64.066,lng:-16.23,time:"13:40",transit:{km:"1 km",dur:"2min"},acts:[]},
+      {id:"d3s9",name:"Fjaðrárgljúfur",icon:"🏔️",cat:"Canyon",lat:63.777,lng:-18.172,time:"15:50",transit:{km:"130 km",dur:"1h 40min"},acts:[]},
+      {id:"d3s11",name:"Hotel Selja",icon:"🏨",cat:"Pernottamento",lat:63.53,lng:-19.47,time:"19:05",transit:{km:"135 km",dur:"1h 45min"},acts:[]}
+    ]},
+    { name:"Penisola di Snæfellsnes", date:"Lun 5 Gen", dayKm:384, dayTime:"5h 21min", stops:[
+      {id:"d4s0",name:"Hotel Selja",icon:"🏨",cat:"Partenza",lat:63.53,lng:-19.47,time:"08:30",transit:null,acts:[]},
+      {id:"d4s1",name:"Seljalandfoss",icon:"💧",cat:"Cascata (percorribile dietro)",lat:63.616,lng:-19.989,time:"08:39",transit:{km:"8 km",dur:"9min"},acts:[]},
+      {id:"d4s3",name:"Gljúfrabúi",icon:"💧",cat:"Cascata nascosta",lat:63.622,lng:-19.987,time:"09:29",transit:{km:"1 km",dur:"10min"},acts:[]},
+      {id:"d4s5",name:"Ytri Tunga",icon:"🦭",cat:"Spiaggia delle foche",lat:64.847,lng:-22.574,time:"13:39",transit:{km:"270 km",dur:"3h 30min"},acts:[]},
+      {id:"d4s7",name:"Búðakirkja",icon:"⛪",cat:"Chiesa nera",lat:64.813,lng:-23.386,time:"14:18",transit:{km:"20 km",dur:"19min"},acts:[]},
+      {id:"d4s9",name:"Kirkjufell",icon:"⛰️",cat:"Montagna iconica",lat:64.941,lng:-23.305,time:"15:11",transit:{km:"35 km",dur:"33min"},acts:[]},
+      {id:"d4s11",name:"Arnarstapi Hotel",icon:"🏨",cat:"Pernottamento",lat:64.767,lng:-23.624,time:"17:21",transit:{km:"50 km",dur:"40min"},acts:[]}
+    ]},
+    { name:"Fagradalsfjall & Rientro Reykjavik", date:"Mar 6 Gen", dayKm:303, dayTime:"4h 17min", stops:[
+      {id:"d5s0",name:"Arnarstapi Hotel",icon:"🏨",cat:"Partenza",lat:64.767,lng:-23.624,time:"08:30",transit:null,acts:[]},
+      {id:"d5s1",name:"Fagradalsfjall",icon:"🌋",cat:"Zona vulcanica",lat:63.897,lng:-22.271,time:"11:47",transit:{km:"243 km",dur:"3h 17min"},acts:[]},
+      {id:"d5s3",name:"Hotel Von",icon:"🏨",cat:"Pernottamento",lat:64.133,lng:-21.894,time:"16:47",transit:{km:"60 km",dur:"1h"},acts:[]}
+    ]},
+    { name:"Rientro all'Aeroporto", date:"Mer 7 Gen", dayKm:50, dayTime:"52min", stops:[
+      {id:"d6s0",name:"Hotel Von",icon:"🏨",cat:"Partenza",lat:64.133,lng:-21.894,time:"08:00",transit:null,acts:[]},
+      {id:"d6s1",name:"Aeroporto di Keflavik",icon:"✈️",cat:"Aeroporto",lat:63.985,lng:-22.606,time:"08:52",transit:{km:"50 km",dur:"52min"},acts:[]}
+    ]}
+  ]
+}];
+
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+let ti=0, activeId=null, dayF='all';
+let map=null, markers={}, polylines=[];
+const DAY_COLORS=['#c8853a','#3a8050','#8a3020','#2050a0','#806020'];
+
+/* ═══════════════════════════════════════
+   LEAFLET MAP
+═══════════════════════════════════════ */
+function initMap(){
+  map = L.map('leaflet-map',{zoomControl:false, attributionControl:true});
+
+  // Satellite tiles — Esri World Imagery (free, no API key)
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution:'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics', maxZoom:19 }
+  ).addTo(map);
+
+  // Labels overlay on top of satellite
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+    { attribution:'', maxZoom:19, opacity:0.7 }
+  ).addTo(map);
+
+  L.control.zoom({position:'bottomright'}).addTo(map);
+}
+
+function makeIcon(stop, active){
+  const size = active ? 40 : 32;
+  return L.divIcon({
+    className:'',
+    html:`<div style="
+      width:${size}px;height:${size}px;
+      background:${active?'#c8853a':'rgba(26,20,16,.88)'};
+      border:2.5px solid ${active?'#fff':'rgba(255,255,255,.85)'};
+      border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:${size*.55}px;
+      box-shadow:0 2px 10px rgba(0,0,0,.4);
+      cursor:pointer;
+      transition:all .2s;
+    ">${stop.icon}</div>`,
+    iconSize:[size,size],
+    iconAnchor:[size/2,size/2],
+    popupAnchor:[0,-(size/2+6)]
+  });
+}
+
+function makePopupHTML(stop){
+  const gdir=`https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`;
+  const gsrch=`https://www.google.com/maps/search/?api=1&query=${stop.lat},${stop.lng}`;
+  const meta=stop.transit?`<div class="lp-meta"><span>📍 ${stop.transit.km}</span><span>⏱ ${stop.transit.dur}</span></div>`:'';
+  return `
+    <div class="lp-name">${stop.icon} ${stop.name}</div>
+    <div class="lp-sub">${stop.cat}</div>
+    ${meta}
+    <div class="lp-acts">
+      <a href="${gdir}" target="_blank" class="lp-btn pri">🧭 Indicazioni</a>
+      <a href="${gsrch}" target="_blank" class="lp-btn sec">🔍 Cerca</a>
+    </div>`;
+}
+
+function renderMap(){
+  if(!map) return;
+  // clear
+  Object.values(markers).forEach(m=>m.remove());
+  markers={};
+  polylines.forEach(p=>p.remove());
+  polylines=[];
+
+  const trip=TRIPS[ti];
+  const allStops=[];
+
+  trip.days.forEach((day,di)=>{
+    if(dayF!=='all'&&dayF!==di) return;
+
+    // polylines per day using road waypoints
+    day.stops.forEach((s,si)=>{
+      if(si===0) return;
+      const prev=day.stops[si-1];
+      const key=`${prev.id}->${s.id}`;
+      const pts=ROADS[key];
+      if(pts&&pts.length>1){
+        const poly=L.polyline(pts,{
+          color: DAY_COLORS[di%DAY_COLORS.length],
+          weight: 3.5, opacity: 0.85
+        }).addTo(map);
+        polylines.push(poly);
+      }
+    });
+
+    // markers
+    day.stops.forEach(stop=>{
+      allStops.push([stop.lat,stop.lng]);
+      const active=stop.id===activeId;
+      const marker=L.marker([stop.lat,stop.lng],{icon:makeIcon(stop,active)})
+        .addTo(map)
+        .bindPopup(makePopupHTML(stop),{maxWidth:280,minWidth:220,className:''})
+        .on('click',()=>{
+          focusStop(stop.id,false);
+        });
+      markers[stop.id]=marker;
+    });
+  });
+
+  if(allStops.length){
+    map.fitBounds(allStops,{padding:[50,50]});
+  }
+}
+
+/* ═══════════════════════════════════════
+   DAY FILTER BAR
+═══════════════════════════════════════ */
+function renderDayBar(){
+  const bar=document.getElementById('mapDaybar');
+  bar.innerHTML='';
+  const trip=TRIPS[ti];
+  const make=(v,lbl)=>{
+    const b=document.createElement('button');
+    b.className='mdb'+(dayF===v?' active':'');
+    b.textContent=lbl;
+    b.onclick=()=>{ dayF=v; renderDayBar(); renderMap(); };
+    bar.appendChild(b);
+  };
+  make('all','Tutti');
+  trip.days.forEach((_,i)=>make(i,`G${i+1}`));
+}
+
+/* ═══════════════════════════════════════
+   FOCUS STOP
+═══════════════════════════════════════ */
+function focusStop(id, scroll){
+  activeId=id;
+  // update sidebar cards
+  document.querySelectorAll('.sc').forEach(e=>e.classList.remove('active'));
+  const card=document.getElementById('c-'+id);
+  if(card){card.classList.add('active');if(scroll)card.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  // update marker icons
+  Object.entries(markers).forEach(([mid,m])=>m.setIcon(makeIcon(findStop(mid),mid===id)));
+  // open popup on map
+  if(markers[id]) markers[id].openPopup();
+}
+
+function findStop(id){
+  for(const d of TRIPS[ti].days) for(const s of d.stops) if(s.id===id) return s;
+  return null;
+}
+
+/* ═══════════════════════════════════════
+   ITINERARY
+═══════════════════════════════════════ */
+function renderItin(){
+  const trip=TRIPS[ti];
+  const body=document.getElementById('itinBody');
+  body.innerHTML='<div class="sec-ttl">Itinerario dettagliato</div>';
+  trip.days.forEach((day,di)=>{
+    const el=document.createElement('div');
+    el.className='day-block';
+    el.style.animationDelay=(di*.05)+'s';
+    const km=day.dayKm>0?`${day.dayKm}km · ${day.dayTime}`:'Arrivo';
+    el.innerHTML=`<div class="day-hdr">
+      <div class="day-n">${di+1}</div>
+      <div class="day-info">
+        <div class="day-name">${day.name}</div>
+        <div class="day-date">${day.date}</div>
+      </div>
+      <div class="day-km">${km}</div>
+    </div>`;
+    day.stops.forEach(stop=>{
+      const tr=stop.transit?`<div class="transit">🚗 ${stop.transit.km} · ${stop.transit.dur}</div>`:'';
+      const actsH=stop.acts.map((a,ai)=>`
+        <div class="act">
+          <div class="ach ${a.done?'chk':''}" onclick="togAct(${ti},${di},${day.stops.indexOf(stop)},${ai})">
+            <div class="ach-i"></div>
+          </div>
+          <span class="act-t ${a.done?'done':''}">${a.t}</span>
+          <span class="act-h">${a.h}</span>
+        </div>`).join('');
+      const gu=`https://www.google.com/maps/search/?api=1&query=${stop.lat},${stop.lng}`;
+      const se=document.createElement('div');
+      se.className='stop';
+      se.innerHTML=`${tr}
+        <div class="sc ${stop.id===activeId?'active':''}" id="c-${stop.id}"
+             onclick="focusStop('${stop.id}',false);if(window.innerWidth<720)mtab('map')">
+          <div class="sc-top">
+            <span class="sc-ico">${stop.icon}</span>
+            <span class="sc-name">${stop.name}</span>
+            <span class="sc-time">${stop.time}</span>
+          </div>
+          <div class="sc-cat">${stop.cat}</div>
+          ${stop.acts.length?`<div class="acts">${actsH}</div>`:''}
+          <a href="${gu}" target="_blank" class="gml">↗ Apri in Google Maps</a>
+        </div>`;
+      el.appendChild(se);
+    });
+    body.appendChild(el);
+  });
+}
+
+function togAct(ti2,di,si,ai){
+  TRIPS[ti2].days[di].stops[si].acts[ai].done^=true;
+  renderItin(); updStats();
+}
+
+/* ═══════════════════════════════════════
+   STATS / HERO
+═══════════════════════════════════════ */
+function updStats(){
+  const trip=TRIPS[ti];
+  document.getElementById('hTitle').textContent=trip.title;
+  document.getElementById('hDates').textContent=trip.dates;
+  document.getElementById('hPersons').textContent=trip.persons;
+  document.getElementById('hStops').textContent=trip.days.flatMap(d=>d.stops).length+' tappe';
+  document.getElementById('sKm').textContent=trip.totalKm;
+  document.getElementById('sTime').textContent=trip.totalTime;
+  document.getElementById('chipName').textContent=trip.title;
+  const acts=trip.days.flatMap(d=>d.stops.flatMap(s=>s.acts));
+  const done=acts.filter(a=>a.done).length;
+  const pct=acts.length?Math.round(done/acts.length*100):0;
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('sDone').textContent=pct+'%';
+}
+
+/* ═══════════════════════════════════════
+   OVERVIEW
+═══════════════════════════════════════ */
+function renderOver(){
+  const body=document.getElementById('overBody');
+  body.innerHTML='<div class="sec-ttl" style="margin-top:.2rem">I tuoi viaggi</div>';
+  TRIPS.forEach((trip,i)=>{
+    const c=document.createElement('div');
+    c.className='trip-card'+(i===ti?' active':'');
+    c.innerHTML=`<div class="tc-title">${trip.title}</div>
+      <div class="tc-meta">
+        <span>📅 ${trip.dates}</span>
+        <span>👥 ${trip.persons}</span>
+        <span>📍 ${trip.days.flatMap(d=>d.stops).length} tappe</span>
+      </div>`;
+    c.onclick=()=>{
+      ti=i; activeId=null; dayF='all';
+      renderAll();
+      if(window.innerWidth<720) mtab('itinerary'); else dv('split');
+    };
+    body.appendChild(c);
+  });
+}
+
+/* ═══════════════════════════════════════
+   VIEW SWITCHING
+═══════════════════════════════════════ */
+function mtab(tab){
+  ['tbOver','tbItin','tbMap'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  ({overview:'tbOver',itinerary:'tbItin',map:'tbMap'}[tab] &&
+    document.getElementById({overview:'tbOver',itinerary:'tbItin',map:'tbMap'}[tab]).classList.add('active'));
+
+  ['pMap','pItin','pOver'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById({overview:'pOver',itinerary:'pItin',map:'pMap'}[tab]).classList.add('on');
+
+  if(tab==='map' && map) setTimeout(()=>map.invalidateSize(),50);
+}
+
+function dv(mode){
+  const ct=document.getElementById('content');
+  ct.className='content v'+mode[0];
+  document.querySelectorAll('.dnav-btn').forEach((b,i)=>
+    b.classList.toggle('active',['overview','split','map','list'][i]===mode));
+
+  ['pMap','pItin','pOver'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  if(mode==='split'){
+    document.getElementById('pMap').classList.add('on');
+    document.getElementById('pItin').classList.add('on');
+  } else {
+    document.getElementById({overview:'pOver',map:'pMap',list:'pItin'}[mode]).classList.add('on');
+  }
+  if(map) setTimeout(()=>map.invalidateSize(),80);
+}
+
+/* ═══════════════════════════════════════
+   RENDER ALL
+═══════════════════════════════════════ */
+function renderAll(){
+  updStats(); renderItin(); renderDayBar(); renderOver(); renderMap();
+}
+
+/* ═══════════════════════════════════════
+   BOOT
+═══════════════════════════════════════ */
+window.addEventListener('load',()=>{
+  initMap();
+  if(window.innerWidth>=720){ dv('split'); } else { mtab('itinerary'); }
+  renderAll();
+  window.addEventListener('resize',()=>{
+    if(map) map.invalidateSize();
+  });
+});
+</script>
+</body>
+</html>

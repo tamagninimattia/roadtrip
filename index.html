@@ -260,6 +260,20 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .confirm-btn.no{background:var(--paper);color:var(--muted)}
 .confirm-btn.yes{background:var(--red);color:white}
 
+/* NEW TRIP BTN */
+.new-trip-btn{display:flex;align-items:center;justify-content:center;gap:.4rem;
+  width:100%;padding:.75rem;border:1.5px dashed var(--border);border-radius:12px;
+  background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;
+  color:var(--muted);transition:all .18s;margin-top:.25rem}
+.new-trip-btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-pale)}
+.tc-actions{display:flex;gap:.4rem;margin-top:.55rem;padding-top:.45rem;border-top:1px dashed var(--border)}
+.tc-btn{display:inline-flex;align-items:center;gap:.2rem;padding:.3rem .65rem;border-radius:6px;
+  font-size:.66rem;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.tc-btn.open{background:var(--amber-pale);color:var(--amber)}
+.tc-btn.open:hover{background:#ecd8b0}
+.tc-btn.del{background:var(--red-pale);color:var(--red)}
+.tc-btn.del:hover{background:#fbd5d0}
+
 /* DESKTOP */
 @media(min-width:720px){
   .tbar{display:none}
@@ -1036,17 +1050,128 @@ function updStats(){
 function renderOver(){
   const body=document.getElementById('overBody');
   body.innerHTML='<div class="sec-ttl" style="margin-top:.2rem">I tuoi viaggi</div>';
-  if(!TRIPS.length){ body.innerHTML+='<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:2rem">Nessun viaggio trovato.</div>'; return; }
+  if(!TRIPS.length){ body.innerHTML+='<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:2rem 0 1rem">Nessun viaggio. Creane uno!</div>'; }
   TRIPS.forEach((trip,i)=>{
     const c=document.createElement('div');
     c.className='trip-card'+(i===ti?' active':'');
     c.innerHTML=`<div class="tc-title">${trip.title}</div>
       <div class="tc-meta"><span>📅 ${trip.dates}</span><span>👥 ${trip.persons}</span>
-      <span>📍 ${trip.days.flatMap(d=>d.stops).length} tappe</span></div>`;
-    c.onclick=()=>{ ti=i;activeId=null;dayF='all';renderAll();
-      if(window.innerWidth<720)mtab('itinerary');else dv('split'); };
+      <span>📍 ${trip.days.flatMap(d=>d.stops).length} tappe</span></div>
+      <div class="tc-actions">
+        <button class="tc-btn open" onclick="event.stopPropagation();selectTrip(${i})">↗ Apri</button>
+        <button class="tc-btn del" onclick="event.stopPropagation();askDeleteTrip(${i})">🗑 Elimina</button>
+      </div>`;
+    c.onclick=()=>selectTrip(i);
     body.appendChild(c);
   });
+  // New trip button
+  const nb=document.createElement('button');
+  nb.className='new-trip-btn';
+  nb.innerHTML='+ Nuovo viaggio';
+  nb.onclick=openTripModal;
+  body.appendChild(nb);
+}
+
+function selectTrip(i){
+  ti=i; activeId=null; dayF='all'; renderAll();
+  if(window.innerWidth<720) mtab('itinerary'); else dv('split');
+}
+
+/* ═══════════════════════════════════════
+   TRIP MODAL — ADD
+═══════════════════════════════════════ */
+function openTripModal(){
+  document.getElementById('tTitle').value='';
+  document.getElementById('tDates').value='';
+  document.getElementById('tPersons').value='';
+  document.getElementById('tKm').value='';
+  document.getElementById('tTime').value='';
+  document.getElementById('tripModalOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('tTitle').focus(),300);
+}
+
+function closeTripModal(e){
+  if(e&&e.target!==document.getElementById('tripModalOverlay')) return;
+  document.getElementById('tripModalOverlay').classList.remove('open');
+}
+
+async function saveNewTrip(){
+  const title=document.getElementById('tTitle').value.trim();
+  if(!title){ alert('Inserisci un titolo per il viaggio.'); return; }
+  const btn=document.getElementById('tripSaveBtn');
+  btn.disabled=true; btn.textContent='Creazione…';
+
+  const {data:trip, error}=await sb.from('trips').insert({
+    user_id: currentUser.id,
+    title,
+    dates: document.getElementById('tDates').value.trim(),
+    persons: document.getElementById('tPersons').value.trim(),
+    total_km: document.getElementById('tKm').value.trim(),
+    total_time: document.getElementById('tTime').value.trim()
+  }).select().single();
+
+  btn.disabled=false; btn.textContent='Crea viaggio';
+
+  if(error){ showToast('❌ Errore: '+error.message); return; }
+
+  // Add a default Day 1
+  await sb.from('days').insert({
+    trip_id: trip.id,
+    name: 'Giorno 1',
+    date: '',
+    day_km: 0,
+    day_time: '',
+    position: 0
+  });
+
+  await loadTrips();
+  ti = TRIPS.findIndex(t=>t.id===trip.id);
+  if(ti<0) ti=TRIPS.length-1;
+  activeId=null; dayF='all';
+  closeTripModal();
+  renderAll();
+  showToast('✈️ Viaggio creato!');
+  if(window.innerWidth<720) mtab('itinerary'); else dv('split');
+}
+
+/* ═══════════════════════════════════════
+   TRIP DELETE
+═══════════════════════════════════════ */
+let pendingDeleteTripIdx = null;
+
+function askDeleteTrip(i){
+  pendingDeleteTripIdx=i;
+  const trip=TRIPS[i];
+  document.getElementById('confirmSub').textContent=
+    `Vuoi eliminare "${trip.title}" con tutti i suoi giorni e tappe? L'azione non è reversibile.`;
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+
+// Override doDelete to handle both stop and trip deletion
+const _doDeleteStop = doDelete;
+async function doDelete(){
+  if(pendingDeleteTripIdx!==null){
+    const trip=TRIPS[pendingDeleteTripIdx];
+    const {error}=await sb.from('trips').delete().eq('id',trip.id);
+    if(error){ showToast('❌ Errore: '+error.message); closeConfirm(); return; }
+    TRIPS.splice(pendingDeleteTripIdx,1);
+    if(ti>=TRIPS.length) ti=Math.max(0,TRIPS.length-1);
+    pendingDeleteTripIdx=null;
+    closeConfirm();
+    renderAll();
+    showToast('🗑 Viaggio eliminato');
+    if(!TRIPS.length){ if(window.innerWidth<720) mtab('overview'); else dv('overview'); }
+    return;
+  }
+  // stop delete
+  if(pendingDeleteDi===null) return;
+  const stop=TRIPS[ti].days[pendingDeleteDi].stops[pendingDeleteSi];
+  if(activeId===stop.id) activeId=null;
+  TRIPS[ti].days[pendingDeleteDi].stops.splice(pendingDeleteSi,1);
+  closeConfirm();
+  await dbDeleteStop(stop.id);
+  showToast('🗑 Tappa eliminata');
+  renderAll();
 }
 
 /* ═══════════════════════════════════════

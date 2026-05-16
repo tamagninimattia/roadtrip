@@ -956,7 +956,19 @@ function renderMap(){
     });
   });
   if(total===0) document.getElementById('mapLoading').classList.add('hidden');
-  if(!bounds.isEmpty()) gmap.fitBounds(bounds,{padding:50});
+  if(!bounds.isEmpty()){
+    gmap.fitBounds(bounds, {padding:60});
+    // After fitBounds, ensure zoom isn't too low (world view)
+    google.maps.event.addListenerOnce(gmap, 'bounds_changed', ()=>{
+      if(gmap.getZoom() < 4) gmap.setZoom(6);
+    });
+  } else {
+    // No valid coordinates — center on a sensible default
+    gmap.setCenter({lat:45.5, lng:12.0});
+    gmap.setZoom(6);
+  }
+  // Force resize in case panel just became visible
+  setTimeout(()=>google.maps.event.trigger(gmap,'resize'), 100);
 }
 
 function renderDayBar(){
@@ -1526,7 +1538,21 @@ function mtab(tab){
   document.getElementById({overview:'tbOver',itinerary:'tbItin',map:'tbMap'}[tab]).classList.add('active');
   ['pMap','pItin','pOver'].forEach(id=>document.getElementById(id).classList.remove('on'));
   document.getElementById({overview:'pOver',itinerary:'pItin',map:'pMap'}[tab]).classList.add('on');
-  if(tab==='map'&&gmap) setTimeout(()=>google.maps.event.trigger(gmap,'resize'),50);
+  if(tab==='map'&&gmap){
+    setTimeout(()=>{
+      google.maps.event.trigger(gmap,'resize');
+      // Re-fit bounds after resize
+      if(TRIPS.length){
+        const trip=TRIPS[ti];
+        const bounds=new google.maps.LatLngBounds();
+        trip.days.forEach((day,di)=>{
+          if(dayF!=='all'&&dayF!==di) return;
+          day.stops.forEach(s=>{ if(s.lat&&s.lng) bounds.extend({lat:s.lat,lng:s.lng}); });
+        });
+        if(!bounds.isEmpty()) gmap.fitBounds(bounds,{padding:60});
+      }
+    }, 80);
+  }
 }
 
 function dv(mode){
@@ -1540,7 +1566,21 @@ function dv(mode){
   } else {
     document.getElementById({overview:'pOver',map:'pMap',list:'pItin'}[mode]).classList.add('on');
   }
-  if(gmap) setTimeout(()=>google.maps.event.trigger(gmap,'resize'),80);
+  if(gmap){
+    setTimeout(()=>{
+      google.maps.event.trigger(gmap,'resize');
+      if(TRIPS.length){
+        const trip=TRIPS[ti];
+        const bounds=new google.maps.LatLngBounds();
+        trip.days.forEach((day,di)=>{
+          if(dayF!=='all'&&dayF!==di) return;
+          day.stops.forEach(s=>{ if(s.lat&&s.lng) bounds.extend({lat:s.lat,lng:s.lng}); });
+        });
+        if(!bounds.isEmpty()) gmap.fitBounds(bounds,{padding:60});
+        else { gmap.setCenter({lat:45.5,lng:12.0}); gmap.setZoom(6); }
+      }
+    }, 100);
+  }
 }
 
 function renderAll(){ updStats(); renderItin(); renderDayBar(); renderOver(); renderMap(); }

@@ -839,13 +839,21 @@ function renderMap(){
   const trip=TRIPS[ti];
   const bounds=new google.maps.LatLngBounds();
   let done=0, total=0;
-  trip.days.forEach((day,di)=>{ if(dayF!=='all'&&dayF!==di) return; total+=Math.max(0,day.stops.length-1); });
+  trip.days.forEach((day,di)=>{
+    if(dayF!=='all'&&dayF!==di) return;
+    day.stops.forEach((stop,si)=>{
+      if(si===0) return;
+      const prev=day.stops[si-1];
+      if(prev.lat&&prev.lng&&stop.lat&&stop.lng) total++;
+    });
+  });
   document.getElementById('mapLoading').classList.remove('hidden');
 
   trip.days.forEach((day,di)=>{
     if(dayF!=='all'&&dayF!==di) return;
     const color=DAY_COLORS[di%DAY_COLORS.length];
     day.stops.forEach((stop,si)=>{
+      if(!stop.lat||!stop.lng) return; // skip stops without coordinates
       const ll=new google.maps.LatLng(stop.lat,stop.lng);
       bounds.extend(ll);
       const marker=new google.maps.Marker({
@@ -858,6 +866,7 @@ function renderMap(){
     day.stops.forEach((stop,si)=>{
       if(si===0) return;
       const prev=day.stops[si-1];
+      if(!prev.lat||!prev.lng||!stop.lat||!stop.lng) { done++; if(done>=total) document.getElementById('mapLoading').classList.add('hidden'); return; }
       directionsService.route({
         origin:{lat:prev.lat,lng:prev.lng},
         destination:{lat:stop.lat,lng:stop.lng},
@@ -1262,6 +1271,23 @@ async function saveNewTrip(){
 
   if(error){ showToast('❌ Errore: '+error.message); return; }
 
+  // Geocode from/to places using PlacesService
+  async function getLatLng(placeData){
+    if(!placeData || !placeData.placeId) return {lat:null, lng:null};
+    return new Promise(resolve=>{
+      placesService.getDetails({placeId:placeData.placeId, fields:['geometry']},(place,status)=>{
+        if(status===google.maps.places.PlacesServiceStatus.OK && place.geometry){
+          resolve({lat:place.geometry.location.lat(), lng:place.geometry.location.lng()});
+        } else {
+          resolve({lat:null, lng:null});
+        }
+      });
+    });
+  }
+
+  const fromCoords = tTripPlaces.tFromData ? await getLatLng(tTripPlaces.tFromData) : {lat:null,lng:null};
+  const toCoords   = tTripPlaces.tToData   ? await getLatLng(tTripPlaces.tToData)   : {lat:null,lng:null};
+
   // Add a default Day 1
   const {data:day1} = await sb.from('days').insert({
     trip_id: trip.id,
@@ -1272,19 +1298,22 @@ async function saveNewTrip(){
     position: 0
   }).select().single();
 
-  // If from/to provided, add them as first and last stop
+  // Add from/to stops with real coordinates
+  let stopPos = 0;
   if(day1 && fromName){
     await sb.from('stops').insert({
       day_id: day1.id,
       name: fromName, icon: '📍', cat: 'Partenza',
-      lat: null, lng: null, time: '', position: 0
+      lat: fromCoords.lat, lng: fromCoords.lng,
+      time: '', position: stopPos++
     });
   }
   if(day1 && toName){
     await sb.from('stops').insert({
       day_id: day1.id,
       name: toName, icon: '🏁', cat: 'Arrivo',
-      lat: null, lng: null, time: '', position: fromName ? 1 : 0
+      lat: toCoords.lat, lng: toCoords.lng,
+      time: '', position: stopPos
     });
   }
 

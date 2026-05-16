@@ -5,12 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Wanderlog — Islanda</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 /* ── TOKENS ── */
 :root {
@@ -40,7 +37,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.28rem .65rem;cursor:pointer}
 .trip-chip-name{font-size:.78rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
 
-/* ── BOTTOM TAB BAR (mobile) ── */
+/* ── BOTTOM TAB BAR ── */
 .tbar{position:fixed;inset:auto 0 0;z-index:1000;
   height:calc(var(--tbh) + env(safe-area-inset-bottom,0px));
   background:var(--ink);display:flex;align-items:flex-start;justify-content:space-around;padding-top:6px;
@@ -51,53 +48,51 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .tb-ico{font-size:1.25rem;line-height:1}
 .tb-lbl{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
 
-/* ── CONTENT AREA ── */
-.content{
-  position:fixed;top:var(--hh);left:0;right:0;
+/* ── CONTENT ── */
+.content{position:fixed;top:var(--hh);left:0;right:0;
   bottom:calc(var(--tbh) + env(safe-area-inset-bottom,0px));
-  display:flex;overflow:hidden;
-}
+  display:flex;overflow:hidden}
 
 /* ── PANELS ── */
 .panel{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden}
 .panel.on{display:flex}
 
-/* ── MAP PANEL ── */
+/* ── MAP ── */
 #pMap{z-index:1}
-#leaflet-map{flex:1;width:100%;min-height:0}
+#gmap{flex:1;width:100%;min-height:0}
 
-/* Leaflet popup overrides */
-.leaflet-popup-content-wrapper{
-  background:var(--ink)!important;color:var(--cream)!important;
-  border-radius:14px!important;box-shadow:var(--sl)!important;
-  font-family:'DM Sans',sans-serif!important;
-  border:1px solid rgba(255,255,255,.1)!important;
-}
-.leaflet-popup-tip{background:var(--ink)!important}
-.leaflet-popup-content{margin:14px 16px 16px!important}
-.lp-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;margin-bottom:.2rem;line-height:1.25}
-.lp-sub{font-size:.7rem;opacity:.5;margin-bottom:.45rem}
-.lp-meta{font-family:'DM Mono',monospace;font-size:.67rem;color:var(--amber-l);margin-bottom:.65rem;display:flex;gap:.65rem;flex-wrap:wrap}
-.lp-acts{display:flex;gap:.4rem;flex-wrap:wrap}
-.lp-btn{flex:1;min-width:90px;display:inline-flex;align-items:center;justify-content:center;gap:.3rem;
-  padding:.5rem .5rem;border-radius:8px;font-weight:600;font-size:.72rem;text-decoration:none;transition:all .15s;cursor:pointer}
-.lp-btn.pri{background:var(--amber);color:var(--ink)}
-.lp-btn.pri:hover{background:var(--amber-l)}
-.lp-btn.sec{background:rgba(255,255,255,.12);color:var(--cream)}
-.lp-btn.sec:hover{background:rgba(255,255,255,.22)}
-
-/* day filter bar on map */
-.map-daybar{
-  position:absolute;top:.7rem;left:.7rem;right:.7rem;z-index:800;
-  display:flex;gap:.35rem;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;pointer-events:all;
-}
+/* day filter bar */
+.map-daybar{position:absolute;top:.7rem;left:.7rem;right:.7rem;z-index:800;
+  display:flex;gap:.35rem;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;pointer-events:all}
 .map-daybar::-webkit-scrollbar{display:none}
-.mdb{flex-shrink:0;background:rgba(255,255,255,.93);border:1px solid var(--border);border-radius:20px;
+.mdb{flex-shrink:0;background:rgba(255,255,255,.95);border:1px solid var(--border);border-radius:20px;
   padding:.35rem .8rem;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;
-  white-space:nowrap;box-shadow:var(--ss);transition:all .15s;backdrop-filter:blur(4px)}
+  white-space:nowrap;box-shadow:var(--ss);transition:all .15s;backdrop-filter:blur(6px)}
 .mdb.active{background:var(--ink);color:var(--cream);border-color:var(--ink)}
 
-/* ── ITINERARY PANEL ── */
+/* loading overlay */
+.map-loading{position:absolute;inset:0;z-index:50;background:rgba(26,20,16,.55);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;color:var(--cream)}
+.map-loading.hidden{display:none}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--amber-l);
+  border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:.82rem;opacity:.8;letter-spacing:.04em}
+
+/* ── CUSTOM INFOWINDOW ── */
+.gm-iw{font-family:'DM Sans',sans-serif;min-width:210px;max-width:260px}
+.gm-iw .iw-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:.18rem;line-height:1.25}
+.gm-iw .iw-cat{font-size:.68rem;color:var(--muted);margin-bottom:.4rem}
+.gm-iw .iw-meta{font-family:'DM Mono',monospace;font-size:.66rem;color:#4a6090;margin-bottom:.55rem;display:flex;gap:.55rem;flex-wrap:wrap}
+.gm-iw .iw-btns{display:flex;gap:.4rem}
+.gm-iw .iw-btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:.25rem;
+  padding:.48rem .4rem;border-radius:7px;font-weight:600;font-size:.7rem;text-decoration:none;transition:all .15s;cursor:pointer}
+.gm-iw .iw-btn.pri{background:var(--amber);color:var(--ink)}
+.gm-iw .iw-btn.pri:hover{background:var(--amber-l)}
+.gm-iw .iw-btn.sec{background:#f0f0f0;color:#333}
+.gm-iw .iw-btn.sec:hover{background:#e0e0e0}
+
+/* ── ITINERARY ── */
 #pItin{background:var(--cream);overflow-y:auto;-webkit-overflow-scrolling:touch;
   scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 #pItin::-webkit-scrollbar{width:3px}
@@ -171,7 +166,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   font-weight:600;margin-top:.45rem;opacity:.82;transition:opacity .15s}
 .gml:hover{opacity:1}
 
-/* ── OVERVIEW PANEL ── */
+/* ── OVERVIEW ── */
 #pOver{background:var(--cream);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .over-body{padding:.9rem .95rem 1.5rem}
 .trip-card{background:white;border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;
@@ -186,19 +181,16 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   .tbar{display:none}
   .dnav{display:flex}
   .content{bottom:0;flex-direction:row}
-
-  /* split: sidebar left, map right */
-  .content.vs .panel#pItin{display:flex;position:relative;width:390px;min-width:390px;border-right:1px solid var(--border);flex-shrink:0}
-  .content.vs .panel#pMap{display:flex;position:relative;flex:1}
-  .content.vm .panel#pMap{display:flex;position:relative;flex:1}
-  .content.vl .panel#pItin{display:flex;position:relative;flex:1}
-  .content.vo .panel#pOver{display:flex;position:relative;flex:1}
+  .content.vs #pItin{display:flex;position:relative;width:390px;min-width:390px;border-right:1px solid var(--border);flex-shrink:0}
+  .content.vs #pMap{display:flex;position:relative;flex:1}
+  .content.vm #pMap{display:flex;position:relative;flex:1}
+  .content.vl #pItin{display:flex;position:relative;flex:1}
+  .content.vo #pOver{display:flex;position:relative;flex:1}
 }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header class="hdr">
   <div class="logo">Wanderlog</div>
   <nav class="dnav" id="dnav">
@@ -213,16 +205,19 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   </div>
 </header>
 
-<!-- CONTENT -->
 <div class="content vs" id="content">
 
-  <!-- MAP PANEL -->
+  <!-- MAP -->
   <div class="panel on" id="pMap">
     <div class="map-daybar" id="mapDaybar"></div>
-    <div id="leaflet-map"></div>
+    <div id="gmap"></div>
+    <div class="map-loading" id="mapLoading">
+      <div class="spinner"></div>
+      <div class="loading-txt">Calcolo percorsi stradali…</div>
+    </div>
   </div>
 
-  <!-- ITINERARY PANEL -->
+  <!-- ITINERARY -->
   <div class="panel on" id="pItin">
     <div class="hero">
       <div class="hero-lbl">Prossimo viaggio</div>
@@ -242,7 +237,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
     <div class="itin-body" id="itinBody"></div>
   </div>
 
-  <!-- OVERVIEW PANEL -->
+  <!-- OVERVIEW -->
   <div class="panel" id="pOver">
     <div class="hero">
       <div class="hero-lbl">I tuoi viaggi</div>
@@ -253,7 +248,6 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 
 </div>
 
-<!-- BOTTOM TAB BAR -->
 <nav class="tbar">
   <button class="tb" id="tbOver" onclick="mtab('overview')"><span class="tb-ico">🗂</span><span class="tb-lbl">Viaggi</span></button>
   <button class="tb active" id="tbItin" onclick="mtab('itinerary')"><span class="tb-ico">📋</span><span class="tb-lbl">Itinerario</span></button>
@@ -262,37 +256,9 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 
 <script>
 /* ═══════════════════════════════════════
-   ROAD WAYPOINTS  (Ring Road + secondary)
+   ⚠️  INCOLLA QUI LA TUA API KEY
 ═══════════════════════════════════════ */
-const ROADS = {
-  "d1s0->d1s1":[[63.985,-22.606],[63.993,-22.556],[64.012,-22.423],[64.045,-22.302],[64.088,-22.145],[64.12,-21.94],[64.175,-21.68],[64.22,-21.45],[64.255,-21.265],[64.266,-21.12]],
-  "d1s1->d1s3":[[64.266,-21.12],[64.22,-21.05],[64.18,-20.98],[64.12,-20.95],[64.06,-20.92],[64.042,-20.886]],
-  "d1s3->d1s5":[[64.042,-20.886],[64.08,-20.75],[64.12,-20.62],[64.18,-20.52],[64.25,-20.42],[64.3,-20.34],[64.312,-20.302]],
-  "d1s5->d1s7":[[64.312,-20.302],[64.313,-20.29],[64.315,-20.28]],
-  "d1s7->d1s9":[[64.315,-20.28],[64.318,-20.27],[64.32,-20.26]],
-  "d2s0->d2s1":[[64.32,-20.26],[64.325,-20.2],[64.327,-20.121]],
-  "d2s1->d2s3":[[64.327,-20.121],[64.28,-20.05],[64.18,-19.98],[64.05,-19.9],[63.98,-19.82],[63.86,-19.78],[63.76,-19.7],[63.65,-19.62],[63.57,-19.56],[63.532,-19.512]],
-  "d2s3->d2s5":[[63.532,-19.512],[63.53,-19.499]],
-  "d2s5->d2s7":[[63.53,-19.499],[63.51,-19.46],[63.49,-19.4],[63.484,-19.362]],
-  "d2s7->d2s9":[[63.484,-19.362],[63.46,-19.28],[63.42,-19.22],[63.402,-19.129]],
-  "d2s9->d2s11":[[63.402,-19.129],[63.404,-19.09],[63.406,-19.044]],
-  "d2s11->d2s13":[[63.406,-19.044],[63.44,-18.9],[63.47,-18.75],[63.49,-18.6],[63.5,-18.45],[63.51,-18.35],[63.519,-18.262]],
-  "d3s0->d3s1":[[63.519,-18.262],[63.6,-17.8],[63.7,-17.5],[63.8,-17.2],[63.9,-17.05],[64.0,-16.99],[64.027,-16.975]],
-  "d3s1->d3s3":[[64.027,-16.975],[64.03,-16.8],[64.022,-16.62],[64.017,-16.417]],
-  "d3s3->d3s5":[[64.017,-16.417],[64.04,-16.36],[64.06,-16.3],[64.078,-16.231]],
-  "d3s5->d3s7":[[64.078,-16.231],[64.07,-16.23],[64.066,-16.23]],
-  "d3s7->d3s9":[[64.066,-16.23],[63.98,-16.8],[63.9,-17.2],[63.85,-17.6],[63.81,-18.0],[63.78,-18.172]],
-  "d3s9->d3s11":[[63.78,-18.172],[63.72,-18.4],[63.68,-18.7],[63.65,-19.0],[63.62,-19.2],[63.59,-19.35],[63.53,-19.47]],
-  "d4s0->d4s1":[[63.53,-19.47],[63.56,-19.7],[63.59,-19.85],[63.616,-19.989]],
-  "d4s1->d4s3":[[63.616,-19.989],[63.622,-19.987]],
-  "d4s3->d4s5":[[63.622,-19.987],[63.7,-20.2],[63.85,-20.6],[64.0,-21.0],[64.15,-21.4],[64.3,-21.7],[64.45,-21.9],[64.58,-22.1],[64.68,-22.35],[64.847,-22.574]],
-  "d4s5->d4s7":[[64.847,-22.574],[64.84,-22.7],[64.83,-22.9],[64.82,-23.1],[64.813,-23.386]],
-  "d4s7->d4s9":[[64.813,-23.386],[64.84,-23.35],[64.87,-23.32],[64.9,-23.31],[64.941,-23.305]],
-  "d4s9->d4s11":[[64.941,-23.305],[64.92,-23.38],[64.89,-23.45],[64.86,-23.52],[64.83,-23.58],[64.767,-23.624]],
-  "d5s0->d5s1":[[64.767,-23.624],[64.7,-23.4],[64.6,-23.0],[64.45,-22.7],[64.3,-22.5],[64.15,-22.4],[64.0,-22.35],[63.95,-22.3],[63.897,-22.271]],
-  "d5s1->d5s3":[[63.897,-22.271],[63.95,-22.2],[64.0,-22.1],[64.05,-22.0],[64.1,-21.95],[64.133,-21.894]],
-  "d6s0->d6s1":[[64.133,-21.894],[64.08,-21.9],[64.02,-21.95],[63.99,-22.1],[63.985,-22.4],[63.985,-22.606]]
-};
+const GMAPS_KEY = "AIzaSyAml2Wk2YmqYeNNbEAb1OF0ZytWY6ueBLo";
 
 /* ═══════════════════════════════════════
    TRIP DATA
@@ -353,111 +319,145 @@ const TRIPS = [{
    STATE
 ═══════════════════════════════════════ */
 let ti=0, activeId=null, dayF='all';
-let map=null, markers={}, polylines=[];
-const DAY_COLORS=['#c8853a','#3a8050','#8a3020','#2050a0','#806020'];
+let gmap=null, infoWindow=null, markers={}, polylines=[];
+let directionsService=null;
+const DAY_COLORS=['#e07820','#1a8040','#b02010','#1040c0','#906010'];
 
 /* ═══════════════════════════════════════
-   LEAFLET MAP
+   GOOGLE MAPS INIT  (called by API callback)
 ═══════════════════════════════════════ */
-function initMap(){
-  map = L.map('leaflet-map',{zoomControl:false, attributionControl:true});
-
-  // Satellite tiles — Esri World Imagery (free, no API key)
-  L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    { attribution:'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics', maxZoom:19 }
-  ).addTo(map);
-
-  // Labels overlay on top of satellite
-  L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
-    { attribution:'', maxZoom:19, opacity:0.7 }
-  ).addTo(map);
-
-  L.control.zoom({position:'bottomright'}).addTo(map);
-}
-
-function makeIcon(stop, active){
-  const size = active ? 40 : 32;
-  return L.divIcon({
-    className:'',
-    html:`<div style="
-      width:${size}px;height:${size}px;
-      background:${active?'#c8853a':'rgba(26,20,16,.88)'};
-      border:2.5px solid ${active?'#fff':'rgba(255,255,255,.85)'};
-      border-radius:50%;
-      display:flex;align-items:center;justify-content:center;
-      font-size:${size*.55}px;
-      box-shadow:0 2px 10px rgba(0,0,0,.4);
-      cursor:pointer;
-      transition:all .2s;
-    ">${stop.icon}</div>`,
-    iconSize:[size,size],
-    iconAnchor:[size/2,size/2],
-    popupAnchor:[0,-(size/2+6)]
+window.initGoogleMaps = function(){
+  gmap = new google.maps.Map(document.getElementById('gmap'),{
+    mapTypeId:'satellite',
+    tilt:0,
+    mapTypeControl:false,
+    streetViewControl:false,
+    fullscreenControl:false,
+    zoomControlOptions:{position:google.maps.ControlPosition.RIGHT_BOTTOM},
+    styles:[]
   });
+  infoWindow = new google.maps.InfoWindow({maxWidth:280});
+  directionsService = new google.maps.DirectionsService();
+  renderMap();
+};
+
+/* ═══════════════════════════════════════
+   MARKER ICON
+═══════════════════════════════════════ */
+function markerIcon(stop, active){
+  // SVG pin with emoji
+  const size = active ? 42 : 34;
+  const bg = active ? '#c8853a' : 'rgba(20,14,10,0.88)';
+  const border = active ? '#fff' : 'rgba(255,255,255,0.85)';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${size/2}" cy="${size/2}" r="${size/2-1}" fill="${bg}" stroke="${border}" stroke-width="2.5"/>
+    <text x="50%" y="54%" font-size="${size*.52}" text-anchor="middle" dominant-baseline="middle">${stop.icon}</text>
+  </svg>`;
+  return {
+    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+    scaledSize: new google.maps.Size(size, size),
+    anchor: new google.maps.Point(size/2, size/2)
+  };
 }
 
-function makePopupHTML(stop){
+/* ═══════════════════════════════════════
+   INFOWINDOW CONTENT
+═══════════════════════════════════════ */
+function iwContent(stop){
   const gdir=`https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`;
   const gsrch=`https://www.google.com/maps/search/?api=1&query=${stop.lat},${stop.lng}`;
-  const meta=stop.transit?`<div class="lp-meta"><span>📍 ${stop.transit.km}</span><span>⏱ ${stop.transit.dur}</span></div>`:'';
-  return `
-    <div class="lp-name">${stop.icon} ${stop.name}</div>
-    <div class="lp-sub">${stop.cat}</div>
+  const meta=stop.transit
+    ?`<div class="iw-meta"><span>📍 ${stop.transit.km}</span><span>⏱ ${stop.transit.dur}</span></div>`:'';
+  return `<div class="gm-iw">
+    <div class="iw-name">${stop.icon} ${stop.name}</div>
+    <div class="iw-cat">${stop.cat} · ${stop.time}</div>
     ${meta}
-    <div class="lp-acts">
-      <a href="${gdir}" target="_blank" class="lp-btn pri">🧭 Indicazioni</a>
-      <a href="${gsrch}" target="_blank" class="lp-btn sec">🔍 Cerca</a>
-    </div>`;
+    <div class="iw-btns">
+      <a href="${gdir}" target="_blank" class="iw-btn pri">🧭 Indicazioni</a>
+      <a href="${gsrch}" target="_blank" class="iw-btn sec">🔍 Cerca</a>
+    </div>
+  </div>`;
 }
 
+/* ═══════════════════════════════════════
+   RENDER MAP
+═══════════════════════════════════════ */
 function renderMap(){
-  if(!map) return;
+  if(!gmap) return;
+
   // clear
-  Object.values(markers).forEach(m=>m.remove());
-  markers={};
-  polylines.forEach(p=>p.remove());
-  polylines=[];
+  Object.values(markers).forEach(m=>m.setMap(null)); markers={};
+  polylines.forEach(p=>p.setMap(null)); polylines=[];
+  infoWindow.close();
 
   const trip=TRIPS[ti];
-  const allStops=[];
+  const bounds=new google.maps.LatLngBounds();
+  let routePromises=[];
+  let completedRoutes=0;
+  let totalRoutes=0;
+
+  // count routes needed
+  trip.days.forEach((day,di)=>{
+    if(dayF!=='all'&&dayF!==di) return;
+    totalRoutes += Math.max(0, day.stops.length-1);
+  });
+
+  document.getElementById('mapLoading').classList.remove('hidden');
 
   trip.days.forEach((day,di)=>{
     if(dayF!=='all'&&dayF!==di) return;
-
-    // polylines per day using road waypoints
-    day.stops.forEach((s,si)=>{
-      if(si===0) return;
-      const prev=day.stops[si-1];
-      const key=`${prev.id}->${s.id}`;
-      const pts=ROADS[key];
-      if(pts&&pts.length>1){
-        const poly=L.polyline(pts,{
-          color: DAY_COLORS[di%DAY_COLORS.length],
-          weight: 3.5, opacity: 0.85
-        }).addTo(map);
-        polylines.push(poly);
-      }
-    });
+    const color=DAY_COLORS[di%DAY_COLORS.length];
 
     // markers
     day.stops.forEach(stop=>{
-      allStops.push([stop.lat,stop.lng]);
+      const latLng=new google.maps.LatLng(stop.lat,stop.lng);
+      bounds.extend(latLng);
       const active=stop.id===activeId;
-      const marker=L.marker([stop.lat,stop.lng],{icon:makeIcon(stop,active)})
-        .addTo(map)
-        .bindPopup(makePopupHTML(stop),{maxWidth:280,minWidth:220,className:''})
-        .on('click',()=>{
-          focusStop(stop.id,false);
-        });
+      const marker=new google.maps.Marker({
+        position:latLng,
+        map:gmap,
+        icon:markerIcon(stop,active),
+        zIndex:active?10:1,
+        title:stop.name
+      });
+      marker.addListener('click',()=>{
+        focusStop(stop.id,false);
+        infoWindow.setContent(iwContent(stop));
+        infoWindow.open(gmap,marker);
+      });
       markers[stop.id]=marker;
+    });
+
+    // routes via Directions Service (real roads)
+    day.stops.forEach((stop,si)=>{
+      if(si===0) return;
+      const prev=day.stops[si-1];
+      directionsService.route({
+        origin:{lat:prev.lat,lng:prev.lng},
+        destination:{lat:stop.lat,lng:stop.lng},
+        travelMode:google.maps.TravelMode.DRIVING
+      }, (result,status)=>{
+        if(status==='OK'){
+          const poly=new google.maps.Polyline({
+            path: result.routes[0].overview_path,
+            geodesic:false,
+            strokeColor:color,
+            strokeOpacity:.85,
+            strokeWeight:3.5,
+            map:gmap
+          });
+          polylines.push(poly);
+        }
+        completedRoutes++;
+        if(completedRoutes>=totalRoutes){
+          document.getElementById('mapLoading').classList.add('hidden');
+        }
+      });
     });
   });
 
-  if(allStops.length){
-    map.fitBounds(allStops,{padding:[50,50]});
-  }
+  if(totalRoutes===0) document.getElementById('mapLoading').classList.add('hidden');
+  gmap.fitBounds(bounds,{padding:50});
 }
 
 /* ═══════════════════════════════════════
@@ -474,8 +474,8 @@ function renderDayBar(){
     b.onclick=()=>{ dayF=v; renderDayBar(); renderMap(); };
     bar.appendChild(b);
   };
-  make('all','Tutti');
-  trip.days.forEach((_,i)=>make(i,`G${i+1}`));
+  make('all','Tutti i giorni');
+  trip.days.forEach((d,i)=>make(i,`G${i+1} — ${d.name}`));
 }
 
 /* ═══════════════════════════════════════
@@ -483,14 +483,15 @@ function renderDayBar(){
 ═══════════════════════════════════════ */
 function focusStop(id, scroll){
   activeId=id;
-  // update sidebar cards
   document.querySelectorAll('.sc').forEach(e=>e.classList.remove('active'));
   const card=document.getElementById('c-'+id);
   if(card){card.classList.add('active');if(scroll)card.scrollIntoView({behavior:'smooth',block:'nearest'});}
-  // update marker icons
-  Object.entries(markers).forEach(([mid,m])=>m.setIcon(makeIcon(findStop(mid),mid===id)));
-  // open popup on map
-  if(markers[id]) markers[id].openPopup();
+  Object.entries(markers).forEach(([mid,m])=>m.setIcon(markerIcon(findStop(mid),mid===id)));
+  if(markers[id]){
+    const s=findStop(id);
+    infoWindow.setContent(iwContent(s));
+    infoWindow.open(gmap,markers[id]);
+  }
 }
 
 function findStop(id){
@@ -555,7 +556,7 @@ function togAct(ti2,di,si,ai){
 }
 
 /* ═══════════════════════════════════════
-   STATS / HERO
+   STATS
 ═══════════════════════════════════════ */
 function updStats(){
   const trip=TRIPS[ti];
@@ -584,15 +585,11 @@ function renderOver(){
     c.className='trip-card'+(i===ti?' active':'');
     c.innerHTML=`<div class="tc-title">${trip.title}</div>
       <div class="tc-meta">
-        <span>📅 ${trip.dates}</span>
-        <span>👥 ${trip.persons}</span>
+        <span>📅 ${trip.dates}</span><span>👥 ${trip.persons}</span>
         <span>📍 ${trip.days.flatMap(d=>d.stops).length} tappe</span>
       </div>`;
-    c.onclick=()=>{
-      ti=i; activeId=null; dayF='all';
-      renderAll();
-      if(window.innerWidth<720) mtab('itinerary'); else dv('split');
-    };
+    c.onclick=()=>{ ti=i;activeId=null;dayF='all';renderAll();
+      if(window.innerWidth<720)mtab('itinerary');else dv('split'); };
     body.appendChild(c);
   });
 }
@@ -602,21 +599,16 @@ function renderOver(){
 ═══════════════════════════════════════ */
 function mtab(tab){
   ['tbOver','tbItin','tbMap'].forEach(id=>document.getElementById(id).classList.remove('active'));
-  ({overview:'tbOver',itinerary:'tbItin',map:'tbMap'}[tab] &&
-    document.getElementById({overview:'tbOver',itinerary:'tbItin',map:'tbMap'}[tab]).classList.add('active'));
-
+  document.getElementById({overview:'tbOver',itinerary:'tbItin',map:'tbMap'}[tab]).classList.add('active');
   ['pMap','pItin','pOver'].forEach(id=>document.getElementById(id).classList.remove('on'));
   document.getElementById({overview:'pOver',itinerary:'pItin',map:'pMap'}[tab]).classList.add('on');
-
-  if(tab==='map' && map) setTimeout(()=>map.invalidateSize(),50);
+  if(tab==='map'&&gmap) setTimeout(()=>google.maps.event.trigger(gmap,'resize'),50);
 }
 
 function dv(mode){
-  const ct=document.getElementById('content');
-  ct.className='content v'+mode[0];
+  document.getElementById('content').className='content v'+mode[0];
   document.querySelectorAll('.dnav-btn').forEach((b,i)=>
     b.classList.toggle('active',['overview','split','map','list'][i]===mode));
-
   ['pMap','pItin','pOver'].forEach(id=>document.getElementById(id).classList.remove('on'));
   if(mode==='split'){
     document.getElementById('pMap').classList.add('on');
@@ -624,25 +616,29 @@ function dv(mode){
   } else {
     document.getElementById({overview:'pOver',map:'pMap',list:'pItin'}[mode]).classList.add('on');
   }
-  if(map) setTimeout(()=>map.invalidateSize(),80);
+  if(gmap) setTimeout(()=>google.maps.event.trigger(gmap,'resize'),80);
 }
 
 /* ═══════════════════════════════════════
    RENDER ALL
 ═══════════════════════════════════════ */
-function renderAll(){
-  updStats(); renderItin(); renderDayBar(); renderOver(); renderMap();
-}
+function renderAll(){ updStats(); renderItin(); renderDayBar(); renderOver(); renderMap(); }
 
 /* ═══════════════════════════════════════
    BOOT
 ═══════════════════════════════════════ */
-window.addEventListener('load',()=>{
-  initMap();
-  if(window.innerWidth>=720){ dv('split'); } else { mtab('itinerary'); }
-  renderAll();
+window.addEventListener('DOMContentLoaded',()=>{
+  if(window.innerWidth>=720) dv('split'); else mtab('itinerary');
+  updStats(); renderItin(); renderDayBar(); renderOver();
+
+  // Load Google Maps API dynamically
+  const script=document.createElement('script');
+  script.src=`https://maps.googleapis.com/maps/api/js?key=${GMAPS_KEY}&callback=initGoogleMaps&libraries=places`;
+  script.async=true; script.defer=true;
+  document.head.appendChild(script);
+
   window.addEventListener('resize',()=>{
-    if(map) map.invalidateSize();
+    if(gmap) google.maps.event.trigger(gmap,'resize');
   });
 });
 </script>

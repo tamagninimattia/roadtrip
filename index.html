@@ -1057,49 +1057,111 @@ async function saveStop(){
   const name=document.getElementById('fName').value.trim();
   if(!name){ alert('Inserisci il nome della tappa.'); return; }
   if(!pendingLat||!pendingLng){ alert('Seleziona un luogo dalla lista di ricerca.'); return; }
+
   const cat=document.getElementById('fCat').value.trim()||'Tappa';
   const time=document.getElementById('fTime').value||'00:00';
   const icon=guessIcon(name,cat);
   const btn=document.getElementById('modalSaveBtn');
-  btn.disabled=true; btn.textContent='Calcolo percorso…';
+  btn.disabled=true; btn.textContent='Salvataggio…';
 
   const targetDi=parseInt(document.getElementById('fDay').value);
   const targetDay=TRIPS[ti].days[targetDi];
   const pos=modalPosIdx>=0?modalPosIdx:targetDay.stops.length;
 
   if(modalMode==='add'){
-    const stop={id:'_new_', name, icon, cat, lat:pendingLat, lng:pendingLng, time, transit, acts:[]};
-    targetDay.stops.splice(pos,0,stop);
-    // save to DB
+    // Insert stop into local state
+    const stop={id:'_new_', name, icon, cat, lat:pendingLat, lng:pendingLng, time, transit:null, acts:[]};
+    targetDay.stops.splice(pos, 0, stop);
+
+    // Calc route from previous stop
+    if(pos > 0){
+      const prev=targetDay.stops[pos-1];
+      if(prev.lat && prev.lng){
+        btn.textContent='Calcolo percorso…';
+        const route=await calcRoute(prev, stop);
+        if(route) stop.transit=route;
+      }
+    }
+
+    // Recalc route of next stop (now departs from new stop)
+    if(pos+1 < targetDay.stops.length){
+      const next=targetDay.stops[pos+1];
+      if(next.lat && next.lng){
+        const route=await calcRoute(stop, next);
+        if(route) next.transit=route;
+        await sb.from('stops').update({
+          transit_km: next.transit?.km||null,
+          transit_dur: next.transit?.dur||null
+        }).eq('id', next.id);
+      }
+    }
+
+    // Save to DB
     const newId=await dbSaveStop(stop, targetDay.id, pos);
     if(newId) stop.id=newId;
-    // reorder remaining
-    for(let i=pos+1;i<targetDay.stops.length;i++)
-      await sb.from('stops').update({position:i}).eq('id',targetDay.stops[i].id);
+
+    // Reorder positions of stops after insertion
+    for(let i=pos+1; i<targetDay.stops.length; i++)
+      await sb.from('stops').update({position:i}).eq('id', targetDay.stops[i].id);
+
     activeId=stop.id;
+
   } else {
+    // Edit mode
     const stop=TRIPS[ti].days[modalDayIdx].stops[modalStopIdx];
+    const prevDayId=TRIPS[ti].days[modalDayIdx].id;
     stop.name=name; stop.icon=icon; stop.cat=cat;
-    stop.lat=pendingLat; stop.lng=pendingLng;
-    stop.time=time; stop.transit=transit;
-    // move if day/position changed
-    if(targetDi!==modalDayIdx||pos!==modalStopIdx){
-      TRIPS[ti].days[modalDayIdx].stops.splice(modalStopIdx,1);
-      TRIPS[ti].days[targetDi].stops.splice(pos>modalStopIdx?pos-1:pos,0,stop);
-      await sb.from('stops').update({day_id:targetDay.id}).eq('id',stop.id);
+    stop.lat=pendingLat; stop.lng=pendingLng; stop.time=time;
+
+    // Move to different day/position if changed
+    if(targetDi!==modalDayIdx || pos!==modalStopIdx){
+      TRIPS[ti].days[modalDayIdx].stops.splice(modalStopIdx, 1);
+      const insertAt=targetDi===modalDayIdx && pos>modalStopIdx ? pos-1 : pos;
+      TRIPS[ti].days[targetDi].stops.splice(insertAt, 0, stop);
+      await sb.from('stops').update({day_id:targetDay.id}).eq('id', stop.id);
       await dbReorderStops(targetDay.id, TRIPS[ti].days[targetDi].stops);
       if(targetDi!==modalDayIdx)
-        await dbReorderStops(TRIPS[ti].days[modalDayIdx].id, TRIPS[ti].days[modalDayIdx].stops);
+        await dbReorderStops(prevDayId, TRIPS[ti].days[modalDayIdx].stops);
     }
-    await dbSaveStop(stop, targetDay.id, pos);
+
+    // Recalc this stop's transit from previous
+    const newPos=TRIPS[ti].days[targetDi].stops.indexOf(stop);
+    if(newPos > 0){
+      const prev=TRIPS[ti].days[targetDi].stops[newPos-1];
+      if(prev.lat && prev.lng){
+        btn.textContent='Calcolo percorso…';
+        const route=await calcRoute(prev, stop);
+        stop.transit=route||null;
+      }
+    } else {
+      stop.transit=null;
+    }
+
+    // Recalc next stop's transit
+    if(newPos+1 < TRIPS[ti].days[targetDi].stops.length){
+      const next=TRIPS[ti].days[targetDi].stops[newPos+1];
+      if(next.lat && next.lng){
+        const route=await calcRoute(stop, next);
+        if(route) next.transit=route;
+        await sb.from('stops').update({
+          transit_km: next.transit?.km||null,
+          transit_dur: next.transit?.dur||null
+        }).eq('id', next.id);
+      }
+    }
+
+    await dbSaveStop(stop, targetDay.id, newPos);
     activeId=stop.id;
   }
+
+  // Recalc trip totals
+  await recalcTripTotals(ti);
 
   btn.disabled=false; btn.textContent='Salva tappa';
   closeModal();
   renderAll();
   showToast('💾 Tappa salvata');
-  setTimeout(()=>focusStop(activeId,true),200);
+  setTimeout(()=>focusStop(activeId, true), 200);
 }
 
 function closeModal(e){

@@ -9,23 +9,20 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ── TOKENS ── */
-:root {
-  --ink:#1a1410; --paper:#f5f0e8; --cream:#faf7f2;
-  --amber:#c8853a; --amber-l:#e8a85a; --amber-pale:#f5e6cc;
-  --sage:#4e7050; --muted:#8a7a6a; --border:#d8cdb8;
-  --ss:0 1px 4px rgba(26,20,16,.10);
-  --sm:0 4px 16px rgba(26,20,16,.14);
-  --sl:0 8px 32px rgba(26,20,16,.22);
-  --hh:52px; --tbh:64px;
+:root{
+  --ink:#1a1410;--paper:#f5f0e8;--cream:#faf7f2;
+  --amber:#c8853a;--amber-l:#e8a85a;--amber-pale:#f5e6cc;
+  --sage:#4e7050;--muted:#8a7a6a;--border:#d8cdb8;
+  --red:#c03020;--red-pale:#fdecea;
+  --ss:0 1px 4px rgba(26,20,16,.10);--sm:0 4px 16px rgba(26,20,16,.14);--sl:0 8px 32px rgba(26,20,16,.22);
+  --hh:52px;--tbh:64px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
 
-/* ── HEADER ── */
+/* HEADER */
 .hdr{position:fixed;inset:0 0 auto;height:var(--hh);z-index:1000;background:var(--ink);
-  display:flex;align-items:center;justify-content:space-between;padding:0 1rem 0 1.25rem;
-  box-shadow:var(--sm)}
+  display:flex;align-items:center;justify-content:space-between;padding:0 1rem 0 1.25rem;box-shadow:var(--sm)}
 .logo{font-family:'Playfair Display',serif;font-style:italic;font-size:1.3rem;color:var(--amber-l);flex-shrink:0}
 .dnav{display:none;gap:.15rem}
 .dnav-btn{background:none;border:none;color:var(--cream);opacity:.45;padding:.35rem .8rem;cursor:pointer;
@@ -37,9 +34,8 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:.28rem .65rem;cursor:pointer}
 .trip-chip-name{font-size:.78rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
 
-/* ── BOTTOM TAB BAR ── */
-.tbar{position:fixed;inset:auto 0 0;z-index:1000;
-  height:calc(var(--tbh) + env(safe-area-inset-bottom,0px));
+/* TAB BAR */
+.tbar{position:fixed;inset:auto 0 0;z-index:1000;height:calc(var(--tbh) + env(safe-area-inset-bottom,0px));
   background:var(--ink);display:flex;align-items:flex-start;justify-content:space-around;padding-top:6px;
   border-top:1px solid rgba(255,255,255,.07);box-shadow:0 -2px 20px rgba(26,20,16,.25)}
 .tb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;
@@ -48,20 +44,14 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .tb-ico{font-size:1.25rem;line-height:1}
 .tb-lbl{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
 
-/* ── CONTENT ── */
-.content{position:fixed;top:var(--hh);left:0;right:0;
-  bottom:calc(var(--tbh) + env(safe-area-inset-bottom,0px));
-  display:flex;overflow:hidden}
-
-/* ── PANELS ── */
+/* CONTENT */
+.content{position:fixed;top:var(--hh);left:0;right:0;bottom:calc(var(--tbh) + env(safe-area-inset-bottom,0px));display:flex;overflow:hidden}
 .panel{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden}
 .panel.on{display:flex}
 
-/* ── MAP ── */
+/* MAP */
 #pMap{z-index:1}
 #gmap{flex:1;width:100%;min-height:0}
-
-/* day filter bar */
 .map-daybar{position:absolute;top:.7rem;left:.7rem;right:.7rem;z-index:800;
   display:flex;gap:.35rem;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;pointer-events:all}
 .map-daybar::-webkit-scrollbar{display:none}
@@ -69,58 +59,53 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   padding:.35rem .8rem;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;
   white-space:nowrap;box-shadow:var(--ss);transition:all .15s;backdrop-filter:blur(6px)}
 .mdb.active{background:var(--ink);color:var(--cream);border-color:var(--ink)}
-
-/* loading overlay */
 .map-loading{position:absolute;inset:0;z-index:50;background:rgba(26,20,16,.55);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;color:var(--cream)}
 .map-loading.hidden{display:none}
 .spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--amber-l);
   border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-txt{font-size:.82rem;opacity:.8;letter-spacing:.04em}
+.loading-txt{font-size:.82rem;opacity:.8}
 
-/* ── CUSTOM INFOWINDOW ── */
+/* INFOWINDOW */
 .gm-iw{font-family:'DM Sans',sans-serif;min-width:210px;max-width:260px}
-.gm-iw .iw-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:.18rem;line-height:1.25}
-.gm-iw .iw-cat{font-size:.68rem;color:var(--muted);margin-bottom:.4rem}
-.gm-iw .iw-meta{font-family:'DM Mono',monospace;font-size:.66rem;color:#4a6090;margin-bottom:.55rem;display:flex;gap:.55rem;flex-wrap:wrap}
-.gm-iw .iw-btns{display:flex;gap:.4rem}
-.gm-iw .iw-btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:.25rem;
-  padding:.48rem .4rem;border-radius:7px;font-weight:600;font-size:.7rem;text-decoration:none;transition:all .15s;cursor:pointer}
-.gm-iw .iw-btn.pri{background:var(--amber);color:var(--ink)}
-.gm-iw .iw-btn.pri:hover{background:var(--amber-l)}
-.gm-iw .iw-btn.sec{background:#f0f0f0;color:#333}
-.gm-iw .iw-btn.sec:hover{background:#e0e0e0}
+.iw-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:.15rem;line-height:1.25}
+.iw-cat{font-size:.68rem;color:var(--muted);margin-bottom:.38rem}
+.iw-meta{font-family:'DM Mono',monospace;font-size:.66rem;color:#4a6090;margin-bottom:.5rem;display:flex;gap:.5rem;flex-wrap:wrap}
+.iw-btns{display:flex;gap:.35rem;flex-wrap:wrap}
+.iw-btn{flex:1;min-width:70px;display:inline-flex;align-items:center;justify-content:center;gap:.22rem;
+  padding:.45rem .4rem;border-radius:7px;font-weight:600;font-size:.68rem;text-decoration:none;
+  transition:all .15s;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
+.iw-btn.pri{background:var(--amber);color:var(--ink)}
+.iw-btn.pri:hover{background:var(--amber-l)}
+.iw-btn.sec{background:#f0f0f0;color:#333}
+.iw-btn.sec:hover{background:#e0e0e0}
+.iw-btn.danger{background:var(--red-pale);color:var(--red)}
+.iw-btn.danger:hover{background:#fbd5d0}
 
-/* ── ITINERARY ── */
-#pItin{background:var(--cream);overflow-y:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+/* ITINERARY */
+#pItin{background:var(--cream);overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 #pItin::-webkit-scrollbar{width:3px}
 #pItin::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-
 .hero{background:linear-gradient(135deg,var(--ink) 0%,#2d2318 100%);color:var(--cream);
   padding:1.2rem 1.2rem .95rem;position:relative;overflow:hidden;flex-shrink:0}
-.hero::after{content:'🧊';position:absolute;right:.8rem;top:50%;transform:translateY(-50%);
-  font-size:4.5rem;opacity:.07;pointer-events:none}
+.hero::after{content:'🧊';position:absolute;right:.8rem;top:50%;transform:translateY(-50%);font-size:4.5rem;opacity:.07;pointer-events:none}
 .hero-lbl{font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--amber-l);margin-bottom:.22rem}
 .hero-title{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;margin-bottom:.5rem}
 .hero-meta{display:flex;gap:.85rem;flex-wrap:wrap}
 .hm{font-size:.73rem;opacity:.68;display:flex;align-items:center;gap:.28rem}
-
 .prog-wrap{height:3px;background:var(--border);flex-shrink:0}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--amber-l));transition:width .4s}
-
 .stats{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);flex-shrink:0;background:var(--cream)}
 .st{padding:.72rem .5rem;text-align:center;border-right:1px solid var(--border)}
 .st:last-child{border-right:none}
 .st-v{font-family:'DM Mono',monospace;font-size:.92rem;font-weight:500;color:var(--amber)}
 .st-l{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:.08rem}
-
 .itin-body{padding:.9rem .95rem 1.5rem}
-.sec-ttl{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;
-  display:flex;align-items:center;gap:.45rem}
+.sec-ttl{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;display:flex;align-items:center;gap:.45rem}
 .sec-ttl::after{content:'';flex:1;height:1px;background:var(--border)}
 
+/* DAY BLOCK */
 .day-block{margin-bottom:1.15rem;animation:fu .3s ease both}
 @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .day-hdr{display:flex;align-items:center;gap:.55rem;margin-bottom:.55rem}
@@ -129,44 +114,53 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .day-info{flex:1;min-width:0}
 .day-name{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .day-date{font-size:.65rem;color:var(--muted)}
-.day-km{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--amber);background:var(--amber-pale);
-  padding:.17rem .48rem;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.day-km{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--amber);background:var(--amber-pale);padding:.17rem .48rem;border-radius:20px;white-space:nowrap;flex-shrink:0}
 
+/* STOP CARD */
 .stop{position:relative;padding-left:.95rem;margin-bottom:.38rem}
 .stop::before{content:'';position:absolute;left:.26rem;top:1.25rem;bottom:-.38rem;width:1px;background:var(--border)}
 .stop:last-child::before{display:none}
 .stop::after{content:'';position:absolute;left:.04rem;top:.5rem;width:.4rem;height:.4rem;border-radius:50%;
   background:var(--amber);border:2px solid var(--cream);box-shadow:0 0 0 1px var(--amber)}
-
 .transit{display:inline-flex;align-items:center;gap:.22rem;padding:.16rem .48rem;border-radius:20px;
   font-size:.62rem;font-family:'DM Mono',monospace;margin-bottom:.32rem;margin-left:.1rem;border:1px solid;
   background:#eef2fa;border-color:#b8c8e8;color:#4a6090}
-
-.sc{background:white;border:1px solid var(--border);border-radius:10px;padding:.62rem .85rem;cursor:pointer;
+.sc{background:white;border:1px solid var(--border);border-radius:10px;padding:.62rem .85rem;
   transition:all .18s;box-shadow:var(--ss);-webkit-user-select:none;user-select:none}
-.sc:active{transform:scale(.985)}
 .sc.active{border-color:var(--amber);background:#fffdf8;box-shadow:0 0 0 3px var(--amber-pale)}
 .sc-top{display:flex;align-items:flex-start;gap:.45rem;margin-bottom:.18rem}
-.sc-ico{font-size:.9rem;flex-shrink:0}
-.sc-name{font-weight:600;font-size:.82rem;flex:1;line-height:1.3}
+.sc-ico{font-size:.9rem;flex-shrink:0;cursor:pointer}
+.sc-name{font-weight:600;font-size:.82rem;flex:1;line-height:1.3;cursor:pointer}
 .sc-time{font-family:'DM Mono',monospace;font-size:.64rem;color:var(--muted);white-space:nowrap}
 .sc-cat{font-size:.65rem;color:var(--muted);margin-bottom:.3rem}
+.sc-actions{display:flex;gap:.3rem;margin-top:.5rem;padding-top:.4rem;border-top:1px dashed var(--border)}
+.sc-btn{display:inline-flex;align-items:center;gap:.2rem;padding:.3rem .6rem;border-radius:6px;
+  font-size:.65rem;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.sc-btn.edit{background:var(--amber-pale);color:var(--amber)}
+.sc-btn.edit:hover{background:#ecd8b0}
+.sc-btn.del{background:var(--red-pale);color:var(--red)}
+.sc-btn.del:hover{background:#fbd5d0}
+.sc-btn.gmaps{background:#f0f4ff;color:#3050a0;margin-left:auto}
+.sc-btn.gmaps:hover{background:#e0e8ff}
 .acts{border-top:1px dashed var(--border);padding-top:.35rem;margin-top:.32rem;display:flex;flex-direction:column;gap:.25rem}
 .act{display:flex;align-items:center;gap:.45rem;min-height:26px}
 .ach{width:26px;height:26px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.ach-i{width:16px;height:16px;border:1.5px solid var(--border);border-radius:4px;display:flex;align-items:center;
-  justify-content:center;transition:all .15s;background:white}
+.ach-i{width:16px;height:16px;border:1.5px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .15s;background:white}
 .ach:hover .ach-i{border-color:var(--amber)}
 .ach.chk .ach-i{background:var(--sage);border-color:var(--sage)}
 .ach.chk .ach-i::after{content:'✓';font-size:.6rem;color:white;font-weight:700}
 .act-t{font-size:.76rem;flex:1;line-height:1.3}
 .act-t.done{text-decoration:line-through;color:var(--muted)}
 .act-h{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);white-space:nowrap}
-.gml{display:inline-flex;align-items:center;gap:.22rem;font-size:.67rem;color:var(--amber);text-decoration:none;
-  font-weight:600;margin-top:.45rem;opacity:.82;transition:opacity .15s}
-.gml:hover{opacity:1}
 
-/* ── OVERVIEW ── */
+/* ADD STOP BUTTON */
+.add-stop-btn{display:flex;align-items:center;justify-content:center;gap:.4rem;
+  width:100%;padding:.6rem;border:1.5px dashed var(--border);border-radius:10px;
+  background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.78rem;
+  color:var(--muted);transition:all .18s;margin-top:.2rem}
+.add-stop-btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-pale)}
+
+/* OVERVIEW */
 #pOver{background:var(--cream);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .over-body{padding:.9rem .95rem 1.5rem}
 .trip-card{background:white;border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;
@@ -176,7 +170,78 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .tc-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:.28rem}
 .tc-meta{font-size:.72rem;color:var(--muted);display:flex;gap:.65rem;flex-wrap:wrap}
 
-/* ── DESKTOP ≥720px ── */
+/* ════════════════════════════════
+   MODAL — add/edit stop
+════════════════════════════════ */
+.modal-overlay{position:fixed;inset:0;z-index:2000;background:rgba(26,20,16,.6);
+  display:flex;align-items:flex-end;justify-content:center;padding:0;
+  opacity:0;pointer-events:none;transition:opacity .22s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+@media(min-width:480px){.modal-overlay{align-items:center;padding:1rem}}
+.modal{background:var(--cream);border-radius:20px 20px 0 0;width:100%;max-width:480px;
+  padding:1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom,0px));
+  transform:translateY(30px);transition:transform .25s;max-height:90vh;overflow-y:auto}
+@media(min-width:480px){.modal{border-radius:16px;transform:translateY(0) scale(.97);max-height:80vh}}
+.modal-overlay.open .modal{transform:translateY(0) scale(1)}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 1rem;display:block}
+@media(min-width:480px){.modal-handle{display:none}}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;margin-bottom:1rem}
+.modal-field{margin-bottom:.85rem}
+.modal-field label{display:block;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;margin-bottom:.3rem}
+.modal-field input,.modal-field select,.modal-field textarea{
+  width:100%;padding:.6rem .75rem;border:1.5px solid var(--border);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;background:white;color:var(--ink);
+  outline:none;transition:border-color .15s}
+.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--amber)}
+.modal-field textarea{resize:vertical;min-height:60px}
+.modal-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.modal-actions{display:flex;gap:.5rem;margin-top:1.1rem}
+.modal-btn{flex:1;padding:.7rem;border-radius:9px;font-family:'DM Sans',sans-serif;
+  font-size:.85rem;font-weight:600;border:none;cursor:pointer;transition:all .18s}
+.modal-btn.cancel{background:var(--paper);color:var(--muted)}
+.modal-btn.cancel:hover{background:var(--border)}
+.modal-btn.save{background:var(--amber);color:var(--ink)}
+.modal-btn.save:hover{background:var(--amber-l)}
+
+/* search results dropdown */
+.search-wrap{position:relative}
+.search-results{position:absolute;top:calc(100% + 4px);left:0;right:0;background:white;
+  border:1.5px solid var(--border);border-radius:8px;box-shadow:var(--sm);z-index:10;
+  max-height:200px;overflow-y:auto;display:none}
+.search-results.open{display:block}
+.sr-item{padding:.6rem .75rem;cursor:pointer;font-size:.84rem;border-bottom:1px solid var(--paper-dark,#ede6d6);transition:background .12s}
+.sr-item:last-child{border-bottom:none}
+.sr-item:hover{background:var(--amber-pale)}
+.sr-item .sr-main{font-weight:500}
+.sr-item .sr-sub{font-size:.7rem;color:var(--muted);margin-top:.1rem}
+
+/* POSITION PICKER inside modal */
+.pos-picker{display:flex;flex-direction:column;gap:.3rem;max-height:150px;overflow-y:auto;
+  border:1.5px solid var(--border);border-radius:8px;background:white}
+.pos-item{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;cursor:pointer;
+  font-size:.82rem;transition:background .12s;border-bottom:1px solid var(--paper,#f5f0e8)}
+.pos-item:last-child{border-bottom:none}
+.pos-item:hover{background:var(--amber-pale)}
+.pos-item.selected{background:var(--amber-pale);font-weight:600}
+.pos-ico{font-size:.85rem}
+
+/* CONFIRM DELETE */
+.confirm-overlay{position:fixed;inset:0;z-index:3000;background:rgba(26,20,16,.65);
+  display:flex;align-items:center;justify-content:center;padding:1.5rem;
+  opacity:0;pointer-events:none;transition:opacity .18s}
+.confirm-overlay.open{opacity:1;pointer-events:all}
+.confirm-box{background:var(--cream);border-radius:16px;padding:1.5rem;max-width:320px;width:100%;text-align:center}
+.confirm-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin-bottom:.4rem}
+.confirm-sub{font-size:.8rem;color:var(--muted);margin-bottom:1.1rem;line-height:1.5}
+.confirm-acts{display:flex;gap:.5rem}
+.confirm-btn{flex:1;padding:.65rem;border-radius:9px;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-weight:600;font-size:.85rem;transition:all .18s}
+.confirm-btn.no{background:var(--paper);color:var(--muted)}
+.confirm-btn.yes{background:var(--red);color:white}
+.confirm-btn.yes:hover{background:#a02010}
+
+/* DESKTOP */
 @media(min-width:720px){
   .tbar{display:none}
   .dnav{display:flex}
@@ -206,7 +271,6 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 </header>
 
 <div class="content vs" id="content">
-
   <!-- MAP -->
   <div class="panel on" id="pMap">
     <div class="map-daybar" id="mapDaybar"></div>
@@ -245,7 +309,6 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
     </div>
     <div class="over-body" id="overBody"></div>
   </div>
-
 </div>
 
 <nav class="tbar">
@@ -254,9 +317,82 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   <button class="tb" id="tbMap" onclick="mtab('map')"><span class="tb-ico">🗺</span><span class="tb-lbl">Mappa</span></button>
 </nav>
 
+<!-- ADD / EDIT STOP MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <span class="modal-handle"></span>
+    <div class="modal-title" id="modalTitle">Aggiungi tappa</div>
+
+    <!-- Search -->
+    <div class="modal-field">
+      <label>Cerca luogo</label>
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Es. Jökulsárlón, Islanda…" autocomplete="off" oninput="onSearchInput()">
+        <div class="search-results" id="searchResults"></div>
+      </div>
+    </div>
+
+    <!-- Name -->
+    <div class="modal-field">
+      <label>Nome tappa</label>
+      <input type="text" id="fName" placeholder="Nome visualizzato">
+    </div>
+
+    <!-- Category + Time -->
+    <div class="modal-row">
+      <div class="modal-field">
+        <label>Categoria</label>
+        <input type="text" id="fCat" placeholder="Es. Cascata">
+      </div>
+      <div class="modal-field">
+        <label>Orario arrivo</label>
+        <input type="time" id="fTime" value="10:00">
+      </div>
+    </div>
+
+    <!-- Day selector -->
+    <div class="modal-field">
+      <label>Giorno</label>
+      <select id="fDay" onchange="renderPosPicker()"></select>
+    </div>
+
+    <!-- Position picker -->
+    <div class="modal-field" id="posPickerWrap">
+      <label>Posizione nell'itinerario</label>
+      <div class="pos-picker" id="posPicker"></div>
+    </div>
+
+    <!-- Transit -->
+    <div class="modal-field">
+      <label>Tratta dalla tappa precedente</label>
+      <div class="modal-row">
+        <input type="text" id="fKm" placeholder="Es. 45 km">
+        <input type="text" id="fDur" placeholder="Es. 40min">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">Annulla</button>
+      <button class="modal-btn save" onclick="saveStop()">Salva tappa</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-title">Elimina tappa</div>
+    <div class="confirm-sub" id="confirmSub">Sei sicuro di voler eliminare questa tappa?</div>
+    <div class="confirm-acts">
+      <button class="confirm-btn no" onclick="closeConfirm()">Annulla</button>
+      <button class="confirm-btn yes" onclick="doDelete()">Elimina</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ═══════════════════════════════════════
-   ⚠️  INCOLLA QUI LA TUA API KEY
+   CONFIG
 ═══════════════════════════════════════ */
 const GMAPS_KEY = "AIzaSyAml2Wk2YmqYeNNbEAb1OF0ZytWY6ueBLo";
 
@@ -319,25 +455,54 @@ const TRIPS = [{
    STATE
 ═══════════════════════════════════════ */
 let ti=0, activeId=null, dayF='all';
-let gmap=null, infoWindow=null, markers={}, polylines=[];
-let directionsService=null;
+let gmap=null, iw=null, markers={}, polylines=[];
+let directionsService=null, autocompleteService=null, placesService=null;
+let searchTimer=null;
+// modal state
+let modalMode='add'; // 'add' | 'edit'
+let modalDayIdx=0, modalStopIdx=-1, modalPosIdx=-1;
+let pendingLat=null, pendingLng=null;
+let pendingDeleteDi=null, pendingDeleteSi=null;
 const DAY_COLORS=['#e07820','#1a8040','#b02010','#1040c0','#906010'];
 
 /* ═══════════════════════════════════════
-   GOOGLE MAPS INIT  (called by API callback)
+   ICONS
+═══════════════════════════════════════ */
+function guessIcon(name,cat){
+  const n=(name+' '+cat).toLowerCase();
+  if(n.includes('aeroporto')||n.includes('airport')) return '✈️';
+  if(n.includes('hotel')||n.includes('pernottamento')||n.includes('cabin')||n.includes('hostel')) return '🏨';
+  if(n.includes('foss')||n.includes('cascata')||n.includes('waterfall')) return '💧';
+  if(n.includes('beach')||n.includes('spiaggia')||n.includes('reynis')||n.includes('diamond')) return '🏖️';
+  if(n.includes('jökul')||n.includes('fjalls')||n.includes('glaci')) return '🧊';
+  if(n.includes('geysir')||n.includes('geyser')) return '💨';
+  if(n.includes('volcano')||n.includes('vulcan')||n.includes('fagradals')||n.includes('kerid')) return '🌋';
+  if(n.includes('mountain')||n.includes('montagna')||n.includes('kirkjufell')) return '⛰️';
+  if(n.includes('church')||n.includes('chiesa')||n.includes('kirkja')) return '⛪';
+  if(n.includes('ristorante')||n.includes('restaurant')||n.includes('cena')) return '🍽️';
+  if(n.includes('museum')||n.includes('museo')) return '🏛️';
+  if(n.includes('canyon')||n.includes('gjúfur')) return '🏔️';
+  if(n.includes('seal')||n.includes('foca')) return '🦭';
+  if(n.includes('plane')||n.includes('wreck')||n.includes('relitto')) return '🛩️';
+  if(n.includes('laguna')||n.includes('lagoon')) return '🏞️';
+  return '📍';
+}
+
+function mkId(){ return 'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
+
+/* ═══════════════════════════════════════
+   GOOGLE MAPS INIT
 ═══════════════════════════════════════ */
 window.initGoogleMaps = function(){
   gmap = new google.maps.Map(document.getElementById('gmap'),{
-    mapTypeId:'satellite',
-    tilt:0,
-    mapTypeControl:false,
-    streetViewControl:false,
-    fullscreenControl:false,
-    zoomControlOptions:{position:google.maps.ControlPosition.RIGHT_BOTTOM},
-    styles:[]
+    mapTypeId:'satellite', tilt:0,
+    mapTypeControl:false, streetViewControl:false, fullscreenControl:false,
+    zoomControlOptions:{position:google.maps.ControlPosition.RIGHT_BOTTOM}
   });
-  infoWindow = new google.maps.InfoWindow({maxWidth:280});
+  iw = new google.maps.InfoWindow({maxWidth:280});
   directionsService = new google.maps.DirectionsService();
+  autocompleteService = new google.maps.places.AutocompleteService();
+  placesService = new google.maps.places.PlacesService(gmap);
   renderMap();
 };
 
@@ -345,36 +510,30 @@ window.initGoogleMaps = function(){
    MARKER ICON
 ═══════════════════════════════════════ */
 function markerIcon(stop, active){
-  // SVG pin with emoji
-  const size = active ? 42 : 34;
-  const bg = active ? '#c8853a' : 'rgba(20,14,10,0.88)';
-  const border = active ? '#fff' : 'rgba(255,255,255,0.85)';
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-    <circle cx="${size/2}" cy="${size/2}" r="${size/2-1}" fill="${bg}" stroke="${border}" stroke-width="2.5"/>
+  const size=active?42:34;
+  const bg=active?'#c8853a':'rgba(20,14,10,.88)';
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${size/2}" cy="${size/2}" r="${size/2-1}" fill="${bg}" stroke="rgba(255,255,255,.9)" stroke-width="2.5"/>
     <text x="50%" y="54%" font-size="${size*.52}" text-anchor="middle" dominant-baseline="middle">${stop.icon}</text>
   </svg>`;
-  return {
-    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
-    scaledSize: new google.maps.Size(size, size),
-    anchor: new google.maps.Point(size/2, size/2)
-  };
+  return {url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),
+    scaledSize:new google.maps.Size(size,size),anchor:new google.maps.Point(size/2,size/2)};
 }
 
 /* ═══════════════════════════════════════
    INFOWINDOW CONTENT
 ═══════════════════════════════════════ */
-function iwContent(stop){
+function iwContent(stop, di, si){
   const gdir=`https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}`;
-  const gsrch=`https://www.google.com/maps/search/?api=1&query=${stop.lat},${stop.lng}`;
-  const meta=stop.transit
-    ?`<div class="iw-meta"><span>📍 ${stop.transit.km}</span><span>⏱ ${stop.transit.dur}</span></div>`:'';
+  const meta=stop.transit?`<div class="iw-meta"><span>📍 ${stop.transit.km}</span><span>⏱ ${stop.transit.dur}</span></div>`:'';
   return `<div class="gm-iw">
     <div class="iw-name">${stop.icon} ${stop.name}</div>
     <div class="iw-cat">${stop.cat} · ${stop.time}</div>
     ${meta}
     <div class="iw-btns">
       <a href="${gdir}" target="_blank" class="iw-btn pri">🧭 Indicazioni</a>
-      <a href="${gsrch}" target="_blank" class="iw-btn sec">🔍 Cerca</a>
+      <button class="iw-btn sec" onclick="openEditModal(${di},${si})">✏️ Modifica</button>
+      <button class="iw-btn danger" onclick="askDelete(${di},${si})">🗑 Elimina</button>
     </div>
   </div>`;
 }
@@ -384,51 +543,36 @@ function iwContent(stop){
 ═══════════════════════════════════════ */
 function renderMap(){
   if(!gmap) return;
-
-  // clear
   Object.values(markers).forEach(m=>m.setMap(null)); markers={};
   polylines.forEach(p=>p.setMap(null)); polylines=[];
-  infoWindow.close();
-
+  iw.close();
   const trip=TRIPS[ti];
   const bounds=new google.maps.LatLngBounds();
-  let routePromises=[];
-  let completedRoutes=0;
-  let totalRoutes=0;
-
-  // count routes needed
+  let done=0, total=0;
   trip.days.forEach((day,di)=>{
     if(dayF!=='all'&&dayF!==di) return;
-    totalRoutes += Math.max(0, day.stops.length-1);
+    total+=Math.max(0,day.stops.length-1);
   });
-
   document.getElementById('mapLoading').classList.remove('hidden');
 
   trip.days.forEach((day,di)=>{
     if(dayF!=='all'&&dayF!==di) return;
     const color=DAY_COLORS[di%DAY_COLORS.length];
-
-    // markers
-    day.stops.forEach(stop=>{
-      const latLng=new google.maps.LatLng(stop.lat,stop.lng);
-      bounds.extend(latLng);
+    day.stops.forEach((stop,si)=>{
+      const ll=new google.maps.LatLng(stop.lat,stop.lng);
+      bounds.extend(ll);
       const active=stop.id===activeId;
       const marker=new google.maps.Marker({
-        position:latLng,
-        map:gmap,
-        icon:markerIcon(stop,active),
-        zIndex:active?10:1,
-        title:stop.name
+        position:ll, map:gmap, icon:markerIcon(stop,active),
+        zIndex:active?10:1, title:stop.name
       });
       marker.addListener('click',()=>{
         focusStop(stop.id,false);
-        infoWindow.setContent(iwContent(stop));
-        infoWindow.open(gmap,marker);
+        iw.setContent(iwContent(stop,di,si));
+        iw.open(gmap,marker);
       });
       markers[stop.id]=marker;
     });
-
-    // routes via Directions Service (real roads)
     day.stops.forEach((stop,si)=>{
       if(si===0) return;
       const prev=day.stops[si-1];
@@ -436,32 +580,25 @@ function renderMap(){
         origin:{lat:prev.lat,lng:prev.lng},
         destination:{lat:stop.lat,lng:stop.lng},
         travelMode:google.maps.TravelMode.DRIVING
-      }, (result,status)=>{
+      },(result,status)=>{
         if(status==='OK'){
           const poly=new google.maps.Polyline({
-            path: result.routes[0].overview_path,
-            geodesic:false,
-            strokeColor:color,
-            strokeOpacity:.85,
-            strokeWeight:3.5,
-            map:gmap
+            path:result.routes[0].overview_path,
+            geodesic:false, strokeColor:color, strokeOpacity:.85, strokeWeight:3.5, map:gmap
           });
           polylines.push(poly);
         }
-        completedRoutes++;
-        if(completedRoutes>=totalRoutes){
-          document.getElementById('mapLoading').classList.add('hidden');
-        }
+        done++;
+        if(done>=total) document.getElementById('mapLoading').classList.add('hidden');
       });
     });
   });
-
-  if(totalRoutes===0) document.getElementById('mapLoading').classList.add('hidden');
-  gmap.fitBounds(bounds,{padding:50});
+  if(total===0) document.getElementById('mapLoading').classList.add('hidden');
+  if(!bounds.isEmpty()) gmap.fitBounds(bounds,{padding:50});
 }
 
 /* ═══════════════════════════════════════
-   DAY FILTER BAR
+   DAY BAR
 ═══════════════════════════════════════ */
 function renderDayBar(){
   const bar=document.getElementById('mapDaybar');
@@ -475,7 +612,7 @@ function renderDayBar(){
     bar.appendChild(b);
   };
   make('all','Tutti i giorni');
-  trip.days.forEach((d,i)=>make(i,`G${i+1} — ${d.name}`));
+  trip.days.forEach((_,i)=>make(i,`G${i+1}`));
 }
 
 /* ═══════════════════════════════════════
@@ -489,18 +626,22 @@ function focusStop(id, scroll){
   Object.entries(markers).forEach(([mid,m])=>m.setIcon(markerIcon(findStop(mid),mid===id)));
   if(markers[id]){
     const s=findStop(id);
-    infoWindow.setContent(iwContent(s));
-    infoWindow.open(gmap,markers[id]);
+    const {di,si}=findStopIdx(id);
+    iw.setContent(iwContent(s,di,si));
+    iw.open(gmap,markers[id]);
   }
 }
 
-function findStop(id){
-  for(const d of TRIPS[ti].days) for(const s of d.stops) if(s.id===id) return s;
-  return null;
+function findStop(id){ for(const d of TRIPS[ti].days) for(const s of d.stops) if(s.id===id) return s; return null; }
+function findStopIdx(id){
+  for(let di=0;di<TRIPS[ti].days.length;di++)
+    for(let si=0;si<TRIPS[ti].days[di].stops.length;si++)
+      if(TRIPS[ti].days[di].stops[si].id===id) return {di,si};
+  return {di:-1,si:-1};
 }
 
 /* ═══════════════════════════════════════
-   ITINERARY
+   ITINERARY RENDER
 ═══════════════════════════════════════ */
 function renderItin(){
   const trip=TRIPS[ti];
@@ -508,44 +649,46 @@ function renderItin(){
   body.innerHTML='<div class="sec-ttl">Itinerario dettagliato</div>';
   trip.days.forEach((day,di)=>{
     const el=document.createElement('div');
-    el.className='day-block';
-    el.style.animationDelay=(di*.05)+'s';
+    el.className='day-block'; el.style.animationDelay=(di*.05)+'s';
     const km=day.dayKm>0?`${day.dayKm}km · ${day.dayTime}`:'Arrivo';
     el.innerHTML=`<div class="day-hdr">
       <div class="day-n">${di+1}</div>
-      <div class="day-info">
-        <div class="day-name">${day.name}</div>
-        <div class="day-date">${day.date}</div>
-      </div>
+      <div class="day-info"><div class="day-name">${day.name}</div><div class="day-date">${day.date}</div></div>
       <div class="day-km">${km}</div>
     </div>`;
-    day.stops.forEach(stop=>{
+    day.stops.forEach((stop,si)=>{
       const tr=stop.transit?`<div class="transit">🚗 ${stop.transit.km} · ${stop.transit.dur}</div>`:'';
       const actsH=stop.acts.map((a,ai)=>`
         <div class="act">
-          <div class="ach ${a.done?'chk':''}" onclick="togAct(${ti},${di},${day.stops.indexOf(stop)},${ai})">
-            <div class="ach-i"></div>
-          </div>
+          <div class="ach ${a.done?'chk':''}" onclick="togAct(${ti},${di},${si},${ai})"><div class="ach-i"></div></div>
           <span class="act-t ${a.done?'done':''}">${a.t}</span>
           <span class="act-h">${a.h}</span>
         </div>`).join('');
-      const gu=`https://www.google.com/maps/search/?api=1&query=${stop.lat},${stop.lng}`;
       const se=document.createElement('div');
       se.className='stop';
       se.innerHTML=`${tr}
-        <div class="sc ${stop.id===activeId?'active':''}" id="c-${stop.id}"
-             onclick="focusStop('${stop.id}',false);if(window.innerWidth<720)mtab('map')">
-          <div class="sc-top">
+        <div class="sc ${stop.id===activeId?'active':''}" id="c-${stop.id}">
+          <div class="sc-top" onclick="focusStop('${stop.id}',false);if(window.innerWidth<720)mtab('map')">
             <span class="sc-ico">${stop.icon}</span>
             <span class="sc-name">${stop.name}</span>
             <span class="sc-time">${stop.time}</span>
           </div>
           <div class="sc-cat">${stop.cat}</div>
           ${stop.acts.length?`<div class="acts">${actsH}</div>`:''}
-          <a href="${gu}" target="_blank" class="gml">↗ Apri in Google Maps</a>
+          <div class="sc-actions">
+            <button class="sc-btn edit" onclick="openEditModal(${di},${si})">✏️ Modifica</button>
+            <button class="sc-btn del" onclick="askDelete(${di},${si})">🗑 Elimina</button>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}" target="_blank" class="sc-btn gmaps">🧭 Maps</a>
+          </div>
         </div>`;
       el.appendChild(se);
     });
+    // Add stop button per day
+    const addBtn=document.createElement('button');
+    addBtn.className='add-stop-btn';
+    addBtn.innerHTML='+ Aggiungi tappa';
+    addBtn.onclick=()=>openAddModal(di);
+    el.appendChild(addBtn);
     body.appendChild(el);
   });
 }
@@ -553,6 +696,206 @@ function renderItin(){
 function togAct(ti2,di,si,ai){
   TRIPS[ti2].days[di].stops[si].acts[ai].done^=true;
   renderItin(); updStats();
+}
+
+/* ═══════════════════════════════════════
+   MODAL — OPEN ADD
+═══════════════════════════════════════ */
+function openAddModal(di){
+  modalMode='add';
+  modalDayIdx=di;
+  modalStopIdx=-1;
+  pendingLat=null; pendingLng=null;
+  document.getElementById('modalTitle').textContent='Aggiungi tappa';
+  document.getElementById('searchInput').value='';
+  document.getElementById('fName').value='';
+  document.getElementById('fCat').value='';
+  document.getElementById('fTime').value='10:00';
+  document.getElementById('fKm').value='';
+  document.getElementById('fDur').value='';
+  document.getElementById('searchResults').classList.remove('open');
+  populateDaySelect(di);
+  renderPosPicker(); // default: bottom of day
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('searchInput').focus(),300);
+}
+
+/* ═══════════════════════════════════════
+   MODAL — OPEN EDIT
+═══════════════════════════════════════ */
+function openEditModal(di,si){
+  modalMode='edit';
+  modalDayIdx=di; modalStopIdx=si;
+  const stop=TRIPS[ti].days[di].stops[si];
+  pendingLat=stop.lat; pendingLng=stop.lng;
+  document.getElementById('modalTitle').textContent='Modifica tappa';
+  document.getElementById('searchInput').value=stop.name;
+  document.getElementById('fName').value=stop.name;
+  document.getElementById('fCat').value=stop.cat;
+  document.getElementById('fTime').value=stop.time;
+  document.getElementById('fKm').value=stop.transit?.km||'';
+  document.getElementById('fDur').value=stop.transit?.dur||'';
+  document.getElementById('searchResults').classList.remove('open');
+  populateDaySelect(di);
+  // position: current index
+  modalPosIdx=si;
+  renderPosPicker();
+  document.getElementById('modalOverlay').classList.add('open');
+  iw && iw.close();
+}
+
+/* ═══════════════════════════════════════
+   MODAL — DAY SELECT + POSITION PICKER
+═══════════════════════════════════════ */
+function populateDaySelect(selectedDi){
+  const sel=document.getElementById('fDay');
+  sel.innerHTML='';
+  TRIPS[ti].days.forEach((day,i)=>{
+    const opt=document.createElement('option');
+    opt.value=i; opt.textContent=`G${i+1} — ${day.name}`;
+    if(i===selectedDi) opt.selected=true;
+    sel.appendChild(opt);
+  });
+  modalDayIdx=selectedDi;
+}
+
+function renderPosPicker(){
+  modalDayIdx=parseInt(document.getElementById('fDay').value);
+  const day=TRIPS[ti].days[modalDayIdx];
+  const picker=document.getElementById('posPicker');
+  picker.innerHTML='';
+  // "In fondo" = after last stop
+  const positions=[];
+  day.stops.forEach((s,i)=>{
+    positions.push({label:`Dopo: ${s.icon} ${s.name}`, idx:i+1});
+  });
+  // Also "Prima di tutto"
+  positions.unshift({label:'In cima al giorno', idx:0});
+  if(modalPosIdx<0) modalPosIdx=positions[positions.length-1].idx; // default: bottom
+
+  positions.forEach(p=>{
+    const row=document.createElement('div');
+    row.className='pos-item'+(p.idx===modalPosIdx?' selected':'');
+    row.innerHTML=`<span>${p.label}</span>`;
+    row.onclick=()=>{
+      modalPosIdx=p.idx;
+      picker.querySelectorAll('.pos-item').forEach(r=>r.classList.remove('selected'));
+      row.classList.add('selected');
+    };
+    picker.appendChild(row);
+  });
+}
+
+/* ═══════════════════════════════════════
+   PLACES AUTOCOMPLETE
+═══════════════════════════════════════ */
+function onSearchInput(){
+  clearTimeout(searchTimer);
+  const q=document.getElementById('searchInput').value.trim();
+  if(q.length<3){ document.getElementById('searchResults').classList.remove('open'); return; }
+  searchTimer=setTimeout(()=>{
+    autocompleteService.getPlacePredictions({input:q,language:'it'},(predictions,status)=>{
+      const box=document.getElementById('searchResults');
+      box.innerHTML='';
+      if(status!==google.maps.places.PlacesServiceStatus.OK||!predictions){box.classList.remove('open');return;}
+      predictions.slice(0,5).forEach(p=>{
+        const item=document.createElement('div');
+        item.className='sr-item';
+        item.innerHTML=`<div class="sr-main">${p.structured_formatting.main_text}</div>
+          <div class="sr-sub">${p.structured_formatting.secondary_text||''}</div>`;
+        item.onclick=()=>{
+          box.classList.remove('open');
+          document.getElementById('searchInput').value=p.description;
+          document.getElementById('fName').value=p.structured_formatting.main_text;
+          // Get details for lat/lng
+          placesService.getDetails({placeId:p.place_id,fields:['geometry','name','types']},(place,s)=>{
+            if(s===google.maps.places.PlacesServiceStatus.OK){
+              pendingLat=place.geometry.location.lat();
+              pendingLng=place.geometry.location.lng();
+              if(!document.getElementById('fCat').value){
+                const t=place.types?.[0]||'';
+                document.getElementById('fCat').value=t.replace(/_/g,' ');
+              }
+            }
+          });
+        };
+        box.appendChild(item);
+      });
+      box.classList.add('open');
+    });
+  },300);
+}
+
+/* ═══════════════════════════════════════
+   MODAL — SAVE
+═══════════════════════════════════════ */
+function saveStop(){
+  const name=document.getElementById('fName').value.trim();
+  if(!name){alert('Inserisci il nome della tappa.');return;}
+  if(!pendingLat||!pendingLng){alert('Seleziona un luogo dalla lista di ricerca.');return;}
+
+  const cat=document.getElementById('fCat').value.trim()||'Tappa';
+  const time=document.getElementById('fTime').value||'00:00';
+  const km=document.getElementById('fKm').value.trim();
+  const dur=document.getElementById('fDur').value.trim();
+  const transit=(km||dur)?{km:km||'—',dur:dur||'—'}:null;
+  const icon=guessIcon(name,cat);
+
+  if(modalMode==='add'){
+    const stop={id:mkId(),name,icon,cat,lat:pendingLat,lng:pendingLng,time,transit,acts:[]};
+    const targetDi=parseInt(document.getElementById('fDay').value);
+    const pos=modalPosIdx>=0?modalPosIdx:TRIPS[ti].days[targetDi].stops.length;
+    TRIPS[ti].days[targetDi].stops.splice(pos,0,stop);
+    activeId=stop.id;
+  } else {
+    // edit
+    const stop=TRIPS[ti].days[modalDayIdx].stops[modalStopIdx];
+    const newDi=parseInt(document.getElementById('fDay').value);
+    stop.name=name; stop.icon=icon; stop.cat=cat;
+    stop.lat=pendingLat; stop.lng=pendingLng;
+    stop.time=time; stop.transit=transit;
+    // move to different day/position if changed
+    if(newDi!==modalDayIdx||modalPosIdx!==modalStopIdx){
+      TRIPS[ti].days[modalDayIdx].stops.splice(modalStopIdx,1);
+      const insertIdx=modalPosIdx>modalStopIdx?modalPosIdx-1:modalPosIdx;
+      TRIPS[ti].days[newDi].stops.splice(Math.max(0,insertIdx),0,stop);
+    }
+  }
+
+  closeModal();
+  renderAll();
+  setTimeout(()=>focusStop(activeId,true),200);
+}
+
+/* ═══════════════════════════════════════
+   MODAL — CLOSE
+═══════════════════════════════════════ */
+function closeModal(e){
+  if(e&&e.target!==document.getElementById('modalOverlay')) return;
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.getElementById('searchResults').classList.remove('open');
+}
+
+/* ═══════════════════════════════════════
+   DELETE
+═══════════════════════════════════════ */
+function askDelete(di,si){
+  pendingDeleteDi=di; pendingDeleteSi=si;
+  const stop=TRIPS[ti].days[di].stops[si];
+  document.getElementById('confirmSub').textContent=`Vuoi eliminare "${stop.name}"? L'azione non è reversibile.`;
+  document.getElementById('confirmOverlay').classList.add('open');
+  iw && iw.close();
+}
+
+function closeConfirm(){ document.getElementById('confirmOverlay').classList.remove('open'); }
+
+function doDelete(){
+  if(pendingDeleteDi===null) return;
+  const stop=TRIPS[ti].days[pendingDeleteDi].stops[pendingDeleteSi];
+  if(activeId===stop.id) activeId=null;
+  TRIPS[ti].days[pendingDeleteDi].stops.splice(pendingDeleteSi,1);
+  closeConfirm();
+  renderAll();
 }
 
 /* ═══════════════════════════════════════
@@ -584,10 +927,8 @@ function renderOver(){
     const c=document.createElement('div');
     c.className='trip-card'+(i===ti?' active':'');
     c.innerHTML=`<div class="tc-title">${trip.title}</div>
-      <div class="tc-meta">
-        <span>📅 ${trip.dates}</span><span>👥 ${trip.persons}</span>
-        <span>📍 ${trip.days.flatMap(d=>d.stops).length} tappe</span>
-      </div>`;
+      <div class="tc-meta"><span>📅 ${trip.dates}</span><span>👥 ${trip.persons}</span>
+      <span>📍 ${trip.days.flatMap(d=>d.stops).length} tappe</span></div>`;
     c.onclick=()=>{ ti=i;activeId=null;dayF='all';renderAll();
       if(window.innerWidth<720)mtab('itinerary');else dv('split'); };
     body.appendChild(c);
@@ -630,16 +971,11 @@ function renderAll(){ updStats(); renderItin(); renderDayBar(); renderOver(); re
 window.addEventListener('DOMContentLoaded',()=>{
   if(window.innerWidth>=720) dv('split'); else mtab('itinerary');
   updStats(); renderItin(); renderDayBar(); renderOver();
-
-  // Load Google Maps API dynamically
   const script=document.createElement('script');
   script.src=`https://maps.googleapis.com/maps/api/js?key=${GMAPS_KEY}&callback=initGoogleMaps&libraries=places`;
   script.async=true; script.defer=true;
   document.head.appendChild(script);
-
-  window.addEventListener('resize',()=>{
-    if(gmap) google.maps.event.trigger(gmap,'resize');
-  });
+  window.addEventListener('resize',()=>{ if(gmap) google.maps.event.trigger(gmap,'resize'); });
 });
 </script>
 </body>

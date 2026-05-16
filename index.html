@@ -274,6 +274,17 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .tc-btn.del{background:var(--red-pale);color:var(--red)}
 .tc-btn.del:hover{background:#fbd5d0}
 
+/* TRANSPORT SELECTOR */
+.transport-selector{display:flex;gap:.4rem;flex-wrap:wrap}
+.transport-opt{flex:1;min-width:60px;display:flex;flex-direction:column;align-items:center;gap:.25rem;
+  padding:.55rem .3rem;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;
+  background:white;transition:all .15s;font-family:'DM Sans',sans-serif}
+.transport-opt:hover{border-color:var(--amber);background:var(--amber-pale)}
+.transport-opt.selected{border-color:var(--amber);background:var(--amber-pale)}
+.transport-opt .t-ico{font-size:1.3rem;line-height:1}
+.transport-opt .t-lbl{font-size:.62rem;font-weight:600;color:var(--muted);text-align:center}
+.transport-opt.selected .t-lbl{color:var(--amber)}
+
 /* DESKTOP */
 @media(min-width:720px){
   .tbar{display:none}
@@ -404,8 +415,25 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
       <label>Posizione nell'itinerario</label>
       <div class="pos-picker" id="posPicker"></div>
     </div>
+    <div class="modal-field" id="transportField">
+      <label>Mezzo di trasporto</label>
+      <div class="transport-selector" id="transportSelector">
+        <div class="transport-opt" data-mode="DRIVING" onclick="selectTransport(this)">
+          <span class="t-ico">🚗</span><span class="t-lbl">Auto</span>
+        </div>
+        <div class="transport-opt" data-mode="TRANSIT" onclick="selectTransport(this)">
+          <span class="t-ico">🚂</span><span class="t-lbl">Treno</span>
+        </div>
+        <div class="transport-opt" data-mode="WALKING" onclick="selectTransport(this)">
+          <span class="t-ico">🚶</span><span class="t-lbl">A piedi</span>
+        </div>
+        <div class="transport-opt selected" data-mode="FLIGHT" onclick="selectTransport(this)">
+          <span class="t-ico">✈️</span><span class="t-lbl">Aereo</span>
+        </div>
+      </div>
+    </div>
     <div class="modal-field" style="background:var(--amber-pale);border-radius:8px;padding:.6rem .75rem">
-      <div style="font-size:.7rem;color:var(--amber);font-weight:600">🚗 Km e tempi calcolati automaticamente da Google Maps</div>
+      <div style="font-size:.7rem;color:var(--amber);font-weight:600">Km e tempi calcolati automaticamente da Google Maps (ove disponibile)</div>
     </div>
     <div class="modal-actions">
       <button class="modal-btn cancel" onclick="closeModal()">Annulla</button>
@@ -569,6 +597,7 @@ async function loadTrips(){
             lng: s.lng,
             time: s.time||'',
             transit: (s.transit_km||s.transit_dur)?{km:s.transit_km||'',dur:s.transit_dur||''}:null,
+            transitMode: s.transit_mode||'DRIVING',
             acts: []
           }))
       }))
@@ -673,6 +702,7 @@ async function dbSaveStop(stop, dayId, position){
     lat: stop.lat, lng: stop.lng, time: stop.time,
     transit_km: stop.transit?.km||null,
     transit_dur: stop.transit?.dur||null,
+    transit_mode: stop.transitMode||'DRIVING',
     position
   };
   if(stop.id && !stop.id.startsWith('_new_')){
@@ -751,20 +781,24 @@ window.initGoogleMaps = function(){
 /* ═══════════════════════════════════════
    ROUTING — calc single leg via Directions API
 ═══════════════════════════════════════ */
-function calcRoute(fromStop, toStop){
+function calcRoute(fromStop, toStop, travelMode){
   return new Promise(resolve=>{
     if(!directionsService||!fromStop||!toStop){ resolve(null); return; }
+    // FLIGHT not supported by Directions API — skip routing, return null
+    if(travelMode==='FLIGHT'){ resolve(null); return; }
+    const gmMode = travelMode==='WALKING'
+      ? google.maps.TravelMode.WALKING
+      : travelMode==='TRANSIT'
+        ? google.maps.TravelMode.TRANSIT
+        : google.maps.TravelMode.DRIVING;
     directionsService.route({
       origin:{lat:fromStop.lat, lng:fromStop.lng},
       destination:{lat:toStop.lat, lng:toStop.lng},
-      travelMode:google.maps.TravelMode.DRIVING
+      travelMode: gmMode
     },(result,status)=>{
       if(status==='OK'){
         const leg=result.routes[0].legs[0];
-        resolve({
-          km: leg.distance.text,
-          dur: leg.duration.text
-        });
+        resolve({ km: leg.distance.text, dur: leg.duration.text });
       } else {
         resolve(null);
       }
@@ -929,7 +963,9 @@ function renderItin(){
       <div class="day-km">${km}</div>
     </div>`;
     day.stops.forEach((stop,si)=>{
-      const tr=stop.transit?`<div class="transit">🚗 ${stop.transit.km} · ${stop.transit.dur}</div>`:'';
+      const tIco={'DRIVING':'🚗','WALKING':'🚶','TRANSIT':'🚂','FLIGHT':'✈️'}[stop.transitMode||'DRIVING']||'🚗';
+      const tr=stop.transit?`<div class="transit">${tIco} ${stop.transit.km} · ${stop.transit.dur}</div>`:
+               stop.transitMode==='FLIGHT'?`<div class="transit">✈️ Volo</div>`:'';
       const se=document.createElement('div');
       se.className='stop';
       se.innerHTML=`${tr}
@@ -960,6 +996,22 @@ function renderItin(){
 /* ═══════════════════════════════════════
    MODAL
 ═══════════════════════════════════════ */
+let selectedTransportMode = 'DRIVING';
+
+function selectTransport(el){
+  document.querySelectorAll('.transport-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTransportMode = el.dataset.mode;
+  // hide transport field if first stop of day (no previous stop)
+}
+
+function setDefaultTransport(mode){
+  selectedTransportMode = mode;
+  document.querySelectorAll('.transport-opt').forEach(o=>{
+    o.classList.toggle('selected', o.dataset.mode === mode);
+  });
+}
+
 function openAddModal(di){
   modalMode='add'; modalDayIdx=di; modalStopIdx=-1;
   pendingLat=null; pendingLng=null;
@@ -972,6 +1024,10 @@ function openAddModal(di){
   populateDaySelect(di);
   modalPosIdx = TRIPS[ti].days[di].stops.length;
   renderPosPicker();
+  // show/hide transport based on position
+  const isFirst = TRIPS[ti].days[di].stops.length === 0;
+  document.getElementById('transportField').style.display = isFirst ? 'none' : '';
+  setDefaultTransport('DRIVING');
   document.getElementById('modalOverlay').classList.add('open');
   setTimeout(()=>document.getElementById('searchInput').focus(),300);
 }
@@ -989,6 +1045,10 @@ function openEditModal(di,si){
   populateDaySelect(di);
   modalPosIdx=si;
   renderPosPicker();
+  // Restore transport mode
+  const tMode = stop.transitMode || 'DRIVING';
+  setDefaultTransport(tMode);
+  document.getElementById('transportField').style.display = si===0 ? 'none' : '';
   document.getElementById('modalOverlay').classList.add('open');
   iw && iw.close();
 }
@@ -1070,7 +1130,8 @@ async function saveStop(){
 
   if(modalMode==='add'){
     // Insert stop into local state
-    const stop={id:'_new_', name, icon, cat, lat:pendingLat, lng:pendingLng, time, transit:null, acts:[]};
+    const tMode=selectedTransportMode;
+    const stop={id:'_new_', name, icon, cat, lat:pendingLat, lng:pendingLng, time, transit:null, transitMode:tMode, acts:[]};
     targetDay.stops.splice(pos, 0, stop);
 
     // Calc route from previous stop
@@ -1078,7 +1139,7 @@ async function saveStop(){
       const prev=targetDay.stops[pos-1];
       if(prev.lat && prev.lng){
         btn.textContent='Calcolo percorso…';
-        const route=await calcRoute(prev, stop);
+        const route=await calcRoute(prev, stop, tMode);
         if(route) stop.transit=route;
       }
     }
@@ -1087,7 +1148,7 @@ async function saveStop(){
     if(pos+1 < targetDay.stops.length){
       const next=targetDay.stops[pos+1];
       if(next.lat && next.lng){
-        const route=await calcRoute(stop, next);
+        const route=await calcRoute(stop, next, next.transitMode||'DRIVING');
         if(route) next.transit=route;
         await sb.from('stops').update({
           transit_km: next.transit?.km||null,
@@ -1130,7 +1191,7 @@ async function saveStop(){
       const prev=TRIPS[ti].days[targetDi].stops[newPos-1];
       if(prev.lat && prev.lng){
         btn.textContent='Calcolo percorso…';
-        const route=await calcRoute(prev, stop);
+        const route=await calcRoute(prev, stop, stop.transitMode||'DRIVING');
         stop.transit=route||null;
       }
     } else {
@@ -1141,7 +1202,7 @@ async function saveStop(){
     if(newPos+1 < TRIPS[ti].days[targetDi].stops.length){
       const next=TRIPS[ti].days[targetDi].stops[newPos+1];
       if(next.lat && next.lng){
-        const route=await calcRoute(stop, next);
+        const route=await calcRoute(stop, next, next.transitMode||'DRIVING');
         if(route) next.transit=route;
         await sb.from('stops').update({
           transit_km: next.transit?.km||null,

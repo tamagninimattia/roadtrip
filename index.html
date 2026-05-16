@@ -418,6 +418,42 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   </div>
 </div>
 
+<!-- NEW TRIP MODAL -->
+<div class="modal-overlay" id="tripModalOverlay" onclick="closeTripModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <span class="modal-handle"></span>
+    <div class="modal-title">Nuovo viaggio</div>
+    <div class="modal-field">
+      <label>Titolo</label>
+      <input type="text" id="tTitle" placeholder="Es. Islanda — Road Trip">
+    </div>
+    <div class="modal-row">
+      <div class="modal-field">
+        <label>Date</label>
+        <input type="text" id="tDates" placeholder="Es. 2–7 Gen 2026">
+      </div>
+      <div class="modal-field">
+        <label>Persone</label>
+        <input type="text" id="tPersons" placeholder="Es. 2 persone">
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-field">
+        <label>Km totali</label>
+        <input type="text" id="tKm" placeholder="Es. 1.200 km">
+      </div>
+      <div class="modal-field">
+        <label>Tempo in viaggio</label>
+        <input type="text" id="tTime" placeholder="Es. 18h">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeTripModal()">Annulla</button>
+      <button class="modal-btn save" id="tripSaveBtn" onclick="saveNewTrip()">Crea viaggio</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM DELETE -->
 <div class="confirm-overlay" id="confirmOverlay">
   <div class="confirm-box">
@@ -1147,8 +1183,6 @@ function askDeleteTrip(i){
   document.getElementById('confirmOverlay').classList.add('open');
 }
 
-// Override doDelete to handle both stop and trip deletion
-const _doDeleteStop = doDelete;
 async function doDelete(){
   if(pendingDeleteTripIdx!==null){
     const trip=TRIPS[pendingDeleteTripIdx];
@@ -1163,7 +1197,6 @@ async function doDelete(){
     if(!TRIPS.length){ if(window.innerWidth<720) mtab('overview'); else dv('overview'); }
     return;
   }
-  // stop delete
   if(pendingDeleteDi===null) return;
   const stop=TRIPS[ti].days[pendingDeleteDi].stops[pendingDeleteSi];
   if(activeId===stop.id) activeId=null;

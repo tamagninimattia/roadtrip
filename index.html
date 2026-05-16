@@ -185,6 +185,26 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   color:var(--muted);transition:all .18s;margin-top:.2rem}
 .add-stop-btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-pale)}
 
+/* TIMES ROW */
+.sc-times{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.32rem;padding-top:.32rem;border-top:1px dashed var(--border)}
+.sc-t{display:flex;align-items:center;gap:.22rem;font-family:'DM Mono',monospace;font-size:.62rem}
+.sc-t-lbl{color:var(--muted);font-size:.58rem;text-transform:uppercase;letter-spacing:.06em}
+.sc-t-val{color:var(--ink);font-weight:500}
+.sc-t-val.dep{color:var(--amber)}
+.sc-times-sep{color:var(--border);font-size:.7rem}
+.stay-input{width:62px;padding:.1rem .3rem;border:1px solid var(--border);border-radius:5px;
+  font-family:'DM Mono',monospace;font-size:.62rem;color:var(--ink);background:white;
+  text-align:center;outline:none;transition:border-color .15s}
+.stay-input:focus{border-color:var(--amber)}
+.stay-input::placeholder{color:var(--border)}
+
+/* DAY DEPARTURE */
+.day-dep{display:flex;align-items:center;gap:.3rem;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--amber);cursor:pointer;white-space:nowrap}
+.day-dep-input{width:58px;padding:.1rem .3rem;border:1px solid var(--border);border-radius:5px;
+  font-family:'DM Mono',monospace;font-size:.62rem;color:var(--amber);background:transparent;
+  text-align:center;outline:none;transition:border-color .15s}
+.day-dep-input:focus{border-color:var(--amber);background:white}
+
 /* OVERVIEW */
 #pOver{background:var(--cream);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .over-body{padding:.9rem .95rem 1.5rem}
@@ -403,8 +423,8 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
         <input type="text" id="fCat" placeholder="Es. Cascata">
       </div>
       <div class="modal-field">
-        <label>Orario arrivo</label>
-        <input type="time" id="fTime" value="10:00">
+        <label>Durata sosta</label>
+        <input type="text" id="fStayDuration" placeholder="Es. 1h 30m">
       </div>
     </div>
     <div class="modal-field">
@@ -586,6 +606,7 @@ async function loadTrips(){
         date: d.date||'',
         dayKm: d.day_km||0,
         dayTime: d.day_time||'',
+        departureTime: d.departure_time||'09:00',
         stops: (d.stops||[])
           .sort((a,b)=>a.position-b.position)
           .map(s=>({
@@ -598,6 +619,9 @@ async function loadTrips(){
             time: s.time||'',
             transit: (s.transit_km||s.transit_dur)?{km:s.transit_km||'',dur:s.transit_dur||''}:null,
             transitMode: s.transit_mode||'DRIVING',
+            stayDuration: s.stay_duration||'',
+            stayMinutes: s.stay_minutes||0,
+            travelMinutes: s.travel_minutes||null,
             acts: []
           }))
       }))
@@ -703,6 +727,9 @@ async function dbSaveStop(stop, dayId, position){
     transit_km: stop.transit?.km||null,
     transit_dur: stop.transit?.dur||null,
     transit_mode: stop.transitMode||'DRIVING',
+    stay_duration: stop.stayDuration||null,
+    stay_minutes: stop.stayMinutes||0,
+    travel_minutes: stop.travelMinutes||null,
     position
   };
   if(stop.id && !stop.id.startsWith('_new_')){
@@ -763,6 +790,73 @@ function findStopIdx(id){
 }
 
 /* ═══════════════════════════════════════
+   TIME HELPERS
+═══════════════════════════════════════ */
+function parseDuration(str){
+  if(!str||!str.trim()) return 0;
+  str = str.toLowerCase().trim();
+  let mins = 0;
+  const hMatch = str.match(/(\d+)\s*h/);
+  const mMatch = str.match(/(\d+)\s*m(?:in)?/);
+  if(hMatch) mins += parseInt(hMatch[1]) * 60;
+  if(mMatch) mins += parseInt(mMatch[1]);
+  if(!hMatch && !mMatch){
+    // fallback: numero puro = minuti
+    const n = parseInt(str);
+    if(!isNaN(n)) mins = n;
+  }
+  return mins;
+}
+
+function timeToMins(timeStr){
+  if(!timeStr) return 0;
+  const [h,m] = timeStr.split(':').map(Number);
+  return h*60 + (m||0);
+}
+
+function minsToTime(mins){
+  // gestisci overflow oltre mezzanotte
+  mins = ((mins % 1440) + 1440) % 1440;
+  const h = Math.floor(mins/60), m = mins%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+// Calcola arrivalTime e departureTime per ogni stop del giorno
+function computeTimes(day){
+  const depStart = timeToMins(day.departureTime||'09:00');
+  day.stops.forEach((stop, si)=>{
+    if(si===0){
+      stop.arrivalTime = minsToTime(depStart);
+    } else {
+      const prev = day.stops[si-1];
+      const prevDep = timeToMins(prev.departureTime||prev.arrivalTime||'09:00');
+      const travel = stop.travelMinutes||0;
+      stop.arrivalTime = minsToTime(prevDep + travel);
+    }
+    const stay = stop.stayMinutes||0;
+    stop.departureTime = minsToTime(timeToMins(stop.arrivalTime) + stay);
+  });
+}
+
+async function saveDepartureTime(di, value){
+  const day = TRIPS[ti].days[di];
+  day.departureTime = value;
+  await sb.from('days').update({departure_time: value}).eq('id', day.id);
+  renderItin();
+}
+
+async function saveStayDuration(di, si, value){
+  const stop = TRIPS[ti].days[di].stops[si];
+  stop.stayDuration = value;
+  stop.stayMinutes = parseDuration(value);
+  await sb.from('stops').update({
+    stay_duration: value||null,
+    stay_minutes: stop.stayMinutes
+  }).eq('id', stop.id);
+  renderItin();
+}
+
+/* ═══════════════════════════════════════
    GOOGLE MAPS
 ═══════════════════════════════════════ */
 window.initGoogleMaps = function(){
@@ -798,7 +892,7 @@ function calcRoute(fromStop, toStop, travelMode){
     },(result,status)=>{
       if(status==='OK'){
         const leg=result.routes[0].legs[0];
-        resolve({ km: leg.distance.text, dur: leg.duration.text });
+        resolve({ km: leg.distance.text, dur: leg.duration.text, durationMinutes: Math.round(leg.duration.value/60) });
       } else {
         resolve(null);
       }
@@ -1004,18 +1098,48 @@ function renderItin(){
   const body=document.getElementById('itinBody');
   body.innerHTML='<div class="sec-ttl">Itinerario dettagliato</div>';
   trip.days.forEach((day,di)=>{
+    // Calcola i tempi per questo giorno
+    computeTimes(day);
+
     const el=document.createElement('div');
     el.className='day-block'; el.style.animationDelay=(di*.05)+'s';
     const km=day.dayKm>0?`${day.dayKm}km · ${day.dayTime}`:'Arrivo';
     el.innerHTML=`<div class="day-hdr">
       <div class="day-n">${di+1}</div>
       <div class="day-info"><div class="day-name">${day.name}</div><div class="day-date">${day.date}</div></div>
-      <div class="day-km">${km}</div>
+      <div style="display:flex;align-items:center;gap:.4rem;flex-shrink:0">
+        <div class="day-dep" title="Orario di partenza del giorno">
+          🕗 <input class="day-dep-input" type="time" value="${day.departureTime||'09:00'}"
+            onchange="saveDepartureTime(${di},this.value)"
+            onclick="event.stopPropagation()" title="Orario partenza">
+        </div>
+        <div class="day-km">${km}</div>
+      </div>
     </div>`;
     day.stops.forEach((stop,si)=>{
       const tIco={'DRIVING':'🚗','WALKING':'🚶','TRANSIT':'🚂','FLIGHT':'✈️'}[stop.transitMode||'DRIVING']||'🚗';
       const tr=stop.transit?`<div class="transit">${tIco} ${stop.transit.km} · ${stop.transit.dur}</div>`:
                stop.transitMode==='FLIGHT'?`<div class="transit">✈️ Volo</div>`:'';
+
+      // Sezione tempi
+      const arrHtml = stop.arrivalTime
+        ? `<span class="sc-t"><span class="sc-t-lbl">Arr</span><span class="sc-t-val">${stop.arrivalTime}</span></span>`
+        : '';
+      const depHtml = stop.departureTime && stop.stayMinutes > 0
+        ? `<span class="sc-times-sep">·</span><span class="sc-t"><span class="sc-t-lbl">Part</span><span class="sc-t-val dep">${stop.departureTime}</span></span>`
+        : '';
+      const timesHtml = `<div class="sc-times">
+        ${arrHtml}
+        <span class="sc-times-sep">·</span>
+        <span class="sc-t"><span class="sc-t-lbl">Sosta</span>
+          <input class="stay-input" type="text" placeholder="—" value="${stop.stayDuration||''}"
+            onchange="saveStayDuration(${di},${si},this.value)"
+            onclick="event.stopPropagation()"
+            title="Durata sosta (es. 1h 30m)">
+        </span>
+        ${depHtml}
+      </div>`;
+
       const se=document.createElement('div');
       se.className='stop';
       se.innerHTML=`${tr}
@@ -1023,9 +1147,9 @@ function renderItin(){
           <div class="sc-top" onclick="focusStop('${stop.id}',false);if(window.innerWidth<720)mtab('map')">
             <span class="sc-ico">${stop.icon}</span>
             <span class="sc-name">${stop.name}</span>
-            <span class="sc-time">${stop.time}</span>
           </div>
           <div class="sc-cat">${stop.cat}</div>
+          ${timesHtml}
           <div class="sc-actions">
             <button class="sc-btn edit" onclick="openEditModal(${di},${si})">✏️ Modifica</button>
             <button class="sc-btn del" onclick="askDelete(${di},${si})">🗑 Elimina</button>
@@ -1069,7 +1193,7 @@ function openAddModal(di){
   document.getElementById('searchInput').value='';
   document.getElementById('fName').value='';
   document.getElementById('fCat').value='';
-  document.getElementById('fTime').value='10:00';
+  document.getElementById('fStayDuration').value='';
   document.getElementById('searchResults').classList.remove('open');
   populateDaySelect(di);
   modalPosIdx = TRIPS[ti].days[di].stops.length;
@@ -1090,7 +1214,7 @@ function openEditModal(di,si){
   document.getElementById('searchInput').value=stop.name;
   document.getElementById('fName').value=stop.name;
   document.getElementById('fCat').value=stop.cat;
-  document.getElementById('fTime').value=stop.time;
+  document.getElementById('fStayDuration').value=stop.stayDuration||'';
   document.getElementById('searchResults').classList.remove('open');
   populateDaySelect(di);
   modalPosIdx=si;
@@ -1169,7 +1293,8 @@ async function saveStop(){
   if(!pendingLat||!pendingLng){ alert('Seleziona un luogo dalla lista di ricerca.'); return; }
 
   const cat=document.getElementById('fCat').value.trim()||'Tappa';
-  const time=document.getElementById('fTime').value||'00:00';
+  const stayDuration=document.getElementById('fStayDuration').value.trim();
+  const stayMinutes=parseDuration(stayDuration);
   const icon=guessIcon(name,cat);
   const btn=document.getElementById('modalSaveBtn');
   btn.disabled=true; btn.textContent='Salvataggio…';
@@ -1181,7 +1306,8 @@ async function saveStop(){
   if(modalMode==='add'){
     // Insert stop into local state
     const tMode=selectedTransportMode;
-    const stop={id:'_new_', name, icon, cat, lat:pendingLat, lng:pendingLng, time, transit:null, transitMode:tMode, acts:[]};
+    const stop={id:'_new_', name, icon, cat, lat:pendingLat, lng:pendingLng, time:'',
+      transit:null, transitMode:tMode, stayDuration, stayMinutes, travelMinutes:null, acts:[]};
     targetDay.stops.splice(pos, 0, stop);
 
     // Calc route from previous stop
@@ -1190,7 +1316,7 @@ async function saveStop(){
       if(prev.lat && prev.lng){
         btn.textContent='Calcolo percorso…';
         const route=await calcRoute(prev, stop, tMode);
-        if(route) stop.transit=route;
+        if(route){ stop.transit=route; stop.travelMinutes=route.durationMinutes; }
       }
     }
 
@@ -1199,10 +1325,11 @@ async function saveStop(){
       const next=targetDay.stops[pos+1];
       if(next.lat && next.lng){
         const route=await calcRoute(stop, next, next.transitMode||'DRIVING');
-        if(route) next.transit=route;
+        if(route){ next.transit=route; next.travelMinutes=route.durationMinutes; }
         await sb.from('stops').update({
           transit_km: next.transit?.km||null,
-          transit_dur: next.transit?.dur||null
+          transit_dur: next.transit?.dur||null,
+          travel_minutes: next.travelMinutes||null
         }).eq('id', next.id);
       }
     }
@@ -1222,7 +1349,8 @@ async function saveStop(){
     const stop=TRIPS[ti].days[modalDayIdx].stops[modalStopIdx];
     const prevDayId=TRIPS[ti].days[modalDayIdx].id;
     stop.name=name; stop.icon=icon; stop.cat=cat;
-    stop.lat=pendingLat; stop.lng=pendingLng; stop.time=time;
+    stop.lat=pendingLat; stop.lng=pendingLng;
+    stop.stayDuration=stayDuration; stop.stayMinutes=stayMinutes;
 
     // Move to different day/position if changed
     if(targetDi!==modalDayIdx || pos!==modalStopIdx){
@@ -1243,9 +1371,11 @@ async function saveStop(){
         btn.textContent='Calcolo percorso…';
         const route=await calcRoute(prev, stop, stop.transitMode||'DRIVING');
         stop.transit=route||null;
+        stop.travelMinutes=route?.durationMinutes||null;
       }
     } else {
       stop.transit=null;
+      stop.travelMinutes=null;
     }
 
     // Recalc next stop's transit
@@ -1253,10 +1383,11 @@ async function saveStop(){
       const next=TRIPS[ti].days[targetDi].stops[newPos+1];
       if(next.lat && next.lng){
         const route=await calcRoute(stop, next, next.transitMode||'DRIVING');
-        if(route) next.transit=route;
+        if(route){ next.transit=route; next.travelMinutes=route.durationMinutes; }
         await sb.from('stops').update({
           transit_km: next.transit?.km||null,
-          transit_dur: next.transit?.dur||null
+          transit_dur: next.transit?.dur||null,
+          travel_minutes: next.travelMinutes||null
         }).eq('id', next.id);
       }
     }

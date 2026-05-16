@@ -278,10 +278,12 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 <!-- AUTH SCREEN -->
 <div class="auth-screen" id="authScreen">
   <div class="auth-logo">RoadTrip</div>
-  <div class="auth-sub">Inserisci la tua email per accedere. Ti invieremo un link magico.</div>
+  <div class="auth-sub">Accedi al tuo account.</div>
   <div class="auth-form">
-    <input class="auth-input" type="email" id="authEmail" placeholder="la-tua@email.com">
-    <button class="auth-btn" id="authBtn" onclick="sendMagicLink()">Invia link di accesso</button>
+    <input class="auth-input" type="email" id="authEmail" placeholder="Email" onkeydown="if(event.key==='Enter')doLogin()">
+    <input class="auth-input" type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="auth-btn" id="authBtn" onclick="doLogin()">Accedi</button>
+    <button class="auth-btn" id="authRegBtn" onclick="doRegister()" style="background:rgba(255,255,255,.1);color:var(--cream)">Crea account</button>
     <div class="auth-msg" id="authMsg"></div>
   </div>
 </div>
@@ -427,18 +429,28 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 /* ═══════════════════════════════════════
    AUTH
 ═══════════════════════════════════════ */
-async function sendMagicLink(){
+async function doLogin(){
   const email = document.getElementById('authEmail').value.trim();
-  if(!email){ showAuthMsg('Inserisci una email valida.','err'); return; }
+  const password = document.getElementById('authPassword').value;
+  if(!email||!password){ showAuthMsg('Inserisci email e password.','err'); return; }
   const btn = document.getElementById('authBtn');
-  btn.disabled = true; btn.textContent = 'Invio…';
-  const {error} = await sb.auth.signInWithOtp({
-    email,
-    options:{ emailRedirectTo: window.location.href }
-  });
-  btn.disabled = false; btn.textContent = 'Invia link di accesso';
+  btn.disabled=true; btn.textContent='Accesso…';
+  const {error} = await sb.auth.signInWithPassword({email, password});
+  btn.disabled=false; btn.textContent='Accedi';
   if(error) showAuthMsg('Errore: '+error.message,'err');
-  else showAuthMsg('✓ Link inviato! Controlla la tua email e clicca il link.','ok');
+}
+
+async function doRegister(){
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  if(!email||!password){ showAuthMsg('Inserisci email e password.','err'); return; }
+  if(password.length<6){ showAuthMsg('La password deve avere almeno 6 caratteri.','err'); return; }
+  const btn = document.getElementById('authRegBtn');
+  btn.disabled=true; btn.textContent='Registrazione…';
+  const {error} = await sb.auth.signUp({email, password});
+  btn.disabled=false; btn.textContent='Crea account';
+  if(error) showAuthMsg('Errore: '+error.message,'err');
+  else showAuthMsg('✓ Account creato! Accesso in corso…','ok');
 }
 
 function showAuthMsg(msg, type){
@@ -1095,7 +1107,6 @@ async function startApp(user){
 }
 
 window.addEventListener('DOMContentLoaded', async ()=>{
-  // Handle magic link redirect
   const {data:{session}, error} = await sb.auth.getSession();
 
   if(session?.user){
@@ -1105,7 +1116,6 @@ window.addEventListener('DOMContentLoaded', async ()=>{
     document.getElementById('authScreen').classList.remove('hidden');
   }
 
-  // Listen for auth changes (magic link click)
   sb.auth.onAuthStateChange((_event, session)=>{
     if(session?.user && !currentUser){
       startApp(session.user);

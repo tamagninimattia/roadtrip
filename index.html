@@ -900,20 +900,58 @@ function renderMap(){
     day.stops.forEach((stop,si)=>{
       if(si===0) return;
       const prev=day.stops[si-1];
-      if(!prev.lat||!prev.lng||!stop.lat||!stop.lng) { done++; if(done>=total) document.getElementById('mapLoading').classList.add('hidden'); return; }
+      if(!prev.lat||!prev.lng||!stop.lat||!stop.lng){ done++; if(done>=total) document.getElementById('mapLoading').classList.add('hidden'); return; }
+
+      const mode=stop.transitMode||'DRIVING';
+
+      // ✈️ FLIGHT — geodesic straight line, no Directions API call
+      if(mode==='FLIGHT'){
+        polylines.push(new google.maps.Polyline({
+          path:[{lat:prev.lat,lng:prev.lng},{lat:stop.lat,lng:stop.lng}],
+          geodesic:true,
+          strokeColor:color,
+          strokeOpacity:0,
+          strokeWeight:0,
+          icons:[{
+            icon:{
+              path:'M 0,-1 0,1',
+              strokeOpacity:.7,
+              strokeColor:color,
+              strokeWeight:2.5,
+              scale:4
+            },
+            offset:'0',
+            repeat:'16px'
+          }],
+          map:gmap
+        }));
+        done++; if(done>=total) document.getElementById('mapLoading').classList.add('hidden');
+        return;
+      }
+
+      // 🚗🚂🚶 Road/transit/walking — use Directions API
+      const gmMode = mode==='WALKING'
+        ? google.maps.TravelMode.WALKING
+        : mode==='TRANSIT'
+          ? google.maps.TravelMode.TRANSIT
+          : google.maps.TravelMode.DRIVING;
+
       directionsService.route({
         origin:{lat:prev.lat,lng:prev.lng},
         destination:{lat:stop.lat,lng:stop.lng},
-        travelMode:google.maps.TravelMode.DRIVING
+        travelMode:gmMode
       },(result,status)=>{
         if(status==='OK'){
           polylines.push(new google.maps.Polyline({
             path:result.routes[0].overview_path,
-            geodesic:false, strokeColor:color, strokeOpacity:.85, strokeWeight:3.5, map:gmap
+            geodesic:false,
+            strokeColor:color,
+            strokeOpacity:.85,
+            strokeWeight:3.5,
+            map:gmap
           }));
         }
-        done++;
-        if(done>=total) document.getElementById('mapLoading').classList.add('hidden');
+        done++; if(done>=total) document.getElementById('mapLoading').classList.add('hidden');
       });
     });
   });

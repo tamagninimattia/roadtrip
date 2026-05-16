@@ -420,18 +420,36 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
     <span class="modal-handle"></span>
     <div class="modal-title">Nuovo viaggio</div>
     <div class="modal-field">
-      <label>Titolo</label>
+      <label>Titolo del viaggio</label>
       <input type="text" id="tTitle" placeholder="Es. Islanda — Road Trip">
     </div>
     <div class="modal-row">
       <div class="modal-field">
-        <label>Date</label>
-        <input type="text" id="tDates" placeholder="Es. 2–7 Gen 2026">
+        <label>Data di inizio</label>
+        <input type="date" id="tDateFrom">
       </div>
       <div class="modal-field">
-        <label>Persone</label>
-        <input type="text" id="tPersons" placeholder="Es. 2 persone">
+        <label>Data di fine</label>
+        <input type="date" id="tDateTo">
       </div>
+    </div>
+    <div class="modal-field">
+      <label>Punto di partenza</label>
+      <div class="search-wrap">
+        <input type="text" id="tFromInput" placeholder="Es. Milano, casa…" autocomplete="off" oninput="onTripSearchInput('tFromInput','tFromResults','tFromData')">
+        <div class="search-results" id="tFromResults"></div>
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>Punto di arrivo</label>
+      <div class="search-wrap">
+        <input type="text" id="tToInput" placeholder="Es. Reykjavik, Islanda…" autocomplete="off" oninput="onTripSearchInput('tToInput','tToResults','tToData')">
+        <div class="search-results" id="tToResults"></div>
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>Persone</label>
+      <input type="text" id="tPersons" placeholder="Es. 2 persone">
     </div>
     <div class="modal-actions">
       <button class="modal-btn cancel" onclick="closeTripModal()">Annulla</button>
@@ -1159,10 +1177,55 @@ function selectTrip(i){
 /* ═══════════════════════════════════════
    TRIP MODAL — ADD
 ═══════════════════════════════════════ */
+// trip search state
+const tTripPlaces = { tFromData: null, tToData: null };
+
+function onTripSearchInput(inputId, resultsId, dataKey){
+  const q = document.getElementById(inputId).value.trim();
+  const box = document.getElementById(resultsId);
+  if(q.length < 2){ box.classList.remove('open'); tTripPlaces[dataKey]=null; return; }
+  autocompleteService.getPlacePredictions({input:q, language:'it'}, (predictions, status)=>{
+    box.innerHTML='';
+    if(status !== google.maps.places.PlacesServiceStatus.OK || !predictions){ box.classList.remove('open'); return; }
+    predictions.slice(0,5).forEach(p=>{
+      const item = document.createElement('div');
+      item.className = 'sr-item';
+      item.innerHTML = `<div class="sr-main">${p.structured_formatting.main_text}</div>
+        <div class="sr-sub">${p.structured_formatting.secondary_text||''}</div>`;
+      item.onclick = ()=>{
+        document.getElementById(inputId).value = p.structured_formatting.main_text;
+        tTripPlaces[dataKey] = { name: p.structured_formatting.main_text, placeId: p.place_id };
+        box.classList.remove('open');
+      };
+      box.appendChild(item);
+    });
+    box.classList.add('open');
+  });
+}
+
+function formatDateIT(dateStr){
+  if(!dateStr) return '';
+  const [y,m,d] = dateStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function buildDatesString(from, to){
+  if(!from && !to) return '';
+  if(from && to) return `${formatDateIT(from)} — ${formatDateIT(to)}`;
+  if(from) return `Dal ${formatDateIT(from)}`;
+  return `Al ${formatDateIT(to)}`;
+}
+
 function openTripModal(){
   document.getElementById('tTitle').value='';
-  document.getElementById('tDates').value='';
+  document.getElementById('tDateFrom').value='';
+  document.getElementById('tDateTo').value='';
+  document.getElementById('tFromInput').value='';
+  document.getElementById('tToInput').value='';
   document.getElementById('tPersons').value='';
+  document.getElementById('tFromResults').classList.remove('open');
+  document.getElementById('tToResults').classList.remove('open');
+  tTripPlaces.tFromData=null; tTripPlaces.tToData=null;
   document.getElementById('tripModalOverlay').classList.add('open');
   setTimeout(()=>document.getElementById('tTitle').focus(),300);
 }
@@ -1178,11 +1241,19 @@ async function saveNewTrip(){
   const btn=document.getElementById('tripSaveBtn');
   btn.disabled=true; btn.textContent='Creazione…';
 
+  const dateFrom=document.getElementById('tDateFrom').value;
+  const dateTo=document.getElementById('tDateTo').value;
+  const datesStr=buildDatesString(dateFrom, dateTo);
+  const fromName=document.getElementById('tFromInput').value.trim();
+  const toName=document.getElementById('tToInput').value.trim();
+  // Build subtitle with from→to if provided
+  let persons=document.getElementById('tPersons').value.trim();
+
   const {data:trip, error}=await sb.from('trips').insert({
     user_id: currentUser.id,
     title,
-    dates: document.getElementById('tDates').value.trim(),
-    persons: document.getElementById('tPersons').value.trim(),
+    dates: datesStr,
+    persons,
     total_km: '—',
     total_time: '—'
   }).select().single();
@@ -1192,14 +1263,30 @@ async function saveNewTrip(){
   if(error){ showToast('❌ Errore: '+error.message); return; }
 
   // Add a default Day 1
-  await sb.from('days').insert({
+  const {data:day1} = await sb.from('days').insert({
     trip_id: trip.id,
     name: 'Giorno 1',
-    date: '',
+    date: dateFrom ? formatDateIT(dateFrom) : '',
     day_km: 0,
     day_time: '',
     position: 0
-  });
+  }).select().single();
+
+  // If from/to provided, add them as first and last stop
+  if(day1 && fromName){
+    await sb.from('stops').insert({
+      day_id: day1.id,
+      name: fromName, icon: '📍', cat: 'Partenza',
+      lat: null, lng: null, time: '', position: 0
+    });
+  }
+  if(day1 && toName){
+    await sb.from('stops').insert({
+      day_id: day1.id,
+      name: toName, icon: '🏁', cat: 'Arrivo',
+      lat: null, lng: null, time: '', position: fromName ? 1 : 0
+    });
+  }
 
   await loadTrips();
   ti = TRIPS.findIndex(t=>t.id===trip.id);

@@ -968,8 +968,6 @@ function openAddModal(di){
   document.getElementById('fName').value='';
   document.getElementById('fCat').value='';
   document.getElementById('fTime').value='10:00';
-  document.getElementById('fKm').value='';
-  document.getElementById('fDur').value='';
   document.getElementById('searchResults').classList.remove('open');
   populateDaySelect(di);
   modalPosIdx = TRIPS[ti].days[di].stops.length;
@@ -987,8 +985,6 @@ function openEditModal(di,si){
   document.getElementById('fName').value=stop.name;
   document.getElementById('fCat').value=stop.cat;
   document.getElementById('fTime').value=stop.time;
-  document.getElementById('fKm').value=stop.transit?.km||'';
-  document.getElementById('fDur').value=stop.transit?.dur||'';
   document.getElementById('searchResults').classList.remove('open');
   populateDaySelect(di);
   modalPosIdx=si;
@@ -1063,9 +1059,6 @@ async function saveStop(){
   if(!pendingLat||!pendingLng){ alert('Seleziona un luogo dalla lista di ricerca.'); return; }
   const cat=document.getElementById('fCat').value.trim()||'Tappa';
   const time=document.getElementById('fTime').value||'00:00';
-  const km=document.getElementById('fKm').value.trim();
-  const dur=document.getElementById('fDur').value.trim();
-  const transit=(km||dur)?{km:km||'—',dur:dur||'—'}:null;
   const icon=guessIcon(name,cat);
   const btn=document.getElementById('modalSaveBtn');
   btn.disabled=true; btn.textContent='Calcolo percorso…';

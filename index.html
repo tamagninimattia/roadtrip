@@ -138,6 +138,14 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .day-block{margin-bottom:1.15rem;animation:fu .3s ease both}
 .day-block.collapsed .day-stops-wrap{display:none}
 .day-block.collapsed .day-label-wrap{display:none}
+.day-block.collapsed .day-collapsed-summary{display:flex}
+.day-collapsed-summary{display:none;align-items:center;gap:.5rem;flex-wrap:wrap;
+  padding:.3rem .5rem .4rem 2.8rem;margin-top:-.3rem;margin-bottom:.2rem}
+.dcs-item{display:flex;align-items:center;gap:.22rem;font-family:'DM Mono',monospace;
+  font-size:.62rem;color:var(--muted)}
+.dcs-label{font-size:.6rem;color:var(--muted)}
+.dcs-desc{font-size:.72rem;font-family:'DM Sans',sans-serif;font-style:italic;
+  color:var(--ink);flex-basis:100%;padding-left:.05rem;opacity:.75}
 .day-collapse-btn{background:none;border:none;cursor:pointer;font-size:.75rem;color:var(--muted);
   padding:.1rem .25rem;border-radius:4px;transition:all .15s;flex-shrink:0;line-height:1}
 .day-collapse-btn:hover{color:var(--amber);background:var(--amber-pale)}
@@ -1712,11 +1720,22 @@ function renderItin(){
     el.style.animationDelay=(di*.05)+'s';
     const km=day.dayKm>0?`${day.dayKm}km · ${day.dayTime}`:'';
     const collapseIco = collapsed ? '▶' : '▼';
+
+    // Summary per stato collassato
+    const descHtml = day.label ? `<div class="dcs-desc">${day.label}</div>` : '';
+    const kmHtml = day.dayKm>0 ? `<span class="dcs-item">🛣 ${day.dayKm} km</span>` : '';
+    const timeHtml2 = day.dayTime ? `<span class="dcs-item">⏱ ${day.dayTime}</span>` : '';
+
     el.innerHTML=`<div class="day-hdr" style="cursor:pointer" onclick="toggleCollapse('${trip.id}',${di})">
       <button class="day-collapse-btn" onclick="event.stopPropagation();toggleCollapse('${trip.id}',${di})">${collapseIco}</button>
       <div class="day-n">${di+1}</div>
       <div class="day-info"><div class="day-name">${day.name}</div><div class="day-date">${day.date}</div></div>
       <div class="day-km">${km}</div>
+    </div>
+    <div class="day-collapsed-summary">
+      ${descHtml}
+      ${kmHtml}
+      ${timeHtml2}
     </div>
     <div class="day-label-wrap">
       <input class="day-label-input" type="text"

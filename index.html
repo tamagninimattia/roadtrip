@@ -1053,6 +1053,22 @@ function computeTimes(day, refDate){
   });
 }
 
+// Fetcha timezone per tutte le tappe che non ce l'hanno ancora
+async function backfillTimezones(){
+  const trip = TRIPS[ti];
+  if(!trip) return;
+  for(const day of trip.days){
+    for(const stop of day.stops){
+      if(!stop.timezoneId && stop.lat && stop.lng){
+        stop.timezoneId = await fetchTimezone(stop.lat, stop.lng);
+        if(stop.timezoneId && stop.id && !stop.id.startsWith('_new_'))
+          await sb.from('stops').update({timezone_id: stop.timezoneId}).eq('id', stop.id);
+      }
+    }
+  }
+  renderItin();
+}
+
 async function saveDepartureTime(di, value){
   const day = TRIPS[ti].days[di];
   day.departureTime = value;
@@ -1688,9 +1704,19 @@ async function saveStop(){
       isOvernight, isOvernightClone:false, timezoneId:null, acts:[]};
     targetDay.stops.splice(pos, 0, stop);
 
-    // Fetch timezone
+    // Fetch timezone tappa corrente
     btn.textContent='Fuso orario…';
     stop.timezoneId = await fetchTimezone(pendingLat, pendingLng);
+
+    // Fetch timezone tappa precedente se mancante
+    if(pos > 0){
+      const prev = targetDay.stops[pos-1];
+      if(!prev.timezoneId && prev.lat && prev.lng){
+        prev.timezoneId = await fetchTimezone(prev.lat, prev.lng);
+        if(prev.id && !prev.id.startsWith('_new_'))
+          await sb.from('stops').update({timezone_id: prev.timezoneId}).eq('id', prev.id);
+      }
+    }
 
     // Calc route from previous stop (skip per voli — usa durata manuale)
     if(pos > 0){
@@ -1746,9 +1772,20 @@ async function saveStop(){
     stop.stayDuration=stayDuration; stop.stayMinutes=stayMinutes;
     stop.isOvernight=isOvernight;
 
-    // Aggiorna timezone se le coordinate sono cambiate
+    // Aggiorna timezone
     btn.textContent='Fuso orario…';
     stop.timezoneId = await fetchTimezone(pendingLat, pendingLng);
+
+    // Fetch timezone tappa precedente se mancante
+    const prevFetchPos=TRIPS[ti].days[targetDi].stops.indexOf(stop);
+    if(prevFetchPos > 0){
+      const prev = TRIPS[ti].days[targetDi].stops[prevFetchPos-1];
+      if(!prev.timezoneId && prev.lat && prev.lng){
+        prev.timezoneId = await fetchTimezone(prev.lat, prev.lng);
+        if(prev.id && !prev.id.startsWith('_new_'))
+          await sb.from('stops').update({timezone_id: prev.timezoneId}).eq('id', prev.id);
+      }
+    }
 
     // Move to different day/position if changed
     if(targetDi!==modalDayIdx || pos!==modalStopIdx){
@@ -2158,6 +2195,9 @@ async function startApp(user){
 
   if(window.innerWidth>=720) dv('split'); else mtab('itinerary');
   updStats(); renderItin(); renderDayBar(); renderOver();
+
+  // Fetcha timezone mancanti in background
+  backfillTimezones();
 
   // Load Google Maps
   const script=document.createElement('script');

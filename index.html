@@ -994,56 +994,36 @@ async function fetchTimezone(lat, lng){
   return null;
 }
 
-// Converte "HH:MM" in ora locale di un timezone → minuti UTC assoluti
-// Usa Intl per ottenere l'offset corrente del timezone (include DST)
-function localTimeToUTC(timeStr, timezoneId, refDate){
-  if(!timezoneId) return timeToMins(timeStr); // fallback: tratta come UTC
-  // Crea un Date con data di riferimento e ora locale nel timezone dato
-  const [h,m] = timeStr.split(':').map(Number);
-  // Formatta la data come stringa senza tz, poi calcola offset
-  const fmt = new Intl.DateTimeFormat('en-CA', {
-    timeZone: timezoneId,
-    year:'numeric', month:'2-digit', day:'2-digit',
-    hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
-  });
-  // Trova l'offset UTC del timezone in quella data usando un punto di riferimento
-  const probe = refDate || new Date();
-  const parts = fmt.formatToParts(probe);
-  const get = type => parseInt(parts.find(p=>p.type===type)?.value||'0');
-  const localNow = Date.UTC(get('year'),get('month')-1,get('day'),get('hour'),get('minute'),get('second'));
-  const offsetMs = probe.getTime() - localNow; // ms da aggiungere a local per ottenere UTC... no, inverso
-  // offset = UTC - local → local + offset = UTC
-  // Più semplice: usa getTimezoneOffset trick
-  const tzOffset = -offsetMs/60000; // minuti: positivo = est di UTC
-  return timeToMins(timeStr) - tzOffset; // minuti UTC
-}
-
-// Converte minuti UTC in "HH:MM" locale del timezone dato
-function utcToLocalTime(utcMins, timezoneId, refDate){
-  if(!timezoneId) return minsToTime(utcMins); // fallback
-  const probe = refDate || new Date();
-  const fmt = new Intl.DateTimeFormat('en-CA', {
-    timeZone: timezoneId,
-    year:'numeric', month:'2-digit', day:'2-digit',
-    hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
-  });
-  const parts = fmt.formatToParts(probe);
-  const get = type => parseInt(parts.find(p=>p.type===type)?.value||'0');
-  const localNow = Date.UTC(get('year'),get('month')-1,get('day'),get('hour'),get('minute'),get('second'));
-  const offsetMs = probe.getTime() - localNow;
-  const tzOffset = -offsetMs/60000;
-  return minsToTime(utcMins + tzOffset);
+// Restituisce l'offset in minuti di un timezone rispetto a UTC (positivo = est di UTC)
+// Es: Europe/Berlin in estate → +120, America/Los_Angeles in inverno → -480
+function getOffsetMinutes(timezoneId, refDate){
+  if(!timezoneId) return 0;
+  try {
+    const ref = refDate || new Date();
+    // Formatta la stessa data in UTC e nel timezone target
+    const utcStr = ref.toLocaleString('en-CA', {timeZone:'UTC', hour12:false,
+      year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const tzStr  = ref.toLocaleString('en-CA', {timeZone:timezoneId, hour12:false,
+      year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const toMins = s => {
+      // formato: "YYYY-MM-DD, HH:MM" oppure "YYYY-MM-DD HH:MM"
+      const clean = s.replace(',','');
+      const [datePart, timePart] = clean.trim().split(' ');
+      const [h,m] = timePart.split(':').map(Number);
+      const [y,mo,d] = datePart.split('-').map(Number);
+      return y*525600 + mo*44640 + d*1440 + h*60 + m;
+    };
+    return toMins(tzStr) - toMins(utcStr);
+  } catch(e){ console.error('getOffsetMinutes error', e); return 0; }
 }
 
 // Calcola arrivalTime e departureTime per ogni stop del giorno, timezone-aware
 function computeTimes(day, refDate){
   const ref = refDate || new Date();
   const depStartLocal = timeToMins(day.departureTime||'09:00');
-  const firstStop = day.stops[0];
 
   day.stops.forEach((stop, si)=>{
     if(si===0){
-      // Prima tappa: ora di partenza del giorno, nel suo timezone
       stop.arrivalTime = minsToTime(depStartLocal);
       const stay = stop.stayMinutes||0;
       stop.departureTime = minsToTime(depStartLocal + stay);
@@ -1051,20 +1031,17 @@ function computeTimes(day, refDate){
     }
     const prev = day.stops[si-1];
     const travel = stop.travelMinutes||0;
+    const prevDepLocal = timeToMins(prev.departureTime||prev.arrivalTime||'09:00');
 
-    // Se entrambe le tappe hanno timezone, calcola via UTC
     if(prev.timezoneId && stop.timezoneId && prev.timezoneId !== stop.timezoneId){
-      // Converti partenza precedente in UTC
-      const prevDepLocal = timeToMins(prev.departureTime||prev.arrivalTime||'09:00');
-      const prevDepUTC = localTimeToUTC(prev.departureTime||prev.arrivalTime||'09:00', prev.timezoneId, ref);
-      // Aggiungi travel in UTC
+      // Converti ora locale precedente → UTC → ora locale destinazione
+      const prevOffset = getOffsetMinutes(prev.timezoneId, ref);  // minuti avanti rispetto UTC
+      const stopOffset = getOffsetMinutes(stop.timezoneId, ref);
+      const prevDepUTC = prevDepLocal - prevOffset;
       const arrUTC = prevDepUTC + travel;
-      // Converti in ora locale della tappa corrente
-      stop.arrivalTime = utcToLocalTime(arrUTC, stop.timezoneId, ref);
+      stop.arrivalTime = minsToTime(arrUTC + stopOffset);
     } else {
-      // Stesso fuso o nessun fuso — calcolo semplice
-      const prevDep = timeToMins(prev.departureTime||prev.arrivalTime||'09:00');
-      stop.arrivalTime = minsToTime(prevDep + travel);
+      stop.arrivalTime = minsToTime(prevDepLocal + travel);
     }
 
     const stay = stop.stayMinutes||0;

@@ -1039,8 +1039,11 @@ function computeTimes(day, refDate){
       const stopOffset = getOffsetMinutes(stop.timezoneId, ref);
       const prevDepUTC = prevDepLocal - prevOffset;
       const arrUTC = prevDepUTC + travel;
-      stop.arrivalTime = minsToTime(arrUTC + stopOffset);
+      const arrLocal = minsToTime(arrUTC + stopOffset);
+      console.log(`[TZ] ${prev.name}(${prev.timezoneId}) off=${prevOffset}m dep=${minsToTime(prevDepLocal)} utc=${minsToTime(prevDepUTC)} +${travel}m arrUTC=${minsToTime(arrUTC)} → ${stop.name}(${stop.timezoneId}) off=${stopOffset}m arr=${arrLocal}`);
+      stop.arrivalTime = arrLocal;
     } else {
+      console.log(`[TZ] same/null tz: prev=${prev.timezoneId} stop=${stop.timezoneId} prevDep=${minsToTime(prevDepLocal)} +${travel}m = ${minsToTime(prevDepLocal+travel)}`);
       stop.arrivalTime = minsToTime(prevDepLocal + travel);
     }
 

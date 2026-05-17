@@ -136,6 +136,16 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .sec-ttl{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;display:flex;align-items:center;gap:.45rem}
 .sec-ttl::after{content:'';flex:1;height:1px;background:var(--border)}
 .day-block{margin-bottom:1.15rem;animation:fu .3s ease both}
+.day-block.collapsed .day-stops-wrap{display:none}
+.day-block.collapsed .day-label-wrap{display:none}
+.day-collapse-btn{background:none;border:none;cursor:pointer;font-size:.75rem;color:var(--muted);
+  padding:.1rem .25rem;border-radius:4px;transition:all .15s;flex-shrink:0;line-height:1}
+.day-collapse-btn:hover{color:var(--amber);background:var(--amber-pale)}
+.itin-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:.4rem;margin-bottom:.6rem}
+.itin-tool-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:.25rem .6rem;
+  font-size:.65rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;
+  transition:all .15s}
+.itin-tool-btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-pale)}
 @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .day-hdr{display:flex;align-items:center;gap:.55rem;margin-bottom:.55rem}
 .day-n{width:27px;height:27px;border-radius:50%;background:var(--ink);color:var(--amber-l);
@@ -1263,6 +1273,42 @@ function computeTimes(day, refDate){
 }
 
 // Fetcha timezone per tutte le tappe che non ce l'hanno ancora
+const COLLAPSE_KEY = 'roadtrip_collapsed';
+
+function getCollapsed(){
+  try { return JSON.parse(localStorage.getItem(COLLAPSE_KEY)||'{}'); } catch(e){ return {}; }
+}
+
+function setCollapsed(tripId, di, val){
+  const state = getCollapsed();
+  const key = tripId+':'+di;
+  if(val) state[key] = true;
+  else delete state[key];
+  localStorage.setItem(COLLAPSE_KEY, JSON.stringify(state));
+}
+
+function isCollapsed(tripId, di){
+  return !!getCollapsed()[tripId+':'+di];
+}
+
+function toggleCollapse(tripId, di){
+  setCollapsed(tripId, di, !isCollapsed(tripId, di));
+  renderItin();
+}
+
+function collapseAll(){
+  const trip = TRIPS[ti];
+  trip.days.forEach((_,di) => setCollapsed(trip.id, di, true));
+  renderItin();
+}
+
+function expandAll(){
+  const trip = TRIPS[ti];
+  trip.days.forEach((_,di) => setCollapsed(trip.id, di, false));
+  renderItin();
+}
+
+// Fetcha timezone per tutte le tappe che non ce l'hanno ancora
 async function backfillTimezones(){
   const trip = TRIPS[ti];
   if(!trip) return;
@@ -1655,15 +1701,19 @@ function renderItin(){
   if(!TRIPS.length){ document.getElementById('itinBody').innerHTML='<div style="padding:2rem;text-align:center;color:var(--muted)">Nessun viaggio trovato.</div>'; return; }
   const trip=TRIPS[ti];
   const body=document.getElementById('itinBody');
-  body.innerHTML='<div class="sec-ttl">Itinerario dettagliato</div>';
+  body.innerHTML='<div class="sec-ttl">Itinerario dettagliato</div><div class="itin-toolbar"><button class="itin-tool-btn" onclick="expandAll()">↕ Espandi tutti</button><button class="itin-tool-btn" onclick="collapseAll()">↕ Collassa tutti</button></div>';
   trip.days.forEach((day,di)=>{
     // Calcola i tempi per questo giorno
     computeTimes(day);
 
+    const collapsed = isCollapsed(trip.id, di);
     const el=document.createElement('div');
-    el.className='day-block'; el.style.animationDelay=(di*.05)+'s';
+    el.className='day-block' + (collapsed ? ' collapsed' : '');
+    el.style.animationDelay=(di*.05)+'s';
     const km=day.dayKm>0?`${day.dayKm}km · ${day.dayTime}`:'';
-    el.innerHTML=`<div class="day-hdr">
+    const collapseIco = collapsed ? '▶' : '▼';
+    el.innerHTML=`<div class="day-hdr" style="cursor:pointer" onclick="toggleCollapse('${trip.id}',${di})">
+      <button class="day-collapse-btn" onclick="event.stopPropagation();toggleCollapse('${trip.id}',${di})">${collapseIco}</button>
       <div class="day-n">${di+1}</div>
       <div class="day-info"><div class="day-name">${day.name}</div><div class="day-date">${day.date}</div></div>
       <div class="day-km">${km}</div>
@@ -1672,8 +1722,11 @@ function renderItin(){
       <input class="day-label-input" type="text"
         placeholder="Aggiungi una nota per questo giorno…"
         value="${(day.label||'').replace(/"/g,'&quot;')}"
-        onchange="saveLabel(${di},this.value)">
-    </div>`;
+        onchange="saveLabel(${di},this.value)"
+        onclick="event.stopPropagation()">
+    </div>
+    <div class="day-stops-wrap"></div>`;
+    const stopsWrap = el.querySelector('.day-stops-wrap');
     day.stops.forEach((stop,si)=>{
       const tIco={'DRIVING':'🚗','WALKING':'🚶','TRANSIT':'🚂','FLIGHT':'✈️'}[stop.transitMode||'DRIVING']||'🚗';
       const tr=stop.transit?`<div class="transit">${tIco} ${stop.transit.km} · ${stop.transit.dur}</div>`:
@@ -1699,7 +1752,7 @@ function renderItin(){
             ${timeHtml}
           </div>
         </div>`;
-        el.appendChild(se);
+        stopsWrap.appendChild(se);
         return;
       }
 
@@ -1740,7 +1793,7 @@ function renderItin(){
             <div class="stop-dest-arr">🏁 Arrivo: ${arrDisplay}${tzLbl ? '<span style="font-size:.6rem;color:var(--muted)"> '+tzLbl+'</span>' : ''}</div>
           </div>
         </div>`;
-        el.appendChild(se);
+        stopsWrap.appendChild(se);
         return;
       }
 
@@ -1848,13 +1901,13 @@ function renderItin(){
             <a href="https://www.google.com/maps/dir/?api=1&destination=${stop.lat},${stop.lng}" target="_blank" class="sc-btn gmaps">🧭 Maps</a>
           </div>
         </div>`;
-      el.appendChild(se);
+      stopsWrap.appendChild(se);
     });
     const addBtn=document.createElement('button');
     addBtn.className='add-stop-btn';
     addBtn.innerHTML='+ Aggiungi tappa';
     addBtn.onclick=()=>openAddModal(di);
-    el.appendChild(addBtn);
+    stopsWrap.appendChild(addBtn);
     body.appendChild(el);
   });
 }

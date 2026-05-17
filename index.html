@@ -169,16 +169,58 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .sc-btn.del:hover{background:#fbd5d0}
 .sc-btn.gmaps{background:#f0f4ff;color:#3050a0;margin-left:auto}
 .sc-btn.gmaps:hover{background:#e0e8ff}
-.acts{border-top:1px dashed var(--border);padding-top:.35rem;margin-top:.32rem;display:flex;flex-direction:column;gap:.25rem}
-.act{display:flex;align-items:center;gap:.45rem;min-height:26px}
-.ach{width:26px;height:26px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.ach-i{width:16px;height:16px;border:1.5px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .15s;background:white}
+.acts{border-top:1px dashed var(--border);padding-top:.35rem;margin-top:.32rem;display:flex;flex-direction:column;gap:.2rem}
+.act{display:flex;align-items:center;gap:.35rem;min-height:28px;border-radius:6px;padding:.1rem .2rem;transition:background .12s;cursor:default}
+.act.dragging-act{opacity:.4;background:var(--paper)}
+.act.drag-over-act{background:var(--amber-pale)}
+.act-drag{width:18px;height:18px;display:flex;align-items:center;justify-content:center;
+  cursor:grab;color:var(--border);font-size:.7rem;flex-shrink:0;border-radius:3px;transition:color .12s}
+.act-drag:hover{color:var(--muted)}
+.act-drag:active{cursor:grabbing}
+.ach{width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ach-i{width:15px;height:15px;border:1.5px solid var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center;transition:all .15s;background:white}
 .ach:hover .ach-i{border-color:var(--amber)}
 .ach.chk .ach-i{background:var(--sage);border-color:var(--sage)}
-.ach.chk .ach-i::after{content:'✓';font-size:.6rem;color:white;font-weight:700}
-.act-t{font-size:.76rem;flex:1;line-height:1.3}
+.ach.chk .ach-i::after{content:'✓';font-size:.55rem;color:white;font-weight:700}
+.act-t{font-size:.74rem;flex:1;line-height:1.3}
 .act-t.done{text-decoration:line-through;color:var(--muted)}
-.act-h{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);white-space:nowrap}
+.act-pin{font-size:.65rem;cursor:pointer;opacity:.6;transition:opacity .12s;flex-shrink:0}
+.act-pin:hover{opacity:1}
+.act-del{font-size:.6rem;cursor:pointer;color:var(--muted);opacity:0;transition:opacity .12s;flex-shrink:0;padding:.1rem .2rem;border-radius:3px}
+.act:hover .act-del{opacity:.6}
+.act-del:hover{opacity:1!important;color:var(--red)}
+
+/* MINI FORM ATTIVITÀ */
+.act-add-form{display:flex;flex-direction:column;gap:.4rem;padding:.45rem .5rem;
+  background:var(--paper);border-radius:8px;border:1px dashed var(--border);margin-top:.2rem}
+.act-add-row{display:flex;gap:.3rem;align-items:center}
+.act-add-input{flex:1;border:1.5px solid var(--border);border-radius:6px;padding:.35rem .55rem;
+  font-family:'DM Sans',sans-serif;font-size:.78rem;background:white;color:var(--ink);outline:none;transition:border-color .15s}
+.act-add-input:focus{border-color:var(--amber)}
+.act-loc-toggle{font-size:.75rem;color:var(--muted);cursor:pointer;padding:.2rem .4rem;border-radius:5px;
+  border:1px solid var(--border);background:white;transition:all .14s;white-space:nowrap}
+.act-loc-toggle:hover,.act-loc-toggle.active{border-color:var(--amber);color:var(--amber);background:var(--amber-pale)}
+.act-loc-wrap{position:relative}
+.act-loc-input{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.32rem .55rem;
+  font-family:'DM Sans',sans-serif;font-size:.76rem;background:white;color:var(--ink);outline:none;transition:border-color .15s}
+.act-loc-input:focus{border-color:var(--amber)}
+.act-loc-results{position:absolute;top:calc(100% + 3px);left:0;right:0;background:white;
+  border:1.5px solid var(--amber);border-radius:8px;z-index:300;max-height:140px;overflow-y:auto;
+  box-shadow:0 4px 12px rgba(0,0,0,.1);display:none}
+.act-loc-results.open{display:block}
+.act-loc-result{padding:.38rem .65rem;font-size:.76rem;cursor:pointer;border-bottom:1px solid var(--paper)}
+.act-loc-result:hover{background:var(--amber-pale)}
+.act-form-btns{display:flex;gap:.3rem;justify-content:flex-end}
+.act-form-btn{padding:.28rem .7rem;border-radius:6px;font-size:.72rem;font-weight:600;
+  border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.act-form-btn.save{background:var(--amber);color:var(--ink)}
+.act-form-btn.save:hover{background:var(--amber-l)}
+.act-form-btn.cancel{background:var(--paper);color:var(--muted)}
+.act-form-btn.cancel:hover{background:var(--border)}
+.add-act-btn{display:flex;align-items:center;gap:.3rem;padding:.22rem .5rem;border-radius:6px;
+  font-size:.68rem;color:var(--muted);background:none;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .14s;margin-top:.1rem;width:fit-content}
+.add-act-btn:hover{color:var(--amber);background:var(--amber-pale)}
 .add-stop-btn{display:flex;align-items:center;justify-content:center;gap:.4rem;
   width:100%;padding:.6rem;border:1.5px dashed var(--border);border-radius:10px;
   background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.78rem;
@@ -747,7 +789,7 @@ function initSplitDivider(){
 ═══════════════════════════════════════ */
 async function loadTrips(){
   const {data: trips, error} = await sb.from('trips')
-    .select(`*, days(*, stops(*))`)
+    .select(`*, days(*, stops(*, activities(*)))`)
     .eq('user_id', currentUser.id)
     .order('created_at');
 
@@ -788,7 +830,16 @@ async function loadTrips(){
             isOvernight: s.is_overnight||false,
             isOvernightClone: s.is_overnight_clone||false,
             timezoneId: s.timezone_id||null,
-            acts: []
+            acts: (s.activities||[])
+              .sort((a,b)=>a.position-b.position)
+              .map(a=>({
+                id: a.id,
+                text: a.text||'',
+                done: a.done||false,
+                lat: a.lat||null,
+                lng: a.lng||null,
+                position: a.position||0
+              }))
           }))
       }))
   }));
@@ -921,6 +972,152 @@ async function dbReorderStops(dayId, stops){
   for(let i=0;i<stops.length;i++){
     await sb.from('stops').update({position:i, day_id:dayId}).eq('id', stops[i].id);
   }
+}
+
+/* ═══════════════════════════════════════
+   ACTIVITIES CRUD
+═══════════════════════════════════════ */
+// Stato mini-form attività per ogni stop (stopId → {open, showLoc, locLat, locLng, locName, searchTimer})
+const actFormState = {};
+
+function getActForm(stopId){
+  if(!actFormState[stopId]) actFormState[stopId]={open:false,showLoc:false,locLat:null,locLng:null,locName:''};
+  return actFormState[stopId];
+}
+
+async function addActivity(di, si){
+  const stop = TRIPS[ti].days[di].stops[si];
+  const formId = `act-form-${stop.id}`;
+  const textEl = document.getElementById(`act-text-${stop.id}`);
+  const text = textEl?.value?.trim();
+  if(!text) return;
+
+  const s = getActForm(stop.id);
+  const position = stop.acts.length;
+  const act = {id:'_new_', text, done:false, lat:s.locLat||null, lng:s.locLng||null, position};
+
+  const {data, error} = await sb.from('activities').insert({
+    stop_id: stop.id, text, done:false,
+    lat:s.locLat||null, lng:s.locLng||null, position
+  }).select().single();
+
+  if(error){ console.error(error); return; }
+  act.id = data.id;
+  stop.acts.push(act);
+
+  // Reset form state
+  s.open = false; s.showLoc = false; s.locLat = null; s.locLng = null; s.locName = '';
+  renderItin();
+  renderMap();
+}
+
+async function toggleActivity(di, si, ai){
+  const act = TRIPS[ti].days[di].stops[si].acts[ai];
+  act.done = !act.done;
+  await sb.from('activities').update({done:act.done}).eq('id',act.id);
+  // Aggiorna solo la checkbox senza re-render completo
+  const chkEl = document.getElementById(`ach-${act.id}`);
+  if(chkEl) chkEl.classList.toggle('chk', act.done);
+  const textEl = document.getElementById(`act-t-${act.id}`);
+  if(textEl) textEl.classList.toggle('done', act.done);
+}
+
+async function deleteActivity(di, si, ai){
+  const act = TRIPS[ti].days[di].stops[si].acts[ai];
+  await sb.from('activities').delete().eq('id',act.id);
+  TRIPS[ti].days[di].stops[si].acts.splice(ai,1);
+  renderItin();
+  renderMap();
+}
+
+async function reorderActivities(di, si, fromIdx, toIdx){
+  if(fromIdx===toIdx) return;
+  const acts = TRIPS[ti].days[di].stops[si].acts;
+  const [moved] = acts.splice(fromIdx,1);
+  acts.splice(toIdx,0,moved);
+  for(let i=0;i<acts.length;i++){
+    acts[i].position = i;
+    await sb.from('activities').update({position:i}).eq('id',acts[i].id);
+  }
+  renderItin();
+}
+
+function openActForm(stopId){
+  const s = getActForm(stopId);
+  s.open = true;
+  renderItin();
+  setTimeout(()=>{
+    const el = document.getElementById(`act-text-${stopId}`);
+    if(el) el.focus();
+  }, 50);
+}
+
+function closeActForm(stopId){
+  const s = getActForm(stopId);
+  s.open = false; s.showLoc = false; s.locLat = null; s.locLng = null; s.locName = '';
+  renderItin();
+}
+
+function toggleActLoc(stopId){
+  const s = getActForm(stopId);
+  s.showLoc = !s.showLoc;
+  renderItin();
+  if(s.showLoc) setTimeout(()=>{
+    document.getElementById(`act-loc-${stopId}`)?.focus();
+  },50);
+}
+
+function onActLocInput(stopId, val){
+  const s = getActForm(stopId);
+  s.locName = val;
+  clearTimeout(s._searchTimer);
+  if(!val.trim()){ document.getElementById(`act-loc-res-${stopId}`).classList.remove('open'); return; }
+  s._searchTimer = setTimeout(()=>{
+    autocompleteService.getPlacePredictions({input:val,language:'it'},(preds,status)=>{
+      const box = document.getElementById(`act-loc-res-${stopId}`);
+      if(!box) return;
+      if(status!==google.maps.places.PlacesServiceStatus.OK||!preds){ box.classList.remove('open'); return; }
+      box.innerHTML = preds.slice(0,4).map(p=>`<div class="act-loc-result" onclick="selectActLoc('${stopId}','${p.place_id}',this)">${p.description}</div>`).join('');
+      box.classList.add('open');
+    });
+  },320);
+}
+
+function selectActLoc(stopId, placeId, el){
+  const s = getActForm(stopId);
+  placesService.getDetails({placeId,fields:['geometry','name']},(place,status)=>{
+    if(status===google.maps.places.PlacesServiceStatus.OK && place.geometry){
+      s.locLat = place.geometry.location.lat();
+      s.locLng = place.geometry.location.lng();
+      s.locName = place.name;
+      const inp = document.getElementById(`act-loc-${stopId}`);
+      if(inp) inp.value = place.name;
+      const box = document.getElementById(`act-loc-res-${stopId}`);
+      if(box) box.classList.remove('open');
+    }
+  });
+}
+
+// Drag & drop attività
+let actDragDi=null, actDragSi=null, actDragFrom=null;
+
+function actDragStart(e, di, si, ai){
+  actDragDi=di; actDragSi=si; actDragFrom=ai;
+  e.dataTransfer.effectAllowed='move';
+  setTimeout(()=>e.target.classList.add('dragging-act'),0);
+}
+function actDragEnd(e){ e.target.classList.remove('dragging-act'); }
+function actDragOver(e, ai){
+  e.preventDefault();
+  document.querySelectorAll('.act').forEach(el=>el.classList.remove('drag-over-act'));
+  const els = document.querySelectorAll(`[data-act-di="${actDragDi}"][data-act-si="${actDragSi}"]`);
+  if(els[ai]) els[ai].classList.add('drag-over-act');
+}
+function actDrop(e, di, si, ai){
+  e.preventDefault();
+  document.querySelectorAll('.act').forEach(el=>el.classList.remove('drag-over-act'));
+  if(actDragDi===di && actDragSi===si && actDragFrom!==null && actDragFrom!==ai)
+    reorderActivities(di, si, actDragFrom, ai);
 }
 
 function showToast(msg='💾 Salvato'){
@@ -1309,6 +1506,33 @@ function renderMap(){
       });
       marker.addListener('click',()=>{ focusStop(stop.id,false); iw.setContent(iwContent(stop,di,si)); iw.open(gmap,marker); });
       markers[stop.id]=marker;
+
+      // Marker piccoli per le attività con coordinate
+      stop.acts.forEach((act,ai)=>{
+        if(!act.lat||!act.lng) return;
+        const all=new google.maps.LatLng(act.lat,act.lng);
+        bounds.extend(all);
+        const actMarker=new google.maps.Marker({
+          position:all, map:gmap, title:act.text,
+          icon:{
+            path:google.maps.SymbolPath.CIRCLE,
+            scale:5,
+            fillColor:color,
+            fillOpacity:.85,
+            strokeColor:'white',
+            strokeWeight:1.5
+          },
+          zIndex:2
+        });
+        actMarker.addListener('click',()=>{
+          iw.setContent(`<div style="font-family:'DM Sans',sans-serif;font-size:.82rem;padding:.2rem .1rem;max-width:180px">
+            <div style="font-weight:600">${act.text}</div>
+            <div style="font-size:.7rem;color:#888;margin-top:.15rem">${stop.name}</div>
+          </div>`);
+          iw.open(gmap,actMarker);
+        });
+        markers[act.id]=actMarker;
+      });
     });
     day.stops.forEach((stop,si)=>{
       if(si===0) return;
@@ -1401,6 +1625,14 @@ function renderDayBar(){
   };
   make('all','Tutti i giorni');
   trip.days.forEach((_,i)=>make(i,`G${i+1}`));
+}
+
+function focusActMarker(actId){
+  const marker = markers[actId];
+  if(!marker) return;
+  gmap.panTo(marker.getPosition());
+  gmap.setZoom(15);
+  if(window.innerWidth<720) mtab('map');
 }
 
 function focusStop(id, scroll){
@@ -1501,7 +1733,7 @@ function renderItin(){
           <div class="stop-dest-info">
             <div class="stop-dest-name">${stop.name}</div>
             <div class="stop-dest-sub">Destinazione finale</div>
-            <div class="stop-dest-arr">🏁 Arrivo: ${arrDisplay}${tzLbl ? ` <span style="font-size:.6rem;color:var(--muted)">${tzLbl}</span>` : ''}</div>
+            <div class="stop-dest-arr">🏁 Arrivo: ${arrDisplay}${tzLbl ? '<span style="font-size:.6rem;color:var(--muted)"> '+tzLbl+'</span>' : ''}</div>
           </div>
         </div>`;
         el.appendChild(se);
@@ -1539,6 +1771,62 @@ function renderItin(){
       const overnightClass = isLastAndOvernight ? ' overnight' : '';
       const overnightBadge = isLastAndOvernight ? '<span class="overnight-badge">🌙 Pernottamento</span>' : '';
 
+      // Attività
+      const s = getActForm(stop.id);
+      let actsHtml = '';
+      if(stop.acts.length > 0 || s.open){
+        actsHtml += `<div class="acts">`;
+        stop.acts.forEach((act,ai)=>{
+          const pinHtml = act.lat ? `<span class="act-pin" title="Posizione su mappa" onclick="focusActMarker('${act.id}')">📍</span>` : '';
+          actsHtml += `<div class="act" draggable="true"
+            data-act-di="${di}" data-act-si="${si}"
+            ondragstart="actDragStart(event,${di},${si},${ai})"
+            ondragend="actDragEnd(event)"
+            ondragover="actDragOver(event,${ai})"
+            ondrop="actDrop(event,${di},${si},${ai})">
+            <span class="act-drag">⠿</span>
+            <div class="ach ${act.done?'chk':''}" id="ach-${act.id}" onclick="toggleActivity(${di},${si},${ai})">
+              <div class="ach-i"></div>
+            </div>
+            <span class="act-t ${act.done?'done':''}" id="act-t-${act.id}">${act.text}</span>
+            ${pinHtml}
+            <span class="act-del" onclick="deleteActivity(${di},${si},${ai})">✕</span>
+          </div>`;
+        });
+
+        if(s.open){
+          const locFieldHtml = s.showLoc ? [
+            '<div class="act-loc-wrap">',
+            `<input class="act-loc-input" id="act-loc-${stop.id}" type="text"`,
+            `placeholder="Cerca luogo…" value="${s.locName||''}"`,
+            `oninput="onActLocInput('${stop.id}',this.value)" autocomplete="off">`,
+            `<div class="act-loc-results" id="act-loc-res-${stop.id}"></div>`,
+            '</div>'
+          ].join('\n') : '';
+          const locToggleClass = s.showLoc ? 'act-loc-toggle active' : 'act-loc-toggle';
+          const addFormRows = [
+            '<div class="act-add-form">',
+            '<div class="act-add-row">',
+            '<input class="act-add-input" id="act-text-' + stop.id + '" type="text" placeholder="Descrivi l\'attivit\u00e0\u2026"',
+            'onkeydown="if(event.key===\'Enter\')addActivity(' + di + ',' + si + ')">',
+            '<button class="' + locToggleClass + '" onclick="toggleActLoc(\'' + stop.id + '\')">📍</button>',
+            '</div>',
+            locFieldHtml,
+            '<div class="act-form-btns">',
+            '<button class="act-form-btn cancel" onclick="closeActForm(\'' + stop.id + '\')">Annulla</button>',
+            '<button class="act-form-btn save" onclick="addActivity(' + di + ',' + si + ')">Aggiungi</button>',
+            '</div>',
+            '</div>'
+          ];
+          actsHtml += addFormRows.join('\n');
+        } else {
+          actsHtml += `<button class="add-act-btn" onclick="openActForm('${stop.id}')">+ attività</button>`;
+        }
+        actsHtml += `</div>`;
+      } else {
+        actsHtml = `<div class="acts"><button class="add-act-btn" onclick="openActForm('${stop.id}')">+ attività</button></div>`;
+      }
+
       const se=document.createElement('div');
       se.className='stop';
       se.innerHTML=`${tr}
@@ -1549,6 +1837,7 @@ function renderItin(){
           </div>
           <div class="sc-cat">${stop.cat}</div>
           ${timesHtml}
+          ${actsHtml}
           <div class="sc-actions">
             <button class="sc-btn edit" onclick="openEditModal(${di},${si})">✏️ Modifica</button>
             <button class="sc-btn del" onclick="askDelete(${di},${si})">🗑 Elimina</button>

@@ -310,12 +310,37 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   .tbar{display:none}
   .dnav{display:flex}
   .content{bottom:0;flex-direction:row}
-  .content.vs #pItin{display:flex;position:relative;width:390px;min-width:390px;border-right:1px solid var(--border);flex-shrink:0}
-  .content.vs #pMap{display:flex;position:relative;flex:1}
+  .content.vs #pItin{display:flex;position:relative;border-right:none;flex-shrink:0}
+  .content.vs #pMap{display:flex;position:relative;flex:1;min-width:180px}
   .content.vm #pMap{display:flex;position:relative;flex:1}
   .content.vl #pItin{display:flex;position:relative;flex:1}
   .content.vo #pOver{display:flex;position:relative;flex:1}
 }
+
+/* SPLIT DIVIDER */
+.split-divider{
+  display:none;width:6px;flex-shrink:0;cursor:col-resize;z-index:500;
+  background:var(--border);position:relative;transition:background .15s;
+  border-left:1px solid rgba(26,20,16,.08);border-right:1px solid rgba(26,20,16,.08)
+}
+.split-divider:hover,.split-divider.dragging{background:var(--amber)}
+.split-divider::after{
+  content:'⋮';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  color:var(--muted);font-size:.9rem;pointer-events:none;line-height:1
+}
+.split-divider.dragging::after{color:var(--ink)}
+@media(min-width:720px){ .content.vs .split-divider{display:block} }
+
+/* PRIMA TAPPA GIORNO — card partenza */
+.stop-departure{
+  background:linear-gradient(90deg,var(--amber-pale),transparent);
+  border:1px solid var(--amber);border-radius:10px;
+  padding:.55rem .85rem;margin-bottom:.38rem;
+  display:flex;align-items:center;gap:.55rem
+}
+.stop-dep-icon{font-size:.9rem;flex-shrink:0}
+.stop-dep-name{font-weight:600;font-size:.82rem;flex:1;line-height:1.3;color:var(--ink)}
+.stop-dep-sub{font-size:.62rem;color:var(--muted);margin-top:.08rem}
 </style>
 </head>
 <body>
@@ -358,14 +383,6 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 </header>
 
 <div class="content vs" id="content">
-  <div class="panel on" id="pMap">
-    <div class="map-daybar" id="mapDaybar"></div>
-    <div id="gmap"></div>
-    <div class="map-loading" id="mapLoading">
-      <div class="spinner"></div>
-      <div class="loading-txt">Calcolo percorsi stradali…</div>
-    </div>
-  </div>
   <div class="panel on" id="pItin">
     <div class="hero">
       <div class="hero-lbl">Prossimo viaggio</div>
@@ -383,6 +400,15 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
       <div class="st"><div class="st-v" id="sDone">0%</div><div class="st-l">completato</div></div>
     </div>
     <div class="itin-body" id="itinBody"></div>
+  </div>
+  <div class="split-divider" id="splitDivider"></div>
+  <div class="panel on" id="pMap">
+    <div class="map-daybar" id="mapDaybar"></div>
+    <div id="gmap"></div>
+    <div class="map-loading" id="mapLoading">
+      <div class="spinner"></div>
+      <div class="loading-txt">Calcolo percorsi stradali…</div>
+    </div>
   </div>
   <div class="panel" id="pOver">
     <div class="hero">
@@ -579,6 +605,68 @@ let modalDayIdx = 0, modalStopIdx = -1, modalPosIdx = -1;
 let pendingLat = null, pendingLng = null;
 let pendingDeleteDi = null, pendingDeleteSi = null;
 const DAY_COLORS = ['#e07820','#1a8040','#b02010','#1040c0','#906010'];
+
+/* ═══════════════════════════════════════
+   SPLIT DIVIDER
+═══════════════════════════════════════ */
+const SPLIT_KEY = 'roadtrip_split_pct';
+let splitPct = parseFloat(localStorage.getItem(SPLIT_KEY)||'38');
+
+function applySplit(pct){
+  pct = Math.max(20, Math.min(75, pct));
+  splitPct = pct;
+  const pItin = document.getElementById('pItin');
+  const content = document.getElementById('content');
+  if(content.classList.contains('vs')){
+    pItin.style.width = pct + '%';
+    pItin.style.minWidth = '220px';
+  }
+  if(gmap) setTimeout(()=>google.maps.event.trigger(gmap,'resize'), 0);
+}
+
+function initSplitDivider(){
+  const divider = document.getElementById('splitDivider');
+  const content = document.getElementById('content');
+  let dragging = false, startX = 0, startPct = 0;
+
+  function onStart(clientX){
+    dragging = true;
+    startX = clientX;
+    startPct = splitPct;
+    divider.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }
+  function onMove(clientX){
+    if(!dragging) return;
+    const contentW = content.getBoundingClientRect().width;
+    const dx = clientX - startX;
+    const newPct = startPct + (dx / contentW * 100);
+    applySplit(newPct);
+  }
+  function onEnd(){
+    if(!dragging) return;
+    dragging = false;
+    divider.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    localStorage.setItem(SPLIT_KEY, splitPct.toFixed(1));
+    if(gmap) setTimeout(()=>google.maps.event.trigger(gmap,'resize'), 80);
+  }
+
+  // Mouse
+  divider.addEventListener('mousedown', e=>{ e.preventDefault(); onStart(e.clientX); });
+  document.addEventListener('mousemove', e=>{ if(dragging) onMove(e.clientX); });
+  document.addEventListener('mouseup', onEnd);
+
+  // Touch
+  divider.addEventListener('touchstart', e=>{ e.preventDefault(); onStart(e.touches[0].clientX); }, {passive:false});
+  document.addEventListener('touchmove', e=>{ if(dragging){ e.preventDefault(); onMove(e.touches[0].clientX); } }, {passive:false});
+  document.addEventListener('touchend', onEnd);
+
+  // Applica subito la posizione salvata
+  applySplit(splitPct);
+}
 
 /* ═══════════════════════════════════════
    SUPABASE — LOAD DATA
@@ -1121,7 +1209,24 @@ function renderItin(){
       const tr=stop.transit?`<div class="transit">${tIco} ${stop.transit.km} · ${stop.transit.dur}</div>`:
                stop.transitMode==='FLIGHT'?`<div class="transit">✈️ Volo</div>`:'';
 
-      // Sezione tempi
+      // Prima tappa del giorno → card partenza speciale
+      if(si===0){
+        const prevDay = di>0 ? trip.days[di-1] : null;
+        const prevSub = prevDay ? `Continuazione da Giorno ${di}` : 'Punto di partenza';
+        const se=document.createElement('div');
+        se.className='stop';
+        se.innerHTML=`<div class="stop-departure" id="c-${stop.id}">
+          <span class="stop-dep-icon">${stop.icon}</span>
+          <div>
+            <div class="stop-dep-name">${stop.name}</div>
+            <div class="stop-dep-sub">${prevSub}</div>
+          </div>
+        </div>`;
+        el.appendChild(se);
+        return;
+      }
+
+      // Sezione tempi (solo per tappe non-prima)
       const arrHtml = stop.arrivalTime
         ? `<span class="sc-t"><span class="sc-t-lbl">Arr</span><span class="sc-t-val">${stop.arrivalTime}</span></span>`
         : '';
@@ -1694,7 +1799,10 @@ function dv(mode){
   if(mode==='split'){
     document.getElementById('pMap').classList.add('on');
     document.getElementById('pItin').classList.add('on');
+    // Riapplica larghezza split salvata
+    setTimeout(()=>applySplit(splitPct), 0);
   } else {
+    document.getElementById('pItin').style.width = '';
     document.getElementById({overview:'pOver',map:'pMap',list:'pItin'}[mode]).classList.add('on');
   }
   if(gmap){
@@ -1723,6 +1831,8 @@ async function startApp(user){
   currentUser = user;
   document.getElementById('authScreen').classList.add('hidden');
   document.getElementById('appLoading').classList.remove('hidden');
+
+  initSplitDivider();
 
   await loadTrips();
 

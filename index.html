@@ -989,6 +989,7 @@ async function fetchTimezone(lat, lng){
     const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${ts}&key=${GMAPS_KEY}`;
     const r = await fetch(url);
     const d = await r.json();
+    console.log('[TZ fetch]', lat, lng, d.status, d.timeZoneId||d.errorMessage||d);
     if(d.status === 'OK') return d.timeZoneId;
   } catch(e){ console.error('fetchTimezone error', e); }
   return null;

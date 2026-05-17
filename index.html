@@ -541,6 +541,10 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
         </div>
       </div>
     </div>
+    <div class="modal-field" id="flightDurField" style="display:none">
+      <label>Durata volo</label>
+      <input type="text" id="fFlightDuration" placeholder="Es. 2h 30m">
+    </div>
     <div class="modal-field" style="background:var(--amber-pale);border-radius:8px;padding:.6rem .75rem">
       <div style="font-size:.7rem;color:var(--amber);font-weight:600">Km e tempi calcolati automaticamente da Google Maps (ove disponibile)</div>
     </div>
@@ -1199,7 +1203,9 @@ function renderMap(){
     day.stops.forEach((stop,si)=>{
       if(si===0) return;
       const prev=day.stops[si-1];
-      if(prev.lat&&prev.lng&&stop.lat&&stop.lng) total++;
+      const mode=stop.transitMode||'DRIVING';
+      // Conta solo le tratte che useranno Directions API (non i voli)
+      if(prev.lat&&prev.lng&&stop.lat&&stop.lng&&mode!=='FLIGHT') total++;
     });
   });
   document.getElementById('mapLoading').classList.remove('hidden');
@@ -1246,7 +1252,8 @@ function renderMap(){
           }],
           map:gmap
         }));
-        done++; if(done>=total) document.getElementById('mapLoading').classList.add('hidden');
+        // I voli non fanno parte del total (Directions API), non incrementare done
+        if(total===0) document.getElementById('mapLoading').classList.add('hidden');
         return;
       }
 
@@ -1453,7 +1460,9 @@ function selectTransport(el){
   document.querySelectorAll('.transport-opt').forEach(o=>o.classList.remove('selected'));
   el.classList.add('selected');
   selectedTransportMode = el.dataset.mode;
-  // hide transport field if first stop of day (no previous stop)
+  const isFlight = selectedTransportMode === 'FLIGHT';
+  document.getElementById('flightDurField').style.display = isFlight ? '' : 'none';
+  if(!isFlight) document.getElementById('fFlightDuration').value = '';
 }
 
 function setDefaultTransport(mode){
@@ -1461,6 +1470,8 @@ function setDefaultTransport(mode){
   document.querySelectorAll('.transport-opt').forEach(o=>{
     o.classList.toggle('selected', o.dataset.mode === mode);
   });
+  const isFlight = mode === 'FLIGHT';
+  document.getElementById('flightDurField').style.display = isFlight ? '' : 'none';
 }
 
 function openAddModal(di){
@@ -1471,6 +1482,7 @@ function openAddModal(di){
   document.getElementById('fName').value='';
   document.getElementById('fCat').value='';
   document.getElementById('fStayDuration').value='';
+  document.getElementById('fFlightDuration').value='';
   setOvernightState(false);
   document.getElementById('overnightToggle').style.display = '';
   document.getElementById('searchResults').classList.remove('open');
@@ -1503,9 +1515,10 @@ function openEditModal(di,si){
   populateDaySelect(di);
   modalPosIdx=si;
   renderPosPicker();
-  // Restore transport mode
+  // Restore transport mode (fa anche show/hide del campo volo)
   const tMode = stop.transitMode || 'DRIVING';
   setDefaultTransport(tMode);
+  if(tMode === 'FLIGHT') document.getElementById('fFlightDuration').value = stop.transit?.dur||'';
   document.getElementById('transportField').style.display = si===0 ? 'none' : '';
   document.getElementById('modalOverlay').classList.add('open');
   iw && iw.close();
@@ -1596,13 +1609,20 @@ async function saveStop(){
       isOvernight, isOvernightClone:false, acts:[]};
     targetDay.stops.splice(pos, 0, stop);
 
-    // Calc route from previous stop
+    // Calc route from previous stop (skip per voli — usa durata manuale)
     if(pos > 0){
       const prev=targetDay.stops[pos-1];
       if(prev.lat && prev.lng){
-        btn.textContent='Calcolo percorso…';
-        const route=await calcRoute(prev, stop, tMode);
-        if(route){ stop.transit=route; stop.travelMinutes=route.durationMinutes; }
+        if(tMode === 'FLIGHT'){
+          const flightDur = document.getElementById('fFlightDuration').value.trim();
+          const flightMins = parseDuration(flightDur);
+          stop.transit = flightDur ? {km:'', dur:flightDur} : null;
+          stop.travelMinutes = flightMins||null;
+        } else {
+          btn.textContent='Calcolo percorso…';
+          const route=await calcRoute(prev, stop, tMode);
+          if(route){ stop.transit=route; stop.travelMinutes=route.durationMinutes; }
+        }
       }
     }
 
@@ -1659,10 +1679,17 @@ async function saveStop(){
     if(newPos > 0){
       const prev=TRIPS[ti].days[targetDi].stops[newPos-1];
       if(prev.lat && prev.lng){
-        btn.textContent='Calcolo percorso…';
-        const route=await calcRoute(prev, stop, stop.transitMode||'DRIVING');
-        stop.transit=route||null;
-        stop.travelMinutes=route?.durationMinutes||null;
+        if(stop.transitMode === 'FLIGHT'){
+          const flightDur = document.getElementById('fFlightDuration').value.trim();
+          const flightMins = parseDuration(flightDur);
+          stop.transit = flightDur ? {km:'', dur:flightDur} : null;
+          stop.travelMinutes = flightMins||null;
+        } else {
+          btn.textContent='Calcolo percorso…';
+          const route=await calcRoute(prev, stop, stop.transitMode||'DRIVING');
+          stop.transit=route||null;
+          stop.travelMinutes=route?.durationMinutes||null;
+        }
       }
     } else {
       stop.transit=null;

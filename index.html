@@ -198,7 +198,14 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .stay-input:focus{border-color:var(--amber)}
 .stay-input::placeholder{color:var(--border)}
 
-/* DAY DEPARTURE */
+/* DAY LABEL */
+.day-label-wrap{padding:.0rem .75rem .45rem;margin-top:-.1rem}
+.day-label-input{width:100%;border:none;border-bottom:1.5px dashed transparent;
+  background:transparent;font-family:'DM Sans',sans-serif;font-size:.75rem;
+  color:var(--muted);outline:none;padding:.1rem 0;transition:border-color .18s;
+  font-style:italic}
+.day-label-input:hover{border-bottom-color:var(--border)}
+.day-label-input:focus{border-bottom-color:var(--amber);color:var(--ink);font-style:normal}
 .day-dep{display:flex;align-items:center;gap:.3rem;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--amber);cursor:pointer;white-space:nowrap}
 .day-dep-input{width:58px;padding:.1rem .3rem;border:1px solid var(--border);border-radius:5px;
   font-family:'DM Mono',monospace;font-size:.62rem;color:var(--amber);background:transparent;
@@ -762,6 +769,7 @@ async function loadTrips(){
         dayKm: d.day_km||0,
         dayTime: d.day_time||'',
         departureTime: d.departure_time||'09:00',
+        label: d.label||'',
         stops: (d.stops||[])
           .sort((a,b)=>a.position-b.position)
           .map(s=>({
@@ -1067,6 +1075,12 @@ async function backfillTimezones(){
     }
   }
   renderItin();
+}
+
+async function saveLabel(di, value){
+  const day = TRIPS[ti].days[di];
+  day.label = value;
+  await sb.from('days').update({label: value||null}).eq('id', day.id);
 }
 
 async function saveDepartureTime(di, value){
@@ -1412,11 +1426,17 @@ function renderItin(){
 
     const el=document.createElement('div');
     el.className='day-block'; el.style.animationDelay=(di*.05)+'s';
-    const km=day.dayKm>0?`${day.dayKm}km · ${day.dayTime}`:'Arrivo';
+    const km=day.dayKm>0?`${day.dayKm}km · ${day.dayTime}`:'';
     el.innerHTML=`<div class="day-hdr">
       <div class="day-n">${di+1}</div>
       <div class="day-info"><div class="day-name">${day.name}</div><div class="day-date">${day.date}</div></div>
       <div class="day-km">${km}</div>
+    </div>
+    <div class="day-label-wrap">
+      <input class="day-label-input" type="text"
+        placeholder="Aggiungi una nota per questo giorno…"
+        value="${(day.label||'').replace(/"/g,'&quot;')}"
+        onchange="saveLabel(${di},this.value)">
     </div>`;
     day.stops.forEach((stop,si)=>{
       const tIco={'DRIVING':'🚗','WALKING':'🚶','TRANSIT':'🚂','FLIGHT':'✈️'}[stop.transitMode||'DRIVING']||'🚗';
@@ -2039,17 +2059,43 @@ async function saveNewTrip(){
   const fromCoords = tTripPlaces.tFromData ? await getLatLng(tTripPlaces.tFromData) : {lat:null,lng:null};
   const toCoords   = tTripPlaces.tToData   ? await getLatLng(tTripPlaces.tToData)   : {lat:null,lng:null};
 
-  // Add a default Day 1
-  const {data:day1} = await sb.from('days').insert({
-    trip_id: trip.id,
-    name: 'Giorno 1',
-    date: dateFrom ? formatDateIT(dateFrom) : '',
-    day_km: 0,
-    day_time: '',
-    position: 0
-  }).select().single();
+  // Genera tutti i giorni dalle date
+  const days = [];
+  if(dateFrom && dateTo){
+    const start = new Date(dateFrom);
+    const end = new Date(dateTo);
+    let cur = new Date(start);
+    let dayNum = 1;
+    while(cur <= end){
+      const isoDate = cur.toISOString().split('T')[0];
+      const {data:day} = await sb.from('days').insert({
+        trip_id: trip.id,
+        name: `Giorno ${dayNum}`,
+        date: formatDateIT(isoDate),
+        day_km: 0,
+        day_time: '',
+        departure_time: '09:00',
+        position: dayNum-1
+      }).select().single();
+      if(day) days.push(day);
+      cur.setDate(cur.getDate()+1);
+      dayNum++;
+    }
+  } else {
+    // Nessuna data — crea almeno Giorno 1
+    const {data:day} = await sb.from('days').insert({
+      trip_id: trip.id,
+      name: 'Giorno 1',
+      date: dateFrom ? formatDateIT(dateFrom) : '',
+      day_km: 0, day_time: '', departure_time: '09:00', position: 0
+    }).select().single();
+    if(day) days.push(day);
+  }
 
-  // Add from/to stops with real coordinates
+  const day1 = days[0];
+  const lastDay = days[days.length-1];
+
+  // Add from/to stops
   let stopPos = 0;
   if(day1 && fromName){
     await sb.from('stops').insert({
@@ -2059,12 +2105,14 @@ async function saveNewTrip(){
       time: '', position: stopPos++
     });
   }
-  if(day1 && toName){
+  if(lastDay && toName){
+    // Destinazione finale nell'ultimo giorno
+    const destDayId = days.length > 1 ? lastDay.id : day1.id;
     await sb.from('stops').insert({
-      day_id: day1.id,
+      day_id: destDayId,
       name: toName, icon: '🏁', cat: 'Arrivo',
       lat: toCoords.lat, lng: toCoords.lng,
-      time: '', position: stopPos
+      time: '', position: days.length > 1 ? 0 : stopPos
     });
   }
 

@@ -1227,7 +1227,10 @@ function renderMap(){
     day.stops.forEach((stop,si)=>{
       if(si===0) return;
       const prev=day.stops[si-1];
-      if(!prev.lat||!prev.lng||!stop.lat||!stop.lng){ done++; if(done>=total) document.getElementById('mapLoading').classList.add('hidden'); return; }
+      if(!prev.lat||!prev.lng||!stop.lat||!stop.lng){
+        // Nessuna coordinata, niente da disegnare — non fa parte del total
+        return;
+      }
 
       const mode=stop.transitMode||'DRIVING';
 

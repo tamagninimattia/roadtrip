@@ -366,6 +366,20 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   background:rgba(200,133,58,.18);color:var(--amber-l);border-radius:20px;
   padding:.12rem .45rem;margin-left:.3rem;letter-spacing:.04em;font-weight:600}
 
+/* DESTINAZIONE FINALE */
+.stop-destination{
+  background:linear-gradient(90deg,var(--amber-pale),transparent);
+  border:1px solid var(--amber);border-radius:10px;
+  padding:.55rem .85rem;margin-bottom:.38rem;
+  display:flex;align-items:center;gap:.55rem
+}
+.stop-dest-icon{font-size:.9rem;flex-shrink:0}
+.stop-dest-info{flex:1;min-width:0}
+.stop-dest-name{font-weight:600;font-size:.82rem;line-height:1.3;color:var(--ink)}
+.stop-dest-sub{font-size:.62rem;color:var(--muted);margin-top:.08rem}
+.stop-dest-arr{display:flex;align-items:center;gap:.25rem;margin-top:.3rem;
+  font-family:'DM Mono',monospace;font-size:.65rem;color:var(--amber)}
+
 /* TOGGLE PERNOTTAMENTO NEL MODAL */
 .overnight-toggle{display:flex;align-items:center;gap:.65rem;padding:.7rem .75rem;
   background:linear-gradient(90deg,#1e1814,#2a2010);border-radius:10px;cursor:pointer;
@@ -1353,7 +1367,26 @@ function renderItin(){
 
       // Overnight: solo arrivo, niente sosta
       const isLastAndOvernight = stop.isOvernight;
-      let timesHtml;
+      const isDestination = (di === trip.days.length-1) && (si === day.stops.length-1);
+
+      // Destinazione finale → card speciale come partenza, solo arrivo
+      if(isDestination){
+        const arrDisplay = stop.arrivalTime || '—';
+        const se=document.createElement('div');
+        se.className='stop';
+        se.innerHTML=`${tr}<div class="stop-destination" id="c-${stop.id}">
+          <span class="stop-dest-icon">${stop.icon}</span>
+          <div class="stop-dest-info">
+            <div class="stop-dest-name">${stop.name}</div>
+            <div class="stop-dest-sub">Destinazione finale</div>
+            <div class="stop-dest-arr">🏁 Arrivo: ${arrDisplay}</div>
+          </div>
+        </div>`;
+        el.appendChild(se);
+        return;
+      }
+
+      // Overnight: solo arrivo, niente sosta
       if(isLastAndOvernight){
         const arrHtml = stop.arrivalTime
           ? `<span class="sc-t"><span class="sc-t-lbl">Arr</span><span class="sc-t-val">${stop.arrivalTime}</span></span>`
@@ -1439,6 +1472,7 @@ function openAddModal(di){
   document.getElementById('fCat').value='';
   document.getElementById('fStayDuration').value='';
   setOvernightState(false);
+  document.getElementById('overnightToggle').style.display = '';
   document.getElementById('searchResults').classList.remove('open');
   populateDaySelect(di);
   modalPosIdx = TRIPS[ti].days[di].stops.length;
@@ -1461,6 +1495,10 @@ function openEditModal(di,si){
   document.getElementById('fCat').value=stop.cat;
   document.getElementById('fStayDuration').value=stop.stayDuration||'';
   setOvernightState(stop.isOvernight||false);
+  // Nascondi overnight toggle se è la destinazione finale
+  const trip = TRIPS[ti];
+  const isDestination = (modalDayIdx === trip.days.length-1) && (modalStopIdx === trip.days[modalDayIdx].stops.length-1);
+  document.getElementById('overnightToggle').style.display = isDestination ? 'none' : '';
   document.getElementById('searchResults').classList.remove('open');
   populateDaySelect(di);
   modalPosIdx=si;

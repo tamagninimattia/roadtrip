@@ -779,6 +779,7 @@ async function loadTrips(){
             travelMinutes: s.travel_minutes||null,
             isOvernight: s.is_overnight||false,
             isOvernightClone: s.is_overnight_clone||false,
+            timezoneId: s.timezone_id||null,
             acts: []
           }))
       }))
@@ -889,6 +890,7 @@ async function dbSaveStop(stop, dayId, position){
     travel_minutes: stop.travelMinutes||null,
     is_overnight: stop.isOvernight||false,
     is_overnight_clone: stop.isOvernightClone||false,
+    timezone_id: stop.timezoneId||null,
     position
   };
   if(stop.id && !stop.id.startsWith('_new_')){
@@ -980,18 +982,91 @@ function minsToTime(mins){
   return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
-// Calcola arrivalTime e departureTime per ogni stop del giorno
-function computeTimes(day){
-  const depStart = timeToMins(day.departureTime||'09:00');
+// Recupera il timezone di una coordinata tramite Google Time Zone API
+async function fetchTimezone(lat, lng){
+  try {
+    const ts = Math.floor(Date.now()/1000);
+    const url = `https://maps.googleapis.com/maps/api/timezone/json?location=${lat},${lng}&timestamp=${ts}&key=${GMAPS_KEY}`;
+    const r = await fetch(url);
+    const d = await r.json();
+    if(d.status === 'OK') return d.timeZoneId;
+  } catch(e){ console.error('fetchTimezone error', e); }
+  return null;
+}
+
+// Converte "HH:MM" in ora locale di un timezone → minuti UTC assoluti
+// Usa Intl per ottenere l'offset corrente del timezone (include DST)
+function localTimeToUTC(timeStr, timezoneId, refDate){
+  if(!timezoneId) return timeToMins(timeStr); // fallback: tratta come UTC
+  // Crea un Date con data di riferimento e ora locale nel timezone dato
+  const [h,m] = timeStr.split(':').map(Number);
+  // Formatta la data come stringa senza tz, poi calcola offset
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezoneId,
+    year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+  });
+  // Trova l'offset UTC del timezone in quella data usando un punto di riferimento
+  const probe = refDate || new Date();
+  const parts = fmt.formatToParts(probe);
+  const get = type => parseInt(parts.find(p=>p.type===type)?.value||'0');
+  const localNow = Date.UTC(get('year'),get('month')-1,get('day'),get('hour'),get('minute'),get('second'));
+  const offsetMs = probe.getTime() - localNow; // ms da aggiungere a local per ottenere UTC... no, inverso
+  // offset = UTC - local → local + offset = UTC
+  // Più semplice: usa getTimezoneOffset trick
+  const tzOffset = -offsetMs/60000; // minuti: positivo = est di UTC
+  return timeToMins(timeStr) - tzOffset; // minuti UTC
+}
+
+// Converte minuti UTC in "HH:MM" locale del timezone dato
+function utcToLocalTime(utcMins, timezoneId, refDate){
+  if(!timezoneId) return minsToTime(utcMins); // fallback
+  const probe = refDate || new Date();
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezoneId,
+    year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+  });
+  const parts = fmt.formatToParts(probe);
+  const get = type => parseInt(parts.find(p=>p.type===type)?.value||'0');
+  const localNow = Date.UTC(get('year'),get('month')-1,get('day'),get('hour'),get('minute'),get('second'));
+  const offsetMs = probe.getTime() - localNow;
+  const tzOffset = -offsetMs/60000;
+  return minsToTime(utcMins + tzOffset);
+}
+
+// Calcola arrivalTime e departureTime per ogni stop del giorno, timezone-aware
+function computeTimes(day, refDate){
+  const ref = refDate || new Date();
+  const depStartLocal = timeToMins(day.departureTime||'09:00');
+  const firstStop = day.stops[0];
+
   day.stops.forEach((stop, si)=>{
     if(si===0){
-      stop.arrivalTime = minsToTime(depStart);
+      // Prima tappa: ora di partenza del giorno, nel suo timezone
+      stop.arrivalTime = minsToTime(depStartLocal);
+      const stay = stop.stayMinutes||0;
+      stop.departureTime = minsToTime(depStartLocal + stay);
+      return;
+    }
+    const prev = day.stops[si-1];
+    const travel = stop.travelMinutes||0;
+
+    // Se entrambe le tappe hanno timezone, calcola via UTC
+    if(prev.timezoneId && stop.timezoneId && prev.timezoneId !== stop.timezoneId){
+      // Converti partenza precedente in UTC
+      const prevDepLocal = timeToMins(prev.departureTime||prev.arrivalTime||'09:00');
+      const prevDepUTC = localTimeToUTC(prev.departureTime||prev.arrivalTime||'09:00', prev.timezoneId, ref);
+      // Aggiungi travel in UTC
+      const arrUTC = prevDepUTC + travel;
+      // Converti in ora locale della tappa corrente
+      stop.arrivalTime = utcToLocalTime(arrUTC, stop.timezoneId, ref);
     } else {
-      const prev = day.stops[si-1];
+      // Stesso fuso o nessun fuso — calcolo semplice
       const prevDep = timeToMins(prev.departureTime||prev.arrivalTime||'09:00');
-      const travel = stop.travelMinutes||0;
       stop.arrivalTime = minsToTime(prevDep + travel);
     }
+
     const stay = stop.stayMinutes||0;
     stop.departureTime = minsToTime(timeToMins(stop.arrivalTime) + stay);
   });
@@ -1377,11 +1452,31 @@ function renderItin(){
 
       // Overnight: solo arrivo, niente sosta
       const isLastAndOvernight = stop.isOvernight;
+
+      // Abbreviazione timezone da mostrare se diverso dalla tappa precedente
+      function tzLabel(stop, si){
+        if(!stop.timezoneId) return '';
+        const prev = si>0 ? day.stops[si-1] : null;
+        if(prev && prev.timezoneId === stop.timezoneId) return '';
+        try {
+          const abbr = new Intl.DateTimeFormat('en', {
+            timeZone: stop.timezoneId, timeZoneName:'short'
+          }).formatToParts(new Date()).find(p=>p.type==='timeZoneName')?.value||'';
+          return abbr ? ` <span style="font-size:.55rem;color:var(--muted);font-family:'DM Mono',monospace">${abbr}</span>` : '';
+        } catch(e){ return ''; }
+      }
       const isDestination = (di === trip.days.length-1) && (si === day.stops.length-1);
 
       // Destinazione finale → card speciale come partenza, solo arrivo
       if(isDestination){
         const arrDisplay = stop.arrivalTime || '—';
+        const tzLbl = stop.timezoneId ? (() => {
+          try {
+            return new Intl.DateTimeFormat('en', {
+              timeZone: stop.timezoneId, timeZoneName:'short'
+            }).formatToParts(new Date()).find(p=>p.type==='timeZoneName')?.value||'';
+          } catch(e){ return ''; }
+        })() : '';
         const se=document.createElement('div');
         se.className='stop';
         se.innerHTML=`${tr}<div class="stop-destination" id="c-${stop.id}">
@@ -1389,7 +1484,7 @@ function renderItin(){
           <div class="stop-dest-info">
             <div class="stop-dest-name">${stop.name}</div>
             <div class="stop-dest-sub">Destinazione finale</div>
-            <div class="stop-dest-arr">🏁 Arrivo: ${arrDisplay}</div>
+            <div class="stop-dest-arr">🏁 Arrivo: ${arrDisplay}${tzLbl ? ` <span style="font-size:.6rem;color:var(--muted)">${tzLbl}</span>` : ''}</div>
           </div>
         </div>`;
         el.appendChild(se);
@@ -1399,14 +1494,14 @@ function renderItin(){
       // Overnight: solo arrivo, niente sosta
       if(isLastAndOvernight){
         const arrHtml = stop.arrivalTime
-          ? `<span class="sc-t"><span class="sc-t-lbl">Arr</span><span class="sc-t-val">${stop.arrivalTime}</span></span>`
+          ? `<span class="sc-t"><span class="sc-t-lbl">Arr</span><span class="sc-t-val">${stop.arrivalTime}${tzLabel(stop,si)}</span></span>`
           : '';
         timesHtml = arrHtml
           ? `<div class="sc-times">${arrHtml}</div>`
           : '';
       } else {
         const arrHtml = stop.arrivalTime
-          ? `<span class="sc-t"><span class="sc-t-lbl">Arr</span><span class="sc-t-val">${stop.arrivalTime}</span></span>`
+          ? `<span class="sc-t"><span class="sc-t-lbl">Arr</span><span class="sc-t-val">${stop.arrivalTime}${tzLabel(stop,si)}</span></span>`
           : '';
         const depHtml = stop.departureTime && stop.stayMinutes > 0
           ? `<span class="sc-times-sep">·</span><span class="sc-t"><span class="sc-t-lbl">Part</span><span class="sc-t-val dep">${stop.departureTime}</span></span>`
@@ -1609,8 +1704,12 @@ async function saveStop(){
     const tMode=selectedTransportMode;
     const stop={id:'_new_', name, icon, cat, lat:pendingLat, lng:pendingLng, time:'',
       transit:null, transitMode:tMode, stayDuration, stayMinutes, travelMinutes:null,
-      isOvernight, isOvernightClone:false, acts:[]};
+      isOvernight, isOvernightClone:false, timezoneId:null, acts:[]};
     targetDay.stops.splice(pos, 0, stop);
+
+    // Fetch timezone
+    btn.textContent='Fuso orario…';
+    stop.timezoneId = await fetchTimezone(pendingLat, pendingLng);
 
     // Calc route from previous stop (skip per voli — usa durata manuale)
     if(pos > 0){
@@ -1665,6 +1764,10 @@ async function saveStop(){
     stop.lat=pendingLat; stop.lng=pendingLng;
     stop.stayDuration=stayDuration; stop.stayMinutes=stayMinutes;
     stop.isOvernight=isOvernight;
+
+    // Aggiorna timezone se le coordinate sono cambiate
+    btn.textContent='Fuso orario…';
+    stop.timezoneId = await fetchTimezone(pendingLat, pendingLng);
 
     // Move to different day/position if changed
     if(targetDi!==modalDayIdx || pos!==modalStopIdx){

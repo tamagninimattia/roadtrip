@@ -339,8 +339,48 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   display:flex;align-items:center;gap:.55rem
 }
 .stop-dep-icon{font-size:.9rem;flex-shrink:0}
-.stop-dep-name{font-weight:600;font-size:.82rem;flex:1;line-height:1.3;color:var(--ink)}
+.stop-dep-info{flex:1;min-width:0}
+.stop-dep-name{font-weight:600;font-size:.82rem;line-height:1.3;color:var(--ink)}
 .stop-dep-sub{font-size:.62rem;color:var(--muted);margin-top:.08rem}
+.stop-dep-time{display:flex;align-items:center;gap:.25rem;margin-top:.3rem;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--amber)}
+.dep-time-input{width:62px;padding:.1rem .3rem;border:1px solid rgba(200,133,58,.4);border-radius:5px;
+  font-family:'DM Mono',monospace;font-size:.65rem;color:var(--amber);background:rgba(200,133,58,.08);
+  text-align:center;outline:none;transition:border-color .15s}
+.dep-time-input:focus{border-color:var(--amber);background:white}
+
+/* ULTIMA TAPPA GIORNO — pernottamento */
+.sc.overnight{
+  background:linear-gradient(135deg,#1e1814 0%,#2d2318 100%);
+  border-color:#3d3020;color:var(--cream)
+}
+.sc.overnight .sc-name{color:var(--cream)}
+.sc.overnight .sc-cat{color:rgba(255,255,255,.45)}
+.sc.overnight .sc-times{border-top-color:rgba(255,255,255,.1)}
+.sc.overnight .sc-t-lbl{color:rgba(255,255,255,.4)}
+.sc.overnight .sc-t-val{color:var(--amber-l)}
+.sc.overnight .sc-actions{border-top-color:rgba(255,255,255,.08)}
+.sc.overnight .sc-btn.edit{background:rgba(200,133,58,.2);color:var(--amber-l)}
+.sc.overnight .sc-btn.del{background:rgba(192,48,32,.2);color:#e07060}
+.sc.overnight .sc-btn.gmaps{background:rgba(255,255,255,.08);color:rgba(255,255,255,.6)}
+.overnight-badge{display:inline-flex;align-items:center;gap:.2rem;font-size:.58rem;
+  background:rgba(200,133,58,.18);color:var(--amber-l);border-radius:20px;
+  padding:.12rem .45rem;margin-left:.3rem;letter-spacing:.04em;font-weight:600}
+
+/* TOGGLE PERNOTTAMENTO NEL MODAL */
+.overnight-toggle{display:flex;align-items:center;gap:.65rem;padding:.7rem .75rem;
+  background:linear-gradient(90deg,#1e1814,#2a2010);border-radius:10px;cursor:pointer;
+  border:1.5px solid #3d3020;transition:all .18s}
+.overnight-toggle:hover{border-color:var(--amber)}
+.overnight-toggle.active{border-color:var(--amber);background:linear-gradient(90deg,#2a1e10,#1e1814)}
+.ot-switch{width:36px;height:20px;border-radius:10px;background:#3d3020;
+  position:relative;transition:background .2s;flex-shrink:0}
+.overnight-toggle.active .ot-switch{background:var(--amber)}
+.ot-knob{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+  background:white;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.overnight-toggle.active .ot-knob{transform:translateX(16px)}
+.ot-label{flex:1}
+.ot-title{font-size:.82rem;font-weight:600;color:var(--cream)}
+.ot-sub{font-size:.65rem;color:rgba(255,255,255,.45);margin-top:.05rem}
 </style>
 </head>
 <body>
@@ -448,9 +488,18 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
         <label>Categoria</label>
         <input type="text" id="fCat" placeholder="Es. Cascata">
       </div>
-      <div class="modal-field">
+      <div class="modal-field" id="stayDurationField">
         <label>Durata sosta</label>
         <input type="text" id="fStayDuration" placeholder="Es. 1h 30m">
+      </div>
+    </div>
+    <div class="modal-field">
+      <div class="overnight-toggle" id="overnightToggle" onclick="toggleOvernight()">
+        <div class="ot-switch"><div class="ot-knob"></div></div>
+        <div class="ot-label">
+          <div class="ot-title">🌙 Pernottamento</div>
+          <div class="ot-sub">Diventerà il punto di partenza del giorno successivo</div>
+        </div>
       </div>
     </div>
     <div class="modal-field">
@@ -710,6 +759,8 @@ async function loadTrips(){
             stayDuration: s.stay_duration||'',
             stayMinutes: s.stay_minutes||0,
             travelMinutes: s.travel_minutes||null,
+            isOvernight: s.is_overnight||false,
+            isOvernightClone: s.is_overnight_clone||false,
             acts: []
           }))
       }))
@@ -818,6 +869,8 @@ async function dbSaveStop(stop, dayId, position){
     stay_duration: stop.stayDuration||null,
     stay_minutes: stop.stayMinutes||0,
     travel_minutes: stop.travelMinutes||null,
+    is_overnight: stop.isOvernight||false,
+    is_overnight_clone: stop.isOvernightClone||false,
     position
   };
   if(stop.id && !stop.id.startsWith('_new_')){
@@ -942,6 +995,78 @@ async function saveStayDuration(di, si, value){
     stay_minutes: stop.stayMinutes
   }).eq('id', stop.id);
   renderItin();
+}
+
+/* ═══════════════════════════════════════
+   OVERNIGHT LOGIC
+═══════════════════════════════════════ */
+let overnightActive = false;
+
+function toggleOvernight(){
+  overnightActive = !overnightActive;
+  const tog = document.getElementById('overnightToggle');
+  tog.classList.toggle('active', overnightActive);
+  // Nascondi/mostra campo sosta
+  document.getElementById('stayDurationField').style.display = overnightActive ? 'none' : '';
+  if(overnightActive) document.getElementById('fStayDuration').value = '';
+}
+
+function setOvernightState(val){
+  overnightActive = val;
+  document.getElementById('overnightToggle').classList.toggle('active', val);
+  document.getElementById('stayDurationField').style.display = val ? 'none' : '';
+}
+
+// Sincronizza la tappa overnight come prima tappa del giorno successivo
+async function syncOvernightToNextDay(di, stop){
+  const trip = TRIPS[ti];
+  const nextDi = di + 1;
+  if(nextDi >= trip.days.length) return; // non c'è giorno dopo
+  const nextDay = trip.days[nextDi];
+
+  // Rimuovi la vecchia prima tappa se era un clone overnight
+  if(nextDay.stops.length > 0 && nextDay.stops[0].isOvernightClone){
+    const old = nextDay.stops[0];
+    nextDay.stops.splice(0, 1);
+    await sb.from('stops').delete().eq('id', old.id);
+    // Riordina posizioni
+    for(let i=0;i<nextDay.stops.length;i++)
+      await sb.from('stops').update({position:i}).eq('id', nextDay.stops[i].id);
+  }
+
+  // Inserisci nuovo clone come prima tappa del giorno dopo
+  const clone = {
+    id: '_new_',
+    name: stop.name, icon: stop.icon, cat: stop.cat,
+    lat: stop.lat, lng: stop.lng, time: '',
+    transit: null, transitMode: 'DRIVING',
+    stayDuration: '', stayMinutes: 0, travelMinutes: null,
+    isOvernight: false, isOvernightClone: true, acts: []
+  };
+  nextDay.stops.splice(0, 0, clone);
+
+  const newId = await dbSaveStop(clone, nextDay.id, 0);
+  if(newId) clone.id = newId;
+  // Aggiorna flag clone su DB
+  await sb.from('stops').update({is_overnight_clone: true}).eq('id', clone.id);
+  // Riordina posizioni delle stop successive
+  for(let i=1;i<nextDay.stops.length;i++)
+    await sb.from('stops').update({position:i}).eq('id', nextDay.stops[i].id);
+}
+
+// Rimuovi clone overnight dal giorno successivo
+async function removeOvernightClone(di){
+  const trip = TRIPS[ti];
+  const nextDi = di + 1;
+  if(nextDi >= trip.days.length) return;
+  const nextDay = trip.days[nextDi];
+  if(nextDay.stops.length > 0 && nextDay.stops[0].isOvernightClone){
+    const old = nextDay.stops[0];
+    nextDay.stops.splice(0, 1);
+    await sb.from('stops').delete().eq('id', old.id);
+    for(let i=0;i<nextDay.stops.length;i++)
+      await sb.from('stops').update({position:i}).eq('id', nextDay.stops[i].id);
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -1195,14 +1320,7 @@ function renderItin(){
     el.innerHTML=`<div class="day-hdr">
       <div class="day-n">${di+1}</div>
       <div class="day-info"><div class="day-name">${day.name}</div><div class="day-date">${day.date}</div></div>
-      <div style="display:flex;align-items:center;gap:.4rem;flex-shrink:0">
-        <div class="day-dep" title="Orario di partenza del giorno">
-          🕗 <input class="day-dep-input" type="time" value="${day.departureTime||'09:00'}"
-            onchange="saveDepartureTime(${di},this.value)"
-            onclick="event.stopPropagation()" title="Orario partenza">
-        </div>
-        <div class="day-km">${km}</div>
-      </div>
+      <div class="day-km">${km}</div>
     </div>`;
     day.stops.forEach((stop,si)=>{
       const tIco={'DRIVING':'🚗','WALKING':'🚶','TRANSIT':'🚂','FLIGHT':'✈️'}[stop.transitMode||'DRIVING']||'🚗';
@@ -1211,47 +1329,68 @@ function renderItin(){
 
       // Prima tappa del giorno → card partenza speciale
       if(si===0){
+        const isFirst = di===0;
         const prevDay = di>0 ? trip.days[di-1] : null;
         const prevSub = prevDay ? `Continuazione da Giorno ${di}` : 'Punto di partenza';
+        const timeHtml = `<div class="stop-dep-time">🕗 <input class="dep-time-input" type="time"
+              value="${day.departureTime||'09:00'}"
+              onchange="saveDepartureTime(${di},this.value)"
+              onclick="event.stopPropagation()"
+              title="Orario di partenza"></div>`;
         const se=document.createElement('div');
         se.className='stop';
         se.innerHTML=`<div class="stop-departure" id="c-${stop.id}">
           <span class="stop-dep-icon">${stop.icon}</span>
-          <div>
+          <div class="stop-dep-info">
             <div class="stop-dep-name">${stop.name}</div>
             <div class="stop-dep-sub">${prevSub}</div>
+            ${timeHtml}
           </div>
         </div>`;
         el.appendChild(se);
         return;
       }
 
-      // Sezione tempi (solo per tappe non-prima)
-      const arrHtml = stop.arrivalTime
-        ? `<span class="sc-t"><span class="sc-t-lbl">Arr</span><span class="sc-t-val">${stop.arrivalTime}</span></span>`
-        : '';
-      const depHtml = stop.departureTime && stop.stayMinutes > 0
-        ? `<span class="sc-times-sep">·</span><span class="sc-t"><span class="sc-t-lbl">Part</span><span class="sc-t-val dep">${stop.departureTime}</span></span>`
-        : '';
-      const timesHtml = `<div class="sc-times">
-        ${arrHtml}
-        <span class="sc-times-sep">·</span>
-        <span class="sc-t"><span class="sc-t-lbl">Sosta</span>
-          <input class="stay-input" type="text" placeholder="—" value="${stop.stayDuration||''}"
-            onchange="saveStayDuration(${di},${si},this.value)"
-            onclick="event.stopPropagation()"
-            title="Durata sosta (es. 1h 30m)">
-        </span>
-        ${depHtml}
-      </div>`;
+      // Overnight: solo arrivo, niente sosta
+      const isLastAndOvernight = stop.isOvernight;
+      let timesHtml;
+      if(isLastAndOvernight){
+        const arrHtml = stop.arrivalTime
+          ? `<span class="sc-t"><span class="sc-t-lbl">Arr</span><span class="sc-t-val">${stop.arrivalTime}</span></span>`
+          : '';
+        timesHtml = arrHtml
+          ? `<div class="sc-times">${arrHtml}</div>`
+          : '';
+      } else {
+        const arrHtml = stop.arrivalTime
+          ? `<span class="sc-t"><span class="sc-t-lbl">Arr</span><span class="sc-t-val">${stop.arrivalTime}</span></span>`
+          : '';
+        const depHtml = stop.departureTime && stop.stayMinutes > 0
+          ? `<span class="sc-times-sep">·</span><span class="sc-t"><span class="sc-t-lbl">Part</span><span class="sc-t-val dep">${stop.departureTime}</span></span>`
+          : '';
+        timesHtml = `<div class="sc-times">
+          ${arrHtml}
+          <span class="sc-times-sep">·</span>
+          <span class="sc-t"><span class="sc-t-lbl">Sosta</span>
+            <input class="stay-input" type="text" placeholder="—" value="${stop.stayDuration||''}"
+              onchange="saveStayDuration(${di},${si},this.value)"
+              onclick="event.stopPropagation()"
+              title="Durata sosta (es. 1h 30m)">
+          </span>
+          ${depHtml}
+        </div>`;
+      }
+
+      const overnightClass = isLastAndOvernight ? ' overnight' : '';
+      const overnightBadge = isLastAndOvernight ? '<span class="overnight-badge">🌙 Pernottamento</span>' : '';
 
       const se=document.createElement('div');
       se.className='stop';
       se.innerHTML=`${tr}
-        <div class="sc ${stop.id===activeId?'active':''}" id="c-${stop.id}">
+        <div class="sc${overnightClass} ${stop.id===activeId?'active':''}" id="c-${stop.id}">
           <div class="sc-top" onclick="focusStop('${stop.id}',false);if(window.innerWidth<720)mtab('map')">
             <span class="sc-ico">${stop.icon}</span>
-            <span class="sc-name">${stop.name}</span>
+            <span class="sc-name">${stop.name}${overnightBadge}</span>
           </div>
           <div class="sc-cat">${stop.cat}</div>
           ${timesHtml}
@@ -1299,6 +1438,7 @@ function openAddModal(di){
   document.getElementById('fName').value='';
   document.getElementById('fCat').value='';
   document.getElementById('fStayDuration').value='';
+  setOvernightState(false);
   document.getElementById('searchResults').classList.remove('open');
   populateDaySelect(di);
   modalPosIdx = TRIPS[ti].days[di].stops.length;
@@ -1320,6 +1460,7 @@ function openEditModal(di,si){
   document.getElementById('fName').value=stop.name;
   document.getElementById('fCat').value=stop.cat;
   document.getElementById('fStayDuration').value=stop.stayDuration||'';
+  setOvernightState(stop.isOvernight||false);
   document.getElementById('searchResults').classList.remove('open');
   populateDaySelect(di);
   modalPosIdx=si;
@@ -1398,8 +1539,9 @@ async function saveStop(){
   if(!pendingLat||!pendingLng){ alert('Seleziona un luogo dalla lista di ricerca.'); return; }
 
   const cat=document.getElementById('fCat').value.trim()||'Tappa';
-  const stayDuration=document.getElementById('fStayDuration').value.trim();
-  const stayMinutes=parseDuration(stayDuration);
+  const stayDuration=overnightActive?'':document.getElementById('fStayDuration').value.trim();
+  const stayMinutes=overnightActive?0:parseDuration(stayDuration);
+  const isOvernight=overnightActive;
   const icon=guessIcon(name,cat);
   const btn=document.getElementById('modalSaveBtn');
   btn.disabled=true; btn.textContent='Salvataggio…';
@@ -1412,7 +1554,8 @@ async function saveStop(){
     // Insert stop into local state
     const tMode=selectedTransportMode;
     const stop={id:'_new_', name, icon, cat, lat:pendingLat, lng:pendingLng, time:'',
-      transit:null, transitMode:tMode, stayDuration, stayMinutes, travelMinutes:null, acts:[]};
+      transit:null, transitMode:tMode, stayDuration, stayMinutes, travelMinutes:null,
+      isOvernight, isOvernightClone:false, acts:[]};
     targetDay.stops.splice(pos, 0, stop);
 
     // Calc route from previous stop
@@ -1447,15 +1590,20 @@ async function saveStop(){
     for(let i=pos+1; i<targetDay.stops.length; i++)
       await sb.from('stops').update({position:i}).eq('id', targetDay.stops[i].id);
 
+    // Se overnight, sincronizza come prima tappa del giorno dopo
+    if(isOvernight) await syncOvernightToNextDay(targetDi, stop);
+
     activeId=stop.id;
 
   } else {
     // Edit mode
     const stop=TRIPS[ti].days[modalDayIdx].stops[modalStopIdx];
     const prevDayId=TRIPS[ti].days[modalDayIdx].id;
+    const wasOvernight=stop.isOvernight;
     stop.name=name; stop.icon=icon; stop.cat=cat;
     stop.lat=pendingLat; stop.lng=pendingLng;
     stop.stayDuration=stayDuration; stop.stayMinutes=stayMinutes;
+    stop.isOvernight=isOvernight;
 
     // Move to different day/position if changed
     if(targetDi!==modalDayIdx || pos!==modalStopIdx){
@@ -1498,6 +1646,18 @@ async function saveStop(){
     }
 
     await dbSaveStop(stop, targetDay.id, newPos);
+
+    // Gestisci cambio stato overnight
+    if(isOvernight && !wasOvernight){
+      await syncOvernightToNextDay(targetDi, stop);
+    } else if(!isOvernight && wasOvernight){
+      await removeOvernightClone(targetDi);
+    } else if(isOvernight && wasOvernight){
+      // Aggiorna il clone con i nuovi dati
+      await removeOvernightClone(targetDi);
+      await syncOvernightToNextDay(targetDi, stop);
+    }
+
     activeId=stop.id;
   }
 

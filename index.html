@@ -1484,6 +1484,32 @@ function kmToNum(kmStr){
   return parseFloat(kmStr.replace(/[^\d.,]/g,'').replace(',','.')) || 0;
 }
 
+// Ricalcola day_km e day_time per ogni giorno di tutti i viaggi e salva nel DB
+async function backfillDayTotals(){
+  for(let tIdx=0; tIdx<TRIPS.length; tIdx++){
+    const trip = TRIPS[tIdx];
+    for(const day of trip.days){
+      if(day.dayKm > 0) continue; // già calcolato
+      let dayKm = 0, dayMins = 0;
+      for(const stop of day.stops){
+        if(stop.transit){
+          dayKm += kmToNum(stop.transit.km);
+          const t = stop.transit.dur||'';
+          const hMatch = t.match(/(\d+)\s*h/);
+          const mMatch = t.match(/(\d+)\s*min/);
+          dayMins += (hMatch?parseInt(hMatch[1])*60:0) + (mMatch?parseInt(mMatch[1]):0);
+        }
+      }
+      if(dayKm > 0 || dayMins > 0){
+        day.dayKm = Math.round(dayKm);
+        day.dayTime = dayMins > 0 ? minsToHuman(dayMins) : '';
+        await sb.from('days').update({day_km: day.dayKm, day_time: day.dayTime}).eq('id', day.id);
+      }
+    }
+  }
+  renderItin();
+}
+
 async function recalcTripTotals(tripIdx){
   const trip=TRIPS[tripIdx];
   let totalKm=0, totalMins=0;
@@ -2616,8 +2642,9 @@ async function startApp(user){
   if(window.innerWidth>=720) dv('split'); else mtab('itinerary');
   updStats(); renderItin(); renderDayBar(); renderOver();
 
-  // Fetcha timezone mancanti in background
+  // Fetcha timezone mancanti e day totals in background
   backfillTimezones();
+  backfillDayTotals();
 
   // Load Google Maps
   const script=document.createElement('script');

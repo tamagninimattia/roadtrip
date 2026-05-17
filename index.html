@@ -366,7 +366,11 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   .content.vo #pOver{display:flex;position:relative;flex:1}
 }
 
-/* SPLIT DIVIDER */
+/* MOBILE — pannelli sempre full-screen */
+@media(max-width:719px){
+  .panel{position:absolute!important;inset:0!important;width:100%!important;min-width:0!important;flex-shrink:unset!important}
+  .split-divider{display:none!important}
+}
 .split-divider{
   display:none;width:6px;flex-shrink:0;cursor:col-resize;z-index:500;
   background:var(--border);position:relative;transition:background .15s;
@@ -2456,9 +2460,16 @@ async function doDelete(){
    VIEW SWITCHING
 ═══════════════════════════════════════ */
 function mtab(tab){
+  // Su mobile forza content in modalità mobile (non split)
+  document.getElementById('content').className='content vm';
   ['tbOver','tbItin','tbMap'].forEach(id=>document.getElementById(id).classList.remove('active'));
   document.getElementById({overview:'tbOver',itinerary:'tbItin',map:'tbMap'}[tab]).classList.add('active');
-  ['pMap','pItin','pOver'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  ['pMap','pItin','pOver'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.classList.remove('on');
+    el.style.width='';
+    el.style.minWidth='';
+  });
   document.getElementById({overview:'pOver',itinerary:'pItin',map:'pMap'}[tab]).classList.add('on');
   if(tab==='map'&&gmap){
     setTimeout(()=>{

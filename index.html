@@ -137,7 +137,9 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .itin-body{padding:.9rem .95rem 1.5rem}
 .sec-ttl{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;display:flex;align-items:center;gap:.45rem}
 .sec-ttl::after{content:'';flex:1;height:1px;background:var(--border)}
-.day-block{margin-bottom:1.15rem;animation:fu .3s ease both}
+.day-block{margin-bottom:.85rem;animation:fu .3s ease both;
+  background:white;border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;box-shadow:none}
 .day-block.collapsed .day-stops-wrap{display:none}
 .day-block.collapsed .day-label-wrap{display:none}
 .day-block.collapsed .day-collapsed-summary{display:flex}
@@ -157,7 +159,8 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   transition:all .15s}
 .itin-tool-btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-pale)}
 @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.day-hdr{display:flex;align-items:center;gap:.55rem;margin-bottom:.3rem}
+.day-hdr{display:flex;align-items:center;gap:.55rem;margin-bottom:0;
+  padding:.65rem .75rem;background:var(--paper);border-bottom:1px solid var(--border)}
 .day-n{width:27px;height:27px;border-radius:50%;background:var(--ink);color:var(--amber-l);
   display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.65rem;flex-shrink:0}
 .day-info{flex:1;min-width:0;overflow:hidden}
@@ -275,7 +278,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .stay-input::placeholder{color:var(--border)}
 
 /* DAY LABEL */
-.day-label-wrap{padding:.0rem .75rem .45rem;margin-top:-.1rem}
+.day-stops-wrap{padding:.6rem .75rem .5rem}
 .day-label-input{width:100%;border:none;border-bottom:1.5px dashed transparent;
   background:transparent;font-family:'DM Sans',sans-serif;font-size:.75rem;
   color:var(--muted);outline:none;padding:.1rem 0;transition:border-color .18s;
@@ -1811,7 +1814,6 @@ function renderItin(){
       '</div>'+
       '<div class="day-km">'+badgeHtml+'</div>'+
     '</div>'+
-    '<div class="day-collapsed-summary">'+descHtml+'</div>'+
     '<div class="day-stops-wrap"></div>';
     const stopsWrap = el.querySelector('.day-stops-wrap');
     day.stops.forEach((stop,si)=>{

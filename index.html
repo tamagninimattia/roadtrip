@@ -21,7 +21,73 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
 
-/* ── AUTH SCREEN ── */
+/* ── EXPENSE PANEL ── */
+.exp-body{flex:1;overflow-y:auto;padding:.9rem .95rem 5rem}
+.exp-section-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;
+  margin:.8rem 0 .5rem;color:var(--ink)}
+.exp-toolbar{display:flex;gap:.4rem;margin-bottom:.8rem;flex-wrap:wrap;align-items:center}
+.exp-tool-btn{background:var(--amber);color:var(--ink);border:none;border-radius:8px;
+  padding:.35rem .8rem;font-size:.75rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;
+  transition:all .15s}
+.exp-tool-btn:hover{background:var(--amber-l)}
+.exp-tool-btn.sec{background:white;border:1px solid var(--border);color:var(--ink)}
+.exp-tool-btn.sec:hover{border-color:var(--amber);background:var(--amber-pale)}
+.exp-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:.8rem}
+.exp-tab{padding:.45rem .9rem;font-size:.78rem;font-weight:600;color:var(--muted);
+  cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;
+  font-family:'DM Sans',sans-serif;background:none;border-top:none;border-left:none;border-right:none}
+.exp-tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+/* Lista spese */
+.exp-list{display:flex;flex-direction:column;gap:.45rem}
+.exp-item{background:white;border:1px solid var(--border);border-radius:10px;
+  padding:.55rem .8rem;display:flex;align-items:center;gap:.55rem;box-shadow:none}
+.exp-item.budget{opacity:.65;border-style:dashed}
+.exp-ico{font-size:1.1rem;flex-shrink:0}
+.exp-info{flex:1;min-width:0}
+.exp-name{font-weight:600;font-size:.82rem;color:var(--ink)}
+.exp-meta{font-size:.65rem;color:var(--muted);margin-top:.06rem}
+.exp-amount{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:700;color:var(--ink);flex-shrink:0}
+.exp-amount.budget{color:var(--muted)}
+.exp-del{font-size:.65rem;color:var(--muted);cursor:pointer;padding:.2rem;opacity:0;transition:opacity .12s}
+.exp-item:hover .exp-del{opacity:.6}
+.exp-del:hover{opacity:1!important;color:var(--red)}
+/* Riepilogo */
+.exp-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.8rem}
+.exp-sum-card{background:white;border:1px solid var(--border);border-radius:10px;padding:.6rem .8rem}
+.exp-sum-cat{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem}
+.exp-sum-val{font-family:'DM Mono',monospace;font-size:.92rem;font-weight:700;color:var(--ink)}
+.exp-sum-sub{font-size:.6rem;color:var(--muted);margin-top:.05rem}
+.exp-balance-card{background:var(--paper);border:1px solid var(--border);border-radius:10px;
+  padding:.7rem .9rem;margin-top:.5rem}
+.exp-balance-row{display:flex;align-items:center;justify-content:space-between;
+  padding:.32rem 0;border-bottom:1px dashed var(--border);font-size:.8rem}
+.exp-balance-row:last-child{border-bottom:none}
+.exp-balance-name{font-weight:600;color:var(--ink)}
+.exp-balance-amt{font-family:'DM Mono',monospace;font-weight:700}
+.exp-balance-amt.pos{color:var(--sage)}
+.exp-balance-amt.neg{color:var(--red)}
+.exp-balance-detail{font-size:.65rem;color:var(--muted);margin-top:.15rem}
+/* Categorie */
+.cat-list{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.6rem}
+.cat-item{display:flex;align-items:center;gap:.5rem;background:white;border:1px solid var(--border);
+  border-radius:8px;padding:.4rem .7rem}
+.cat-ico-input{width:36px;text-align:center;border:1px solid var(--border);border-radius:6px;
+  font-size:.9rem;padding:.15rem;background:var(--paper)}
+.cat-name-input{flex:1;border:none;border-bottom:1px dashed var(--border);background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.8rem;color:var(--ink);outline:none;padding:.1rem 0}
+.cat-name-input:focus{border-bottom-color:var(--amber)}
+.cat-del{font-size:.65rem;color:var(--muted);cursor:pointer;opacity:.5}
+.cat-del:hover{opacity:1;color:var(--red)}
+/* Partecipanti */
+.part-list{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem}
+.part-chip{display:flex;align-items:center;gap:.3rem;background:var(--amber-pale);
+  border:1px solid var(--amber);border-radius:20px;padding:.25rem .6rem;font-size:.76rem;font-weight:600}
+.part-chip-del{cursor:pointer;color:var(--amber);font-size:.6rem;opacity:.7}
+.part-chip-del:hover{opacity:1;color:var(--red)}
+.part-add-row{display:flex;gap:.3rem;align-items:center}
+.part-add-input{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:.35rem .6rem;
+  font-family:'DM Sans',sans-serif;font-size:.8rem;outline:none;transition:border-color .15s}
+.part-add-input:focus{border-color:var(--amber)}
 .auth-screen{position:fixed;inset:0;z-index:9000;background:var(--ink);
   display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:1.5rem}
 .auth-screen.hidden{display:none}
@@ -285,7 +351,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .stay-input::placeholder{color:var(--border)}
 
 /* DAY LABEL */
-.day-stops-wrap{padding:.6rem .75rem .5rem;background:#ede7de}
+.day-stops-wrap{padding:.6rem .75rem .5rem;background:#ebe4d8}
 .day-label-input{width:100%;border:none;border-bottom:1.5px dashed transparent;
   background:transparent;font-family:'DM Sans',sans-serif;font-size:.75rem;
   color:var(--muted);outline:none;padding:.1rem 0;transition:border-color .18s;
@@ -408,6 +474,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   .content.vm #pMap{display:flex;position:relative;flex:1}
   .content.vl #pItin{display:flex;position:relative;flex:1}
   .content.vo #pOver{display:flex;position:relative;flex:1}
+  .content.ve #pExp{display:flex;position:relative;flex:1}
 }
 
 /* MOBILE — pannelli sempre full-screen */
@@ -440,7 +507,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .stop-dep-name{font-weight:600;font-size:.82rem;line-height:1.3;color:var(--ink)}
 .stop-dep-sub{font-size:.62rem;color:var(--muted);margin-top:.08rem}
 .stop-dep-time{display:flex;align-items:center;gap:.25rem;margin-top:.3rem;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--amber)}
-.dep-time-input{width:82px;padding:.1rem .3rem;border:1px solid rgba(200,133,58,.4);border-radius:5px;
+.dep-time-input{width:96px;padding:.1rem .35rem;border:1px solid rgba(200,133,58,.4);border-radius:5px;
   font-family:'DM Mono',monospace;font-size:.65rem;color:var(--amber);background:rgba(200,133,58,.08);
   text-align:center;outline:none;transition:border-color .15s}
 .dep-time-input:focus{border-color:var(--amber);background:white}
@@ -524,6 +591,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
       <button class="dnav-btn active" onclick="dv('split')">⊞ Split</button>
       <button class="dnav-btn" onclick="dv('map')">◎ Mappa</button>
       <button class="dnav-btn" onclick="dv('list')">☰ Itinerario</button>
+      <button class="dnav-btn" onclick="dv('expenses')">💶 Spese</button>
     </nav>
     <div class="trip-chip" onclick="mtab('overview')">
       <span class="trip-chip-name" id="chipName">—</span>
@@ -570,15 +638,76 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
     </div>
     <div class="over-body" id="overBody"></div>
   </div>
+  <div class="panel" id="pExp">
+    <div class="hero">
+      <div class="hero-lbl">Gestione spese</div>
+      <div class="hero-title" id="expTitle">—</div>
+    </div>
+    <div class="exp-tabs">
+      <button class="exp-tab active" onclick="switchExpTab('list')">📋 Spese</button>
+      <button class="exp-tab" onclick="switchExpTab('summary')">📊 Riepilogo</button>
+      <button class="exp-tab" onclick="switchExpTab('settings')">⚙️ Impostazioni</button>
+    </div>
+    <div class="exp-body" id="expBody"></div>
+  </div>
 </div>
 
 <nav class="tbar">
   <button class="tb" id="tbOver" onclick="mtab('overview')"><span class="tb-ico">🗂</span><span class="tb-lbl">Viaggi</span></button>
   <button class="tb active" id="tbItin" onclick="mtab('itinerary')"><span class="tb-ico">📋</span><span class="tb-lbl">Itinerario</span></button>
   <button class="tb" id="tbMap" onclick="mtab('map')"><span class="tb-ico">🗺</span><span class="tb-lbl">Mappa</span></button>
+  <button class="tb" id="tbExp" onclick="mtab('expenses')"><span class="tb-ico">💶</span><span class="tb-lbl">Spese</span></button>
 </nav>
 
 <div class="save-toast" id="saveToast">💾 Salvato</div>
+
+<!-- MODAL SPESA -->
+<div class="modal-overlay" id="expModalOverlay" onclick="closeExpModal(event)">
+  <div class="modal" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto">
+    <span class="modal-handle"></span>
+    <div class="modal-title" id="expModalTitle">Nuova spesa</div>
+    <div class="modal-row">
+      <div class="modal-field">
+        <label>Data</label>
+        <input type="date" id="fExpDate">
+      </div>
+      <div class="modal-field">
+        <label>Importo (€)</label>
+        <input type="number" id="fExpAmount" placeholder="0.00" step="0.01" min="0">
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>Categoria</label>
+      <select id="fExpCat" style="width:100%;padding:.45rem .6rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none"></select>
+    </div>
+    <div class="modal-field">
+      <label>Note (opzionale)</label>
+      <input type="text" id="fExpNotes" placeholder="Es. Cena al ristorante">
+    </div>
+    <div class="modal-field">
+      <label>Pagato da</label>
+      <select id="fExpPaidBy" style="width:100%;padding:.45rem .6rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none"></select>
+    </div>
+    <div class="modal-field">
+      <label>Quote di competenza</label>
+      <div id="fExpShares" style="display:flex;flex-direction:column;gap:.3rem;margin-top:.2rem"></div>
+      <button onclick="equalizeShares()" style="margin-top:.4rem;font-size:.68rem;color:var(--amber);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif">↻ Dividi equamente</button>
+    </div>
+    <div class="modal-field">
+      <div class="overnight-toggle" id="expActualToggle" onclick="toggleExpActual()" style="background:linear-gradient(90deg,var(--paper),transparent);border-color:var(--border)">
+        <div class="ot-switch" id="expActualSwitch" style="background:var(--sage)"><div class="ot-knob" style="transform:translateX(16px)"></div></div>
+        <div class="ot-label">
+          <div class="ot-title" style="color:var(--ink)">✅ Spesa sostenuta</div>
+          <div class="ot-sub" style="color:var(--muted)">Disattiva per spesa preventivata</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-top:.5rem">
+      <button class="modal-btn" onclick="closeExpModal()">Annulla</button>
+      <button class="modal-btn save" id="expSaveBtn" onclick="saveExpense()">Salva spesa</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL ADD/EDIT -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
@@ -771,6 +900,17 @@ let modalDayIdx = 0, modalStopIdx = -1, modalPosIdx = -1;
 let pendingLat = null, pendingLng = null;
 let pendingDeleteDi = null, pendingDeleteSi = null;
 const DAY_COLORS = ['#e07820','#1a8040','#b02010','#1040c0','#906010'];
+
+/* ═══════════════════════════════════════
+   EXPENSE STATE
+═══════════════════════════════════════ */
+let EXP_PARTICIPANTS = [];
+let EXP_CATEGORIES = [];
+let EXP_EXPENSES = [];
+let expTabActive = 'list';
+let expModalMode = 'add';
+let expEditId = null;
+let expActualState = true;
 
 /* ═══════════════════════════════════════
    SPLIT DIVIDER
@@ -1521,6 +1661,25 @@ function minsToHuman(mins){
   return `${m}min`;
 }
 
+// Parser robusto per stringhe durata di Google Maps (IT e EN)
+// Gestisce: "1 ora 28 min", "4 ore 12 min", "1h 28min", "28 min", "1 hour 28 mins", "4 Stunden 12 Minuten" ecc.
+function durToMins(str){
+  if(!str) return 0;
+  let mins = 0;
+  // Ore: "4 ore", "1 ora", "4h", "4 hours", "4 Stunden"
+  const hMatch = str.match(/(\d+)\s*(?:h(?:r|ours?)?|or[ae]|stunden?|heure?s?)/i);
+  // Minuti: "28 min", "28 minuti", "28 minutes", "28 Minuten"
+  const mMatch = str.match(/(\d+)\s*(?:min(?:ut[ei]|utes?|s)?)/i);
+  if(hMatch) mins += parseInt(hMatch[1]) * 60;
+  if(mMatch) mins += parseInt(mMatch[1]);
+  // Fallback: numero puro = minuti
+  if(!hMatch && !mMatch){
+    const n = parseInt(str);
+    if(!isNaN(n)) mins = n;
+  }
+  return mins;
+}
+
 function kmToNum(kmStr){
   if(!kmStr) return 0;
   return parseFloat(kmStr.replace(/[^\d.,]/g,'').replace(',','.')) || 0;
@@ -1534,10 +1693,7 @@ function calcModeTotals(stops){
     const mode = stop.transitMode||'DRIVING';
     const m = modes[mode]||modes.DRIVING;
     if(mode !== 'FLIGHT') m.km += kmToNum(stop.transit.km);
-    const t = stop.transit.dur||'';
-    const hMatch = t.match(/(\d+)\s*h/);
-    const mMatch = t.match(/(\d+)\s*min/);
-    m.mins += (hMatch?parseInt(hMatch[1])*60:0)+(mMatch?parseInt(mMatch[1]):0);
+    m.mins += durToMins(stop.transit.dur);
     // Per i voli usa travelMinutes se disponibile
     if(mode === 'FLIGHT' && stop.travelMinutes) m.mins = Math.max(m.mins, stop.travelMinutes);
   }
@@ -1567,15 +1723,11 @@ async function backfillDayTotals(){
   for(let tIdx=0; tIdx<TRIPS.length; tIdx++){
     const trip = TRIPS[tIdx];
     for(const day of trip.days){
-      if(day.dayKm > 0) continue; // già calcolato
       let dayKm = 0, dayMins = 0;
       for(const stop of day.stops){
         if(stop.transit){
           dayKm += kmToNum(stop.transit.km);
-          const t = stop.transit.dur||'';
-          const hMatch = t.match(/(\d+)\s*h/);
-          const mMatch = t.match(/(\d+)\s*min/);
-          dayMins += (hMatch?parseInt(hMatch[1])*60:0) + (mMatch?parseInt(mMatch[1]):0);
+          dayMins += durToMins(stop.transit.dur);
         }
       }
       if(dayKm > 0 || dayMins > 0){
@@ -1594,8 +1746,7 @@ async function recalcTripTotals(tripIdx){
   const modes = calcModeTotals(allStops);
   // Totali aggregati per totalKm e totalTime (backwards compat)
   let totalKm=0, totalMins=0;
-  for(const m of Object.values(modes)){ totalKm+=m.km; totalMins+=m.mins; }
-  const kmStr=totalKm>0?Math.round(totalKm).toLocaleString('it')+' km':'—';
+  for(const m of Object.values(modes)){ totalKm+=m.km; totalMins+=m.mins; }  const kmStr=totalKm>0?Math.round(totalKm).toLocaleString('it')+' km':'—';
   const timeStr=totalMins>0?minsToHuman(totalMins):'—';
   trip.totalKm=kmStr; trip.totalTime=timeStr;
   trip.modeTotals=modes;
@@ -1979,7 +2130,7 @@ function renderItin(){
             '<div class="act-add-form">',
             '<div class="act-add-row">',
             '<input class="act-add-input" id="act-text-' + stop.id + '" type="text" placeholder="Descrivi l\'attivit\u00e0\u2026"',
-            'onkeydown="if(event.key===\'Enter\')addActivity(' + di + ',' + si + ')">',
+            'onkeydown="if(event.key==&quot;Enter&quot;)addActivity(' + di + ',' + si + ')">',
             '<button class="' + locToggleClass + '" onclick="toggleActLoc(\'' + stop.id + '\')">📍</button>',
             '</div>',
             locFieldHtml,
@@ -2627,17 +2778,17 @@ async function doDelete(){
    VIEW SWITCHING
 ═══════════════════════════════════════ */
 function mtab(tab){
-  // Su mobile forza content in modalità mobile (non split)
   document.getElementById('content').className='content vm';
-  ['tbOver','tbItin','tbMap'].forEach(id=>document.getElementById(id).classList.remove('active'));
-  document.getElementById({overview:'tbOver',itinerary:'tbItin',map:'tbMap'}[tab]).classList.add('active');
-  ['pMap','pItin','pOver'].forEach(id=>{
+  ['tbOver','tbItin','tbMap','tbExp'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
+  document.getElementById({overview:'tbOver',itinerary:'tbItin',map:'tbMap',expenses:'tbExp'}[tab])?.classList.add('active');
+  ['pMap','pItin','pOver','pExp'].forEach(id=>{
     const el=document.getElementById(id);
     el.classList.remove('on');
     el.style.width='';
     el.style.minWidth='';
   });
-  document.getElementById({overview:'pOver',itinerary:'pItin',map:'pMap'}[tab]).classList.add('on');
+  document.getElementById({overview:'pOver',itinerary:'pItin',map:'pMap',expenses:'pExp'}[tab]).classList.add('on');
+  if(tab==='expenses') openExpPanel();
   if(tab==='map'&&gmap){
     setTimeout(()=>{
       google.maps.event.trigger(gmap,'resize');
@@ -2658,13 +2809,15 @@ function mtab(tab){
 function dv(mode){
   document.getElementById('content').className='content v'+mode[0];
   document.querySelectorAll('.dnav-btn').forEach((b,i)=>
-    b.classList.toggle('active',['overview','split','map','list'][i]===mode));
-  ['pMap','pItin','pOver'].forEach(id=>document.getElementById(id).classList.remove('on'));
+    b.classList.toggle('active',['overview','split','map','list','expenses'][i]===mode));
+  ['pMap','pItin','pOver','pExp'].forEach(id=>document.getElementById(id).classList.remove('on'));
   if(mode==='split'){
     document.getElementById('pMap').classList.add('on');
     document.getElementById('pItin').classList.add('on');
-    // Riapplica larghezza split salvata
     setTimeout(()=>applySplit(splitPct), 0);
+  } else if(mode==='expenses'){
+    document.getElementById('pExp').classList.add('on');
+    openExpPanel();
   } else {
     document.getElementById('pItin').style.width = '';
     document.getElementById({overview:'pOver',map:'pMap',list:'pItin'}[mode]).classList.add('on');
@@ -2691,6 +2844,408 @@ function renderAll(){ updStats(); renderItin(); renderDayBar(); renderOver(); re
 /* ═══════════════════════════════════════
    BOOT
 ═══════════════════════════════════════ */
+async /* ═══════════════════════════════════════
+   EXPENSE FUNCTIONS
+═══════════════════════════════════════ */
+async function loadExpenses(){
+  if(!TRIPS.length) return;
+  const tripId = TRIPS[ti].id;
+
+  const [{data:parts},{data:cats},{data:exps}] = await Promise.all([
+    sb.from('participants').select('*').eq('trip_id',tripId).order('position'),
+    sb.from('expense_categories').select('*').eq('trip_id',tripId).order('position'),
+    sb.from('expenses').select('*, expense_shares(*)').eq('trip_id',tripId).order('date')
+  ]);
+  EXP_PARTICIPANTS = parts||[];
+  EXP_CATEGORIES = cats||[];
+  EXP_EXPENSES = (exps||[]).map(e=>({...e, shares: e.expense_shares||[]}));
+}
+
+function switchExpTab(tab){
+  expTabActive = tab;
+  document.querySelectorAll('.exp-tab').forEach((b,i)=>
+    b.classList.toggle('active', ['list','summary','settings'][i]===tab));
+  renderExpBody();
+}
+
+function renderExpBody(){
+  if(!TRIPS.length) return;
+  document.getElementById('expTitle').textContent = TRIPS[ti].title;
+  if(expTabActive==='list') renderExpList();
+  else if(expTabActive==='summary') renderExpSummary();
+  else renderExpSettings();
+}
+
+function renderExpList(){
+  const body = document.getElementById('expBody');
+  const actualExps = EXP_EXPENSES.filter(e=>e.is_actual);
+  const budgetExps = EXP_EXPENSES.filter(e=>!e.is_actual);
+
+  let html = '<div class="exp-toolbar">';
+  html += '<button class="exp-tool-btn" onclick="openExpModal()">+ Nuova spesa</button>';
+  html += '</div>';
+
+  if(EXP_EXPENSES.length===0){
+    html += '<div style="text-align:center;color:var(--muted);padding:2rem 0;font-size:.85rem">Nessuna spesa ancora. Aggiungine una!</div>';
+    body.innerHTML = html; return;
+  }
+
+  if(actualExps.length>0){
+    html += '<div class="exp-section-title">Spese sostenute</div><div class="exp-list">';
+    html += actualExps.map(e=>expItemHtml(e,false)).join('');
+    html += '</div>';
+  }
+  if(budgetExps.length>0){
+    html += '<div class="exp-section-title">Preventivi</div><div class="exp-list">';
+    html += budgetExps.map(e=>expItemHtml(e,true)).join('');
+    html += '</div>';
+  }
+  body.innerHTML = html;
+}
+
+function expItemHtml(e, isBudget){
+  const cat = EXP_CATEGORIES.find(c=>c.id===e.category_id);
+  const paidBy = EXP_PARTICIPANTS.find(p=>p.id===e.paid_by);
+  const sharesTxt = e.shares.map(s=>{
+    const p = EXP_PARTICIPANTS.find(x=>x.id===s.participant_id);
+    return p ? p.name+(s.percentage<100?` ${s.percentage}%`:'') : '';
+  }).filter(Boolean).join(', ');
+  return '<div class="exp-item'+(isBudget?' budget':'')+'">' +
+    '<span class="exp-ico">'+(cat?cat.icon:'💰')+'</span>' +
+    '<div class="exp-info">' +
+      '<div class="exp-name">'+(cat?cat.name:'—')+(e.notes?' · <span style="font-weight:400;color:var(--muted)">'+e.notes+'</span>':'')+'</div>' +
+      '<div class="exp-meta">'+e.date+(paidBy?' · pagato da '+paidBy.name:'')+(sharesTxt?' · '+sharesTxt:'')+'</div>' +
+    '</div>' +
+    '<span class="exp-amount'+(isBudget?' budget':'')+'">€'+parseFloat(e.amount).toFixed(2)+'</span>' +
+    '<span class="exp-del" onclick="deleteExpense(\''+e.id+'\')">✕</span>' +
+    '<span style="font-size:.65rem;color:var(--muted);cursor:pointer;padding:.2rem" onclick="openExpModal(\''+e.id+'\')">✏️</span>' +
+  '</div>';
+}
+
+function renderExpSummary(){
+  const body = document.getElementById('expBody');
+  const actual = EXP_EXPENSES.filter(e=>e.is_actual);
+  const budget = EXP_EXPENSES.filter(e=>!e.is_actual);
+  const totalActual = actual.reduce((s,e)=>s+parseFloat(e.amount),0);
+  const totalBudget = budget.reduce((s,e)=>s+parseFloat(e.amount),0);
+
+  // Per categoria
+  let byCat = '<div class="exp-summary-grid">';
+  EXP_CATEGORIES.forEach(cat=>{
+    const catExps = actual.filter(e=>e.category_id===cat.id);
+    if(!catExps.length) return;
+    const tot = catExps.reduce((s,e)=>s+parseFloat(e.amount),0);
+    byCat += '<div class="exp-sum-card">'+
+      '<div class="exp-sum-cat">'+cat.icon+' '+cat.name+'</div>'+
+      '<div class="exp-sum-val">€'+tot.toFixed(2)+'</div>'+
+      '<div class="exp-sum-sub">'+catExps.length+' spesa'+(catExps.length>1?'e':'')+'</div>'+
+    '</div>';
+  });
+  byCat += '</div>';
+
+  // Per persona — quanto ha pagato vs quanto deve
+  let balanceHtml = '';
+  if(EXP_PARTICIPANTS.length>0){
+    balanceHtml = '<div class="exp-section-title">Saldo per persona</div><div class="exp-balance-card">';
+    EXP_PARTICIPANTS.forEach(p=>{
+      const paid = actual.filter(e=>e.paid_by===p.id).reduce((s,e)=>s+parseFloat(e.amount),0);
+      let owes = 0;
+      actual.forEach(e=>{
+        const share = e.shares.find(s=>s.participant_id===p.id);
+        if(share) owes += parseFloat(e.amount) * parseFloat(share.percentage) / 100;
+      });
+      const balance = paid - owes;
+      const cls = balance>0.01?'pos':balance<-0.01?'neg':'';
+      const sign = balance>0?'+':'';
+      balanceHtml += '<div class="exp-balance-row">'+
+        '<div><div class="exp-balance-name">'+p.name+'</div>'+
+        '<div class="exp-balance-detail">Pagato €'+paid.toFixed(2)+' · Dovuto €'+owes.toFixed(2)+'</div></div>'+
+        '<div class="exp-balance-amt '+cls+'">'+sign+balance.toFixed(2)+'€</div>'+
+      '</div>';
+    });
+
+    // Sbilanci — chi deve dare a chi
+    const balances = EXP_PARTICIPANTS.map(p=>{
+      const paid = actual.filter(e=>e.paid_by===p.id).reduce((s,e)=>s+parseFloat(e.amount),0);
+      let owes = 0;
+      actual.forEach(e=>{
+        const share = e.shares.find(s=>s.participant_id===p.id);
+        if(share) owes += parseFloat(e.amount) * parseFloat(share.percentage) / 100;
+      });
+      return {id:p.id, name:p.name, balance: paid-owes};
+    });
+    const debtors = balances.filter(b=>b.balance<-0.01).sort((a,b)=>a.balance-b.balance);
+    const creditors = balances.filter(b=>b.balance>0.01).sort((a,b)=>b.balance-a.balance);
+    if(debtors.length>0){
+      balanceHtml += '<div style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border)">';
+      balanceHtml += '<div style="font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">Da saldare</div>';
+      debtors.forEach(d=>{
+        creditors.forEach(c=>{
+          const amt = Math.min(-d.balance, c.balance);
+          if(amt>0.01)
+            balanceHtml += '<div style="font-size:.78rem;padding:.18rem 0;color:var(--ink)">'+
+              '💸 <b>'+d.name+'</b> deve dare <b>€'+amt.toFixed(2)+'</b> a <b>'+c.name+'</b></div>';
+        });
+      });
+      balanceHtml += '</div>';
+    }
+    balanceHtml += '</div>';
+  }
+
+  body.innerHTML =
+    '<div class="exp-summary-grid" style="grid-template-columns:1fr 1fr;margin-bottom:.8rem">'+
+      '<div class="exp-sum-card"><div class="exp-sum-cat">✅ Sostenute</div><div class="exp-sum-val">€'+totalActual.toFixed(2)+'</div><div class="exp-sum-sub">'+actual.length+' spese</div></div>'+
+      '<div class="exp-sum-card"><div class="exp-sum-cat">📋 Preventivi</div><div class="exp-sum-val">€'+totalBudget.toFixed(2)+'</div><div class="exp-sum-sub">'+budget.length+' voci</div></div>'+
+    '</div>'+
+    '<div class="exp-section-title">Per categoria</div>'+byCat+balanceHtml;
+}
+
+function renderExpSettings(){
+  const body = document.getElementById('expBody');
+  // Partecipanti
+  let partsHtml = '<div class="exp-section-title">Partecipanti</div>'+
+    '<div class="part-list">'+
+    EXP_PARTICIPANTS.map(p=>
+      '<div class="part-chip">'+p.name+
+      '<span class="part-chip-del" onclick="deleteParticipant(\''+p.id+'\')">✕</span></div>'
+    ).join('')+
+    '</div>'+
+    '<div class="part-add-row">'+
+      '<input class="part-add-input" id="newPartName" placeholder="Nome partecipante\u2026" onkeydown="if(event.key==&quot;Enter&quot;)addParticipant()">'+
+      '<button class="exp-tool-btn" onclick="addParticipant()">+</button>'+
+    '</div>';
+
+  // Categorie
+  let catsHtml = '<div class="exp-section-title" style="margin-top:1rem">Categorie</div>'+
+    '<div class="cat-list">'+
+    EXP_CATEGORIES.map(c=>
+      '<div class="cat-item">'+
+        '<input class="cat-ico-input" value="'+c.icon+'" maxlength="2" onchange="updateCategory(\''+c.id+'\',\'icon\',this.value)">'+
+        '<input class="cat-name-input" value="'+c.name+'" onchange="updateCategory(\''+c.id+'\',\'name\',this.value)">'+
+        '<span class="cat-del" onclick="deleteCategory(\''+c.id+'\')">✕</span>'+
+      '</div>'
+    ).join('')+
+    '</div>'+
+    '<button class="exp-tool-btn sec" onclick="addCategory()">+ Aggiungi categoria</button>';
+
+  body.innerHTML = partsHtml + catsHtml;
+}
+
+// ── Partecipanti ──
+async function addParticipant(){
+  const inp = document.getElementById('newPartName');
+  const name = inp?.value?.trim();
+  if(!name) return;
+  const {data} = await sb.from('participants').insert({
+    trip_id: TRIPS[ti].id, name, position: EXP_PARTICIPANTS.length
+  }).select().single();
+  if(data){ EXP_PARTICIPANTS.push(data); inp.value=''; renderExpBody(); }
+}
+
+async function deleteParticipant(id){
+  await sb.from('participants').delete().eq('id',id);
+  EXP_PARTICIPANTS = EXP_PARTICIPANTS.filter(p=>p.id!==id);
+  renderExpBody();
+}
+
+// ── Categorie ──
+const DEFAULT_CATS = [
+  {name:'Voli',icon:'✈️'},{name:'Assicurazione',icon:'🛡️'},{name:'Cibo',icon:'🍽️'},
+  {name:'Shopping',icon:'🛍️'},{name:'Parcheggi',icon:'🅿️'},{name:'Pedaggi',icon:'🛣️'},
+  {name:'Noleggio auto',icon:'🚗'},{name:'Hotel',icon:'🏨'},{name:'Trasporti',icon:'🚌'},
+  {name:'Altro',icon:'💰'}
+];
+
+async function addCategory(name, icon){
+  const n = name||'Nuova categoria', i = icon||'💰';
+  const {data} = await sb.from('expense_categories').insert({
+    trip_id: TRIPS[ti].id, name:n, icon:i, position: EXP_CATEGORIES.length
+  }).select().single();
+  if(data){ EXP_CATEGORIES.push(data); renderExpBody(); }
+}
+
+async function updateCategory(id, field, value){
+  await sb.from('expense_categories').update({[field]:value}).eq('id',id);
+  const cat = EXP_CATEGORIES.find(c=>c.id===id);
+  if(cat) cat[field]=value;
+}
+
+async function deleteCategory(id){
+  await sb.from('expense_categories').delete().eq('id',id);
+  EXP_CATEGORIES = EXP_CATEGORIES.filter(c=>c.id!==id);
+  renderExpBody();
+}
+
+async function initDefaultCategories(){
+  if(EXP_CATEGORIES.length>0) return;
+  for(let i=0;i<DEFAULT_CATS.length;i++){
+    const {data} = await sb.from('expense_categories').insert({
+      trip_id:TRIPS[ti].id, name:DEFAULT_CATS[i].name, icon:DEFAULT_CATS[i].icon, position:i
+    }).select().single();
+    if(data) EXP_CATEGORIES.push(data);
+  }
+}
+
+// ── Modal spesa ──
+function openExpModal(id){
+  expModalMode = id ? 'edit' : 'add';
+  expEditId = id||null;
+
+  // Popola select categorie
+  const catSel = document.getElementById('fExpCat');
+  catSel.innerHTML = EXP_CATEGORIES.map(c=>`<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+
+  // Popola select pagante
+  const paidSel = document.getElementById('fExpPaidBy');
+  paidSel.innerHTML = EXP_PARTICIPANTS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+
+  // Quote
+  renderShareInputs();
+
+  if(id){
+    const e = EXP_EXPENSES.find(x=>x.id===id);
+    if(!e) return;
+    document.getElementById('expModalTitle').textContent='Modifica spesa';
+    document.getElementById('fExpDate').value=e.date;
+    document.getElementById('fExpAmount').value=e.amount;
+    document.getElementById('fExpCat').value=e.category_id||'';
+    document.getElementById('fExpNotes').value=e.notes||'';
+    document.getElementById('fExpPaidBy').value=e.paid_by||'';
+    expActualState=e.is_actual;
+    // Ripristina quote
+    e.shares.forEach(s=>{
+      const inp=document.getElementById('share-'+s.participant_id);
+      if(inp) inp.value=s.percentage;
+    });
+  } else {
+    document.getElementById('expModalTitle').textContent='Nuova spesa';
+    document.getElementById('fExpDate').value=new Date().toISOString().split('T')[0];
+    document.getElementById('fExpAmount').value='';
+    document.getElementById('fExpNotes').value='';
+    expActualState=true;
+    equalizeShares();
+  }
+  updateExpActualUI();
+  document.getElementById('expModalOverlay').classList.add('open');
+}
+
+function closeExpModal(e){
+  if(e&&e.target!==document.getElementById('expModalOverlay')) return;
+  document.getElementById('expModalOverlay').classList.remove('open');
+}
+
+function renderShareInputs(){
+  const wrap = document.getElementById('fExpShares');
+  wrap.innerHTML = EXP_PARTICIPANTS.map(p=>
+    '<div style="display:flex;align-items:center;gap:.4rem;font-size:.8rem">'+
+      '<span style="flex:1;font-weight:500">'+p.name+'</span>'+
+      '<input id="share-'+p.id+'" type="number" min="0" max="100" step="1" value="0"'+
+        ' style="width:62px;padding:.25rem .4rem;border:1.5px solid var(--border);border-radius:6px;font-family:\'DM Mono\',monospace;font-size:.8rem;text-align:center;outline:none"'+
+        ' oninput="checkShareTotal()">'+
+      '<span style="font-size:.7rem;color:var(--muted)">%</span>'+
+    '</div>'
+  ).join('');
+}
+
+function equalizeShares(){
+  if(!EXP_PARTICIPANTS.length) return;
+  const pct = Math.round(100/EXP_PARTICIPANTS.length);
+  let rem = 100;
+  EXP_PARTICIPANTS.forEach((p,i)=>{
+    const v = i===EXP_PARTICIPANTS.length-1 ? rem : pct;
+    rem -= pct;
+    const inp=document.getElementById('share-'+p.id);
+    if(inp) inp.value=v;
+  });
+}
+
+function checkShareTotal(){
+  const total = EXP_PARTICIPANTS.reduce((s,p)=>{
+    const v=parseFloat(document.getElementById('share-'+p.id)?.value||0);
+    return s+v;
+  },0);
+  const btn=document.getElementById('expSaveBtn');
+  if(Math.abs(total-100)>0.5){
+    btn.textContent='Totale quote: '+total+'%';
+    btn.style.opacity='.5';
+  } else {
+    btn.textContent='Salva spesa';
+    btn.style.opacity='1';
+  }
+}
+
+function toggleExpActual(){
+  expActualState=!expActualState;
+  updateExpActualUI();
+}
+
+function updateExpActualUI(){
+  const tog=document.getElementById('expActualToggle');
+  const sw=document.getElementById('expActualSwitch');
+  const knob=sw.querySelector('.ot-knob');
+  if(expActualState){
+    sw.style.background='var(--sage)';
+    knob.style.transform='translateX(16px)';
+  } else {
+    sw.style.background='#aaa';
+    knob.style.transform='translateX(0)';
+  }
+}
+
+async function saveExpense(){
+  const date=document.getElementById('fExpDate').value;
+  const amount=parseFloat(document.getElementById('fExpAmount').value);
+  const catId=document.getElementById('fExpCat').value||null;
+  const notes=document.getElementById('fExpNotes').value.trim()||null;
+  const paidBy=document.getElementById('fExpPaidBy').value||null;
+  if(!date||isNaN(amount)||amount<=0) return;
+
+  const total=EXP_PARTICIPANTS.reduce((s,p)=>s+parseFloat(document.getElementById('share-'+p.id)?.value||0),0);
+  if(EXP_PARTICIPANTS.length>0&&Math.abs(total-100)>0.5) return;
+
+  const payload={trip_id:TRIPS[ti].id,date,amount,category_id:catId,notes,paid_by:paidBy,is_actual:expActualState};
+
+  if(expModalMode==='edit'){
+    await sb.from('expenses').update(payload).eq('id',expEditId);
+    await sb.from('expense_shares').delete().eq('expense_id',expEditId);
+    const exp=EXP_EXPENSES.find(e=>e.id===expEditId);
+    if(exp) Object.assign(exp,payload);
+  } else {
+    const {data}=await sb.from('expenses').insert(payload).select().single();
+    if(!data) return;
+    expEditId=data.id;
+    EXP_EXPENSES.push({...data,shares:[]});
+  }
+
+  // Salva quote
+  const shares=EXP_PARTICIPANTS.map(p=>({
+    expense_id:expEditId,
+    participant_id:p.id,
+    percentage:parseFloat(document.getElementById('share-'+p.id)?.value||0)
+  })).filter(s=>s.percentage>0);
+  if(shares.length){
+    await sb.from('expense_shares').delete().eq('expense_id',expEditId);
+    await sb.from('expense_shares').insert(shares);
+    const exp=EXP_EXPENSES.find(e=>e.id===expEditId);
+    if(exp) exp.shares=shares;
+  }
+
+  document.getElementById('expModalOverlay').classList.remove('open');
+  renderExpBody();
+}
+
+async function deleteExpense(id){
+  await sb.from('expenses').delete().eq('id',id);
+  EXP_EXPENSES=EXP_EXPENSES.filter(e=>e.id!==id);
+  renderExpBody();
+}
+
+async function openExpPanel(){
+  await loadExpenses();
+  if(EXP_CATEGORIES.length===0) await initDefaultCategories();
+  renderExpBody();
+}
+
 async function startApp(user){
   currentUser = user;
   document.getElementById('authScreen').classList.add('hidden');

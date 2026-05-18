@@ -160,26 +160,26 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .itin-tool-btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-pale)}
 @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .day-hdr{display:flex;align-items:center;gap:.55rem;margin-bottom:0;
-  padding:.65rem .75rem;background:var(--paper);border-bottom:1px solid var(--border)}
+  padding:.65rem .75rem;background:#e2d8cc;border-bottom:1px solid var(--border)}
 .day-n{width:27px;height:27px;border-radius:50%;background:var(--ink);color:var(--amber-l);
   display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.65rem;flex-shrink:0}
 .day-info{flex:1;min-width:0;overflow:hidden}
-.day-name-row{display:flex;align-items:baseline;gap:.4rem;flex-wrap:wrap}
-.day-name{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;white-space:nowrap}
-.day-note-inline-input{font-size:.72rem;color:var(--ink);font-weight:500;white-space:nowrap;
+.day-name-row{display:flex;align-items:baseline;gap:.5rem;flex-wrap:nowrap;overflow:hidden}
+.day-name{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;white-space:nowrap;flex-shrink:0}
+.day-note-inline-input{font-size:.72rem;color:var(--ink);font-weight:500;
   border:none;background:transparent;outline:none;padding:0;
   border-bottom:1.5px dashed transparent;transition:border-color .15s;
-  min-width:40px;max-width:200px;font-family:'DM Sans',sans-serif}
+  min-width:60px;flex:1;width:0;font-family:'DM Sans',sans-serif;overflow:hidden;text-overflow:ellipsis}
 .day-note-inline-input:hover{border-bottom-color:var(--border)}
 .day-note-inline-input:focus{border-bottom-color:var(--amber)}
 .day-note-inline-input.empty{color:var(--muted);font-style:italic;font-weight:400}
 .day-note-inline-input::placeholder{color:var(--border)}
-.day-date{font-size:.65rem;color:var(--muted)}
+.day-date{font-size:.65rem;color:var(--ink);font-weight:500;opacity:.7;white-space:nowrap}
 .day-km{display:flex;align-items:center;gap:.25rem;flex-shrink:0;flex-wrap:nowrap}
-.day-km-chip{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--amber);background:var(--amber-pale);
+.day-km-chip{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--ink);background:rgba(26,20,16,.1);
   padding:.14rem .38rem;border-radius:20px;white-space:nowrap;display:flex;align-items:center;gap:.18rem}
-.stat-chip{font-family:'DM Mono',monospace;font-size:.82rem;font-weight:600;color:var(--amber);
-  background:var(--amber-pale);padding:.28rem .65rem;border-radius:20px;white-space:nowrap;
+.stat-chip{font-family:'DM Mono',monospace;font-size:.82rem;font-weight:600;color:var(--ink);
+  background:rgba(26,20,16,.08);padding:.28rem .65rem;border-radius:20px;white-space:nowrap;
   display:flex;align-items:center;gap:.25rem}
 .stop{position:relative;padding-left:.95rem;margin-bottom:.38rem}
 .stop::before{content:'';position:absolute;left:.26rem;top:1.25rem;bottom:-.38rem;width:1px;background:var(--border)}
@@ -1718,7 +1718,7 @@ function renderMap(){
             geodesic:false,
             strokeColor:color,
             strokeOpacity:.85,
-            strokeWeight:3.5,
+            strokeWeight:5,
             map:gmap
           }));
         }
@@ -1809,8 +1809,8 @@ function renderItin(){
       '<button class="day-collapse-btn" onclick="event.stopPropagation();toggleCollapse(\''+trip.id+'\','+di+')">'+collapseIco+'</button>'+
       '<div class="day-n">'+(di+1)+'</div>'+
       '<div class="day-info">'+
-        '<div class="day-name-row"><span class="day-name">'+day.name+'</span>'+noteInline+'</div>'+
         '<div class="day-date">'+day.date+'</div>'+
+        '<div class="day-name-row"><span class="day-name">'+day.name+'</span>'+noteInline+'</div>'+
       '</div>'+
       '<div class="day-km">'+badgeHtml+'</div>'+
     '</div>'+

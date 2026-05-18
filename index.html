@@ -127,7 +127,9 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .hm{font-size:.73rem;opacity:.68;display:flex;align-items:center;gap:.28rem}
 .prog-wrap{height:3px;background:var(--border);flex-shrink:0}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--amber-l));transition:width .4s}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);flex-shrink:0;background:var(--cream)}
+.stats{display:flex;align-items:center;gap:.4rem;padding:.5rem .85rem;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--cream);flex-wrap:wrap}
+.st-v{font-family:'DM Mono',monospace;font-size:1rem;font-weight:600;color:var(--amber)}
+.st-l{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:.08rem}
 .st{padding:.72rem .5rem;text-align:center;border-right:1px solid var(--border)}
 .st:last-child{border-right:none}
 .st-v{font-family:'DM Mono',monospace;font-size:.92rem;font-weight:500;color:var(--amber)}
@@ -161,11 +163,21 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .day-info{flex:1;min-width:0;overflow:hidden}
 .day-name-row{display:flex;align-items:baseline;gap:.4rem;flex-wrap:wrap}
 .day-name{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;white-space:nowrap}
-.day-note-inline{font-size:.68rem;color:var(--muted);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.day-note-inline-input{font-size:.72rem;color:var(--ink);font-weight:500;white-space:nowrap;
+  border:none;background:transparent;outline:none;padding:0;
+  border-bottom:1.5px dashed transparent;transition:border-color .15s;
+  min-width:40px;max-width:200px;font-family:'DM Sans',sans-serif}
+.day-note-inline-input:hover{border-bottom-color:var(--border)}
+.day-note-inline-input:focus{border-bottom-color:var(--amber)}
+.day-note-inline-input.empty{color:var(--muted);font-style:italic;font-weight:400}
+.day-note-inline-input::placeholder{color:var(--border)}
 .day-date{font-size:.65rem;color:var(--muted)}
-.day-km{display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;flex-shrink:0;max-width:160px;justify-content:flex-end}
+.day-km{display:flex;align-items:center;gap:.25rem;flex-shrink:0;flex-wrap:nowrap}
 .day-km-chip{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--amber);background:var(--amber-pale);
   padding:.14rem .38rem;border-radius:20px;white-space:nowrap;display:flex;align-items:center;gap:.18rem}
+.stat-chip{font-family:'DM Mono',monospace;font-size:.82rem;font-weight:600;color:var(--amber);
+  background:var(--amber-pale);padding:.28rem .65rem;border-radius:20px;white-space:nowrap;
+  display:flex;align-items:center;gap:.25rem}
 .stop{position:relative;padding-left:.95rem;margin-bottom:.38rem}
 .stop::before{content:'';position:absolute;left:.26rem;top:1.25rem;bottom:-.38rem;width:1px;background:var(--border)}
 .stop:last-child::before{display:none}
@@ -523,9 +535,8 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
       </div>
     </div>
     <div class="prog-wrap"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
-    <div class="stats">
-      <div class="st" id="stModes" style="flex:2"><div class="st-v" id="sModes" style="display:flex;gap:.3rem;flex-wrap:wrap">—</div><div class="st-l">in viaggio</div></div>
-      <div class="st"><div class="st-v" id="sDone">0%</div><div class="st-l">completato</div></div>
+    <div class="stats" id="statsBar">
+      <div id="sModes" style="display:flex;gap:.35rem;flex-wrap:wrap;align-items:center">—</div>
     </div>
     <div class="itin-body" id="itinBody"></div>
   </div>
@@ -1506,12 +1517,13 @@ function calcModeTotals(stops){
 }
 
 // Genera HTML badge per un oggetto modeTotals
-function renderModeBadges(modes){
+function renderModeBadges(modes, large=false){
+  const cls = large ? 'stat-chip' : 'day-km-chip';
   const cfg = [
-    {key:'DRIVING', ico:'🚗', label:'auto'},
-    {key:'FLIGHT',  ico:'✈️', label:'volo'},
-    {key:'TRANSIT', ico:'🚂', label:'transit'},
-    {key:'WALKING', ico:'🚶', label:'piedi'},
+    {key:'DRIVING', ico:'🚗'},
+    {key:'FLIGHT',  ico:'✈️'},
+    {key:'TRANSIT', ico:'🚂'},
+    {key:'WALKING', ico:'🚶'},
   ];
   return cfg.map(({key,ico})=>{
     const m = modes[key];
@@ -1519,7 +1531,7 @@ function renderModeBadges(modes){
     const kmPart = key!=='FLIGHT' && m.km>0 ? Math.round(m.km)+'km' : '';
     const timePart = m.mins>0 ? minsToHuman(m.mins) : '';
     const txt = [kmPart,timePart].filter(Boolean).join(' ');
-    return txt ? '<span class="day-km-chip">'+ico+' '+txt+'</span>' : '';
+    return txt ? '<span class="'+cls+'">'+ico+' '+txt+'</span>' : '';
   }).join('');
 }
 
@@ -1783,7 +1795,9 @@ function renderItin(){
     const badgeHtml = renderModeBadges(modes) || '';
 
     // Nota inline (troncata)
-    const noteInline = day.label ? '<span class="day-note-inline">· '+day.label+'</span>' : '';
+    const noteInline = day.label
+      ? '<input class="day-note-inline-input" value="'+day.label.replace(/"/g,'&quot;')+'" onchange="saveLabel('+di+',this.value)" onclick="event.stopPropagation()" title="Clicca per modificare la nota">'
+      : '<input class="day-note-inline-input empty" placeholder="+ nota…" onchange="saveLabel('+di+',this.value)" onclick="event.stopPropagation()">';
 
     // Summary collassato — solo descrizione (km/tempo già nel badge)
     const descHtml = day.label ? '<div class="dcs-desc">'+day.label+'</div>' : '';
@@ -1798,13 +1812,6 @@ function renderItin(){
       '<div class="day-km">'+badgeHtml+'</div>'+
     '</div>'+
     '<div class="day-collapsed-summary">'+descHtml+'</div>'+
-    '<div class="day-label-wrap">'+
-      '<input class="day-label-input" type="text"'+
-        ' placeholder="Aggiungi una nota per questo giorno\u2026"'+
-        ' value="'+(day.label||'').replace(/"/g,'&quot;')+'"'+
-        ' onchange="saveLabel('+di+',this.value)"'+
-        ' onclick="event.stopPropagation()">'+
-    '</div>'+
     '<div class="day-stops-wrap"></div>';
     const stopsWrap = el.querySelector('.day-stops-wrap');
     day.stops.forEach((stop,si)=>{
@@ -2344,13 +2351,10 @@ function updStats(){
   document.getElementById('hDates').textContent=trip.dates;
   document.getElementById('hPersons').textContent=trip.persons;
   document.getElementById('hStops').textContent=trip.days.flatMap(d=>d.stops).length+' tappe';
-  // Badge multimodale totali viaggio
   const allStops = trip.days.flatMap(d=>d.stops);
   const modes = calcModeTotals(allStops);
-  const badgesHtml = renderModeBadges(modes);
-  document.getElementById('sModes').innerHTML = badgesHtml || '—';
+  document.getElementById('sModes').innerHTML = renderModeBadges(modes, true) || '<span style="color:var(--muted);font-size:.8rem">Nessuna tratta</span>';
   document.getElementById('chipName').textContent=trip.title;
-  document.getElementById('sDone').textContent='0%';
 }
 
 function renderOver(){

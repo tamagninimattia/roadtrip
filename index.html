@@ -593,7 +593,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
       <button class="dnav-btn" onclick="dv('list')">☰ Itinerario</button>
       <button class="dnav-btn" onclick="dv('expenses')">💶 Spese</button>
     </nav>
-    <div class="trip-chip" onclick="mtab('overview')">
+    <div class="trip-chip" onclick="window.innerWidth>=720?dv('overview'):mtab('overview')">
       <span class="trip-chip-name" id="chipName">—</span>
       <span style="color:var(--amber-l);font-size:.7rem">▾</span>
     </div>

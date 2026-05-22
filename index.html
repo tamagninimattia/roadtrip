@@ -53,7 +53,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .exp-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.8rem}
 .exp-sum-card{background:#ebe4d8;border:1px solid var(--border);border-radius:10px;padding:.6rem .8rem}
 .exp-sum-cat{font-size:.68rem;color:#6a5a4a;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem}
-.exp-sum-val{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.92rem;font-weight:400;color:var(--ink)}
+.exp-sum-val{font-size:.82rem;font-weight:400;color:var(--ink)}
 .exp-sum-sub{font-size:.63rem;color:#6a5a4a;margin-top:.05rem}
 .exp-balance-card{background:#ebe4d8;border:1px solid var(--border);border-radius:10px;
   padding:.7rem .9rem;margin-top:.5rem}
@@ -61,7 +61,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
   padding:.32rem 0;border-bottom:1px dashed var(--border);font-size:.8rem}
 .exp-balance-row:last-child{border-bottom:none}
 .exp-balance-name{font-weight:600;color:var(--ink)}
-.exp-balance-amt{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:.85rem}
+.exp-balance-amt{font-weight:400;font-size:.82rem}
 .exp-balance-amt.pos{color:var(--sage)}
 .exp-balance-amt.neg{color:var(--red)}
 .exp-balance-detail{font-size:.67rem;color:#6a5a4a;margin-top:.15rem}
@@ -1664,7 +1664,15 @@ function calcRoute(fromStop, toStop, travelMode){
 // Es: 1234.5 → "1.234,50"
 function fmtAmt(n){
   const num = parseFloat(n)||0;
-  return num.toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const fixed = num.toFixed(2);
+  const parts = fixed.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return parts[0] + ',' + parts[1];
+}
+
+function fmtKm(n){
+  const num = Math.round(parseFloat(n)||0);
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
 function minsToHuman(mins){
@@ -1725,7 +1733,7 @@ function renderModeBadges(modes, large=false){
   return cfg.map(({key,ico})=>{
     const m = modes[key];
     if(!m || (m.km===0 && m.mins===0)) return '';
-    const kmPart = key!=='FLIGHT' && m.km>0 ? Math.round(m.km)+'km' : '';
+    const kmPart = key!=='FLIGHT' && m.km>0 ? fmtKm(m.km)+'km' : '';
     const timePart = m.mins>0 ? minsToHuman(m.mins) : '';
     const txt = [kmPart,timePart].filter(Boolean).join(' ');
     return txt ? '<span class="'+cls+'">'+ico+' '+txt+'</span>' : '';
@@ -1759,7 +1767,7 @@ async function recalcTripTotals(tripIdx){
   const modes = calcModeTotals(allStops);
   // Totali aggregati per totalKm e totalTime (backwards compat)
   let totalKm=0, totalMins=0;
-  for(const m of Object.values(modes)){ totalKm+=m.km; totalMins+=m.mins; }  const kmStr=totalKm>0?Math.round(totalKm).toLocaleString('it')+' km':'—';
+  for(const m of Object.values(modes)){ totalKm+=m.km; totalMins+=m.mins; }  const kmStr=totalKm>0?fmtKm(totalKm)+' km':'—';
   const timeStr=totalMins>0?minsToHuman(totalMins):'—';
   trip.totalKm=kmStr; trip.totalTime=timeStr;
   trip.modeTotals=modes;

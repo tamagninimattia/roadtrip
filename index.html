@@ -41,7 +41,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .exp-list{display:flex;flex-direction:column;gap:.45rem}
 .exp-item{background:#ebe4d8;border:1px solid var(--border);border-radius:10px;
   padding:.55rem .8rem;display:flex;align-items:center;gap:.55rem}
-.exp-item.budget{opacity:.75;border-style:dashed}
+.exp-item.budget{background:#f5f0e8;border:1.5px dashed #b8a898;opacity:1}
 .exp-ico{font-size:1.1rem;flex-shrink:0}
 .exp-info{flex:1;min-width:0}
 .exp-name{font-weight:600;font-size:.82rem;color:var(--ink)}
@@ -368,7 +368,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 /* OVERVIEW */
 #pOver{background:var(--cream);overflow-y:auto;-webkit-overflow-scrolling:touch}
 .over-body{padding:.9rem .95rem 1.5rem}
-.trip-card{background:white;border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;
+.trip-card{background:#ebe4d8;border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;
   margin-bottom:.65rem;cursor:pointer;transition:all .18s;box-shadow:var(--ss)}
 .trip-card:active{transform:scale(.98)}
 .trip-card.active{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-pale)}
@@ -3109,8 +3109,6 @@ function renderExpBody(){
 
 function renderExpList(){
   const body = document.getElementById('expBody');
-  const actualExps = EXP_EXPENSES.filter(e=>e.is_actual);
-  const budgetExps = EXP_EXPENSES.filter(e=>!e.is_actual);
 
   let html = '<div class="exp-toolbar">';
   html += '<button class="exp-tool-btn" onclick="openExpModal()">+ Nuova spesa</button>';
@@ -3121,16 +3119,10 @@ function renderExpList(){
     body.innerHTML = html; return;
   }
 
-  if(actualExps.length>0){
-    html += '<div class="exp-section-title">Spese sostenute</div><div class="exp-list">';
-    html += actualExps.map(e=>expItemHtml(e,false)).join('');
-    html += '</div>';
-  }
-  if(budgetExps.length>0){
-    html += '<div class="exp-section-title">Preventivi</div><div class="exp-list">';
-    html += budgetExps.map(e=>expItemHtml(e,true)).join('');
-    html += '</div>';
-  }
+  const sorted = [...EXP_EXPENSES].sort((a,b)=>a.date.localeCompare(b.date));
+  html += '<div class="exp-list">';
+  html += sorted.map(e=>expItemHtml(e, !e.is_actual)).join('');
+  html += '</div>';
   body.innerHTML = html;
 }
 
@@ -3141,10 +3133,11 @@ function expItemHtml(e, isBudget){
     const p = EXP_PARTICIPANTS.find(x=>x.id===s.participant_id);
     return p ? p.name+(s.percentage<100?` ${s.percentage}%`:'') : '';
   }).filter(Boolean).join(', ');
+  const budgeBadge = isBudget ? '<span style="font-size:.55rem;font-weight:700;color:#7a6a5a;background:#e8e0d4;border:1px solid #c8b8a8;border-radius:4px;padding:.08rem .3rem;margin-left:.3rem;vertical-align:middle">PREV.</span>' : '';
   return '<div class="exp-item'+(isBudget?' budget':'')+'">' +
     '<span class="exp-ico">'+(cat?cat.icon:'💰')+'</span>' +
     '<div class="exp-info">' +
-      '<div class="exp-name">'+(cat?cat.name:'—')+(e.notes?' · <span style="font-weight:400;color:var(--muted)">'+e.notes+'</span>':'')+'</div>' +
+      '<div class="exp-name">'+(cat?cat.name:'—')+budgeBadge+(e.notes?' · <span style="font-weight:400;color:var(--muted)">'+e.notes+'</span>':'')+'</div>' +
       '<div class="exp-meta">'+e.date+(paidBy?' · pagato da '+paidBy.name:'')+(sharesTxt?' · '+sharesTxt:'')+'</div>' +
     '</div>' +
     '<span class="exp-amount'+(isBudget?' budget':'')+'">€'+parseFloat(e.amount).toFixed(2)+'</span>' +
@@ -3161,39 +3154,44 @@ function renderExpSummary(){
   const totalActual = actual.reduce((s,e)=>s+parseFloat(e.amount),0);
   const totalBudget = budget.reduce((s,e)=>s+parseFloat(e.amount),0);
 
-  // Spese considerate nel saldo (actual + eventualmente budget)
+  // Spese considerate nel saldo e per categoria
   const forBalance = includeBudgetInBalance ? EXP_EXPENSES : actual;
 
-  // Per categoria (sempre solo sostenute)
-  let byCat = '<div class="exp-summary-grid">';
-  EXP_CATEGORIES.forEach(cat=>{
-    const catExps = actual.filter(e=>e.category_id===cat.id);
-    if(!catExps.length) return;
-    const tot = catExps.reduce((s,e)=>s+parseFloat(e.amount),0);
-    byCat += '<div class="exp-sum-card">'+
-      '<div class="exp-sum-cat">'+cat.icon+' '+cat.name+'</div>'+
-      '<div class="exp-sum-val">€'+tot.toFixed(2)+'</div>'+
-      '<div class="exp-sum-sub">'+catExps.length+' spesa'+(catExps.length>1?'e':'')+'</div>'+
-    '</div>';
-  });
-  byCat += '</div>';
-
-  // Toggle preventivi nel saldo
-  const toggleHtml = EXP_PARTICIPANTS.length>0 ? [
+  // Toggle (ora sopra alla sezione per categoria)
+  const toggleHtml = [
     '<div style="display:flex;align-items:center;justify-content:space-between;',
     'background:#ebe4d8;border:1px solid var(--border);border-radius:8px;',
-    'padding:.45rem .7rem;margin-bottom:.5rem;cursor:pointer" onclick="toggleBudgetInBalance()">',
-    '<span style="font-size:.78rem;font-weight:500;color:var(--ink)">Includi preventivi nel saldo</span>',
+    'padding:.45rem .7rem;margin-bottom:.6rem;cursor:pointer" onclick="toggleBudgetInBalance()">',
+    '<span style="font-size:.78rem;font-weight:500;color:var(--ink)">Includi preventivi</span>',
     '<div style="width:36px;height:20px;border-radius:10px;position:relative;transition:background .2s;flex-shrink:0;background:'+(includeBudgetInBalance?'var(--amber)':'#bbb')+'">',
     '<div style="position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:white;',
     'box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s;transform:'+(includeBudgetInBalance?'translateX(16px)':'translateX(0)')+'"></div>',
     '</div></div>'
-  ].join('') : '';
+  ].join('');
+
+  // Per categoria — usa forBalance
+  let byCat = '<div class="exp-summary-grid">';
+  EXP_CATEGORIES.forEach(cat=>{
+    const catExps = forBalance.filter(e=>e.category_id===cat.id);
+    if(!catExps.length) return;
+    const tot = catExps.reduce((s,e)=>s+parseFloat(e.amount),0);
+    const actualCount = catExps.filter(e=>e.is_actual).length;
+    const budgetCount = catExps.filter(e=>!e.is_actual).length;
+    const sub = includeBudgetInBalance && budgetCount>0
+      ? actualCount+' sost. · '+budgetCount+' prev.'
+      : catExps.length+' spesa'+(catExps.length>1?'e':'');
+    byCat += '<div class="exp-sum-card">'+
+      '<div class="exp-sum-cat">'+cat.icon+' '+cat.name+'</div>'+
+      '<div class="exp-sum-val">€'+tot.toFixed(2)+'</div>'+
+      '<div class="exp-sum-sub">'+sub+'</div>'+
+    '</div>';
+  });
+  byCat += '</div>';
 
   // Per persona — saldo
   let balanceHtml = '';
   if(EXP_PARTICIPANTS.length>0){
-    balanceHtml = '<div class="exp-section-title">Saldo per persona</div>'+toggleHtml+'<div class="exp-balance-card">';
+    balanceHtml = '<div class="exp-section-title">Saldo per persona</div><div class="exp-balance-card">';
     EXP_PARTICIPANTS.forEach(p=>{
       const paid = forBalance.filter(e=>e.paid_by===p.id).reduce((s,e)=>s+parseFloat(e.amount),0);
       let owes = 0;
@@ -3244,7 +3242,8 @@ function renderExpSummary(){
       '<div class="exp-sum-card"><div class="exp-sum-cat">✅ Sostenute</div><div class="exp-sum-val">€'+totalActual.toFixed(2)+'</div><div class="exp-sum-sub">'+actual.length+' spese</div></div>'+
       '<div class="exp-sum-card"><div class="exp-sum-cat">📋 Preventivi</div><div class="exp-sum-val">€'+totalBudget.toFixed(2)+'</div><div class="exp-sum-sub">'+budget.length+' voci</div></div>'+
     '</div>'+
-    '<div class="exp-section-title">Per categoria</div>'+byCat+balanceHtml;
+    '<div class="exp-section-title">Per categoria</div>'+
+    toggleHtml+byCat+balanceHtml;
 }
 
 function toggleBudgetInBalance(){

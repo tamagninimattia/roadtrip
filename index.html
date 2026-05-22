@@ -30,7 +30,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   padding:.35rem .8rem;font-size:.75rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;
   transition:all .15s}
 .exp-tool-btn:hover{background:var(--amber-l)}
-.exp-tool-btn.sec{background:white;border:1px solid var(--border);color:var(--ink)}
+.exp-tool-btn.sec{background:#e8e0d4;border:1px solid var(--border);color:var(--ink)}
 .exp-tool-btn.sec:hover{border-color:var(--amber);background:var(--amber-pale)}
 .exp-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:.8rem}
 .exp-tab{padding:.45rem .9rem;font-size:.78rem;font-weight:600;color:var(--muted);
@@ -39,54 +39,55 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .exp-tab.active{color:var(--amber);border-bottom-color:var(--amber)}
 /* Lista spese */
 .exp-list{display:flex;flex-direction:column;gap:.45rem}
-.exp-item{background:white;border:1px solid var(--border);border-radius:10px;
-  padding:.55rem .8rem;display:flex;align-items:center;gap:.55rem;box-shadow:none}
-.exp-item.budget{opacity:.65;border-style:dashed}
+.exp-item{background:#ebe4d8;border:1px solid var(--border);border-radius:10px;
+  padding:.55rem .8rem;display:flex;align-items:center;gap:.55rem}
+.exp-item.budget{opacity:.75;border-style:dashed}
 .exp-ico{font-size:1.1rem;flex-shrink:0}
 .exp-info{flex:1;min-width:0}
 .exp-name{font-weight:600;font-size:.82rem;color:var(--ink)}
-.exp-meta{font-size:.65rem;color:var(--muted);margin-top:.06rem}
-.exp-amount{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:700;color:var(--ink);flex-shrink:0}
-.exp-amount.budget{color:var(--muted)}
-.exp-del{font-size:.65rem;color:var(--muted);cursor:pointer;padding:.2rem;opacity:0;transition:opacity .12s}
-.exp-item:hover .exp-del{opacity:.6}
+.exp-meta{font-size:.68rem;color:#6a5a4a;margin-top:.06rem}
+.exp-amount{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:600;color:var(--ink);flex-shrink:0}
+.exp-amount.budget{color:#6a5a4a}
+.exp-del{font-size:.65rem;color:#6a5a4a;cursor:pointer;padding:.2rem;opacity:0;transition:opacity .12s}
+.exp-item:hover .exp-del{opacity:.7}
 .exp-del:hover{opacity:1!important;color:var(--red)}
 /* Riepilogo */
 .exp-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.8rem}
-.exp-sum-card{background:white;border:1px solid var(--border);border-radius:10px;padding:.6rem .8rem}
-.exp-sum-cat{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem}
-.exp-sum-val{font-family:'DM Mono',monospace;font-size:.92rem;font-weight:700;color:var(--ink)}
-.exp-sum-sub{font-size:.6rem;color:var(--muted);margin-top:.05rem}
-.exp-balance-card{background:var(--paper);border:1px solid var(--border);border-radius:10px;
+.exp-sum-card{background:#ebe4d8;border:1px solid var(--border);border-radius:10px;padding:.6rem .8rem}
+.exp-sum-cat{font-size:.68rem;color:#6a5a4a;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem}
+.exp-sum-val{font-family:'DM Mono',monospace;font-size:.92rem;font-weight:400;color:var(--ink)}
+.exp-sum-sub{font-size:.63rem;color:#6a5a4a;margin-top:.05rem}
+.exp-balance-card{background:#ebe4d8;border:1px solid var(--border);border-radius:10px;
   padding:.7rem .9rem;margin-top:.5rem}
 .exp-balance-row{display:flex;align-items:center;justify-content:space-between;
   padding:.32rem 0;border-bottom:1px dashed var(--border);font-size:.8rem}
 .exp-balance-row:last-child{border-bottom:none}
 .exp-balance-name{font-weight:600;color:var(--ink)}
-.exp-balance-amt{font-family:'DM Mono',monospace;font-weight:700}
+.exp-balance-amt{font-family:'DM Mono',monospace;font-weight:400;font-size:.85rem}
 .exp-balance-amt.pos{color:var(--sage)}
 .exp-balance-amt.neg{color:var(--red)}
-.exp-balance-detail{font-size:.65rem;color:var(--muted);margin-top:.15rem}
+.exp-balance-detail{font-size:.67rem;color:#6a5a4a;margin-top:.15rem}
 /* Categorie */
 .cat-list{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.6rem}
-.cat-item{display:flex;align-items:center;gap:.5rem;background:white;border:1px solid var(--border);
+.cat-item{display:flex;align-items:center;gap:.5rem;background:#ebe4d8;border:1px solid var(--border);
   border-radius:8px;padding:.4rem .7rem}
 .cat-ico-input{width:36px;text-align:center;border:1px solid var(--border);border-radius:6px;
   font-size:.9rem;padding:.15rem;background:var(--paper)}
 .cat-name-input{flex:1;border:none;border-bottom:1px dashed var(--border);background:transparent;
   font-family:'DM Sans',sans-serif;font-size:.8rem;color:var(--ink);outline:none;padding:.1rem 0}
 .cat-name-input:focus{border-bottom-color:var(--amber)}
-.cat-del{font-size:.65rem;color:var(--muted);cursor:pointer;opacity:.5}
+.cat-del{font-size:.65rem;color:#6a5a4a;cursor:pointer;opacity:.6}
 .cat-del:hover{opacity:1;color:var(--red)}
 /* Partecipanti */
 .part-list{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem}
 .part-chip{display:flex;align-items:center;gap:.3rem;background:var(--amber-pale);
-  border:1px solid var(--amber);border-radius:20px;padding:.25rem .6rem;font-size:.76rem;font-weight:600}
+  border:1px solid var(--amber);border-radius:20px;padding:.25rem .6rem;font-size:.76rem;font-weight:600;color:var(--ink)}
 .part-chip-del{cursor:pointer;color:var(--amber);font-size:.6rem;opacity:.7}
 .part-chip-del:hover{opacity:1;color:var(--red)}
 .part-add-row{display:flex;gap:.3rem;align-items:center}
 .part-add-input{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:.35rem .6rem;
-  font-family:'DM Sans',sans-serif;font-size:.8rem;outline:none;transition:border-color .15s}
+  font-family:'DM Sans',sans-serif;font-size:.8rem;outline:none;transition:border-color .15s;
+  background:#ebe4d8;color:var(--ink)}
 .part-add-input:focus{border-color:var(--amber)}
 .auth-screen{position:fixed;inset:0;z-index:9000;background:var(--ink);
   display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:1.5rem}
@@ -448,7 +449,12 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .tc-actions{display:flex;gap:.4rem;margin-top:.55rem;padding-top:.45rem;border-top:1px dashed var(--border)}
 .tc-btn{display:inline-flex;align-items:center;gap:.2rem;padding:.3rem .65rem;border-radius:6px;
   font-size:.66rem;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
-.tc-btn.open{background:var(--amber-pale);color:var(--amber)}
+.tc-btn.exp{background:#e8f0e8;color:#2a5a2a}
+.tc-btn.exp:hover{background:#d0e8d0}
+.import-btn{display:flex;align-items:center;gap:.35rem;padding:.38rem .8rem;border-radius:8px;
+  font-size:.74rem;font-weight:600;border:1.5px dashed var(--border);background:transparent;
+  color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.import-btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-pale)}
 .tc-btn.open:hover{background:#ecd8b0}
 .tc-btn.del{background:var(--red-pale);color:var(--red)}
 .tc-btn.del:hover{background:#fbd5d0}
@@ -659,6 +665,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   <button class="tb" id="tbExp" onclick="mtab('expenses')"><span class="tb-ico">💶</span><span class="tb-lbl">Spese</span></button>
 </nav>
 
+<input type="file" id="importFileInput" accept=".json" style="display:none" onchange="handleImportFile(event)">
 <div class="save-toast" id="saveToast">💾 Salvato</div>
 
 <!-- MODAL SPESA -->
@@ -911,6 +918,7 @@ let expTabActive = 'list';
 let expModalMode = 'add';
 let expEditId = null;
 let expActualState = true;
+let includeBudgetInBalance = false;
 
 /* ═══════════════════════════════════════
    SPLIT DIVIDER
@@ -2547,22 +2555,245 @@ function renderOver(){
       <span>📍 ${trip.days.flatMap(d=>d.stops).length} tappe</span></div>
       <div class="tc-actions">
         <button class="tc-btn open" onclick="event.stopPropagation();selectTrip(${i})">↗ Apri</button>
+        <button class="tc-btn exp" onclick="event.stopPropagation();exportTrip(${i})">⬇ Esporta</button>
         <button class="tc-btn del" onclick="event.stopPropagation();askDeleteTrip(${i})">🗑 Elimina</button>
       </div>`;
     c.onclick=()=>selectTrip(i);
     body.appendChild(c);
   });
-  // New trip button
+  // Pulsanti azione generale
+  const actRow=document.createElement('div');
+  actRow.style.cssText='display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap';
   const nb=document.createElement('button');
   nb.className='new-trip-btn';
+  nb.style.flex='1';
   nb.innerHTML='+ Nuovo viaggio';
   nb.onclick=openTripModal;
-  body.appendChild(nb);
+  const ib=document.createElement('button');
+  ib.className='import-btn';
+  ib.innerHTML='⬆ Importa viaggio';
+  ib.onclick=()=>document.getElementById('importFileInput').click();
+  actRow.appendChild(nb);
+  actRow.appendChild(ib);
+  body.appendChild(actRow);
 }
 
 function selectTrip(i){
   ti=i; activeId=null; dayF='all'; renderAll();
   if(window.innerWidth<720) mtab('itinerary'); else dv('split');
+}
+
+/* ═══════════════════════════════════════
+   EXPORT / IMPORT
+═══════════════════════════════════════ */
+async function exportTrip(i){
+  const trip = TRIPS[i];
+
+  // Carica attività per ogni stop (potrebbero non essere in memoria)
+  const {data: fullDays} = await sb.from('days')
+    .select('*, stops(*, activities(*))')
+    .eq('trip_id', trip.id)
+    .order('position');
+
+  // Carica dati spese
+  const [{data: participants}, {data: categories}, {data: expenses}] = await Promise.all([
+    sb.from('participants').select('*').eq('trip_id', trip.id).order('position'),
+    sb.from('expense_categories').select('*').eq('trip_id', trip.id).order('position'),
+    sb.from('expenses').select('*, expense_shares(*)').eq('trip_id', trip.id).order('date')
+  ]);
+
+  const exportData = {
+    version: '1.0',
+    exported_at: new Date().toISOString(),
+    trip: {
+      title: trip.title,
+      dates: trip.dates,
+      persons: trip.persons,
+      total_km: trip.totalKm,
+      total_time: trip.totalTime
+    },
+    days: (fullDays||[]).sort((a,b)=>a.position-b.position).map(d=>({
+      name: d.name,
+      date: d.date,
+      day_km: d.day_km,
+      day_time: d.day_time,
+      departure_time: d.departure_time,
+      label: d.label,
+      position: d.position,
+      stops: (d.stops||[]).sort((a,b)=>a.position-b.position).map(s=>({
+        name: s.name,
+        icon: s.icon,
+        cat: s.cat,
+        lat: s.lat,
+        lng: s.lng,
+        time: s.time,
+        transit_km: s.transit_km,
+        transit_dur: s.transit_dur,
+        transit_mode: s.transit_mode,
+        stay_duration: s.stay_duration,
+        stay_minutes: s.stay_minutes,
+        travel_minutes: s.travel_minutes,
+        is_overnight: s.is_overnight,
+        is_overnight_clone: s.is_overnight_clone,
+        timezone_id: s.timezone_id,
+        position: s.position,
+        activities: (s.activities||[]).sort((a,b)=>a.position-b.position).map(a=>({
+          text: a.text,
+          done: a.done,
+          lat: a.lat,
+          lng: a.lng,
+          position: a.position
+        }))
+      }))
+    })),
+    participants: (participants||[]).map(p=>({name:p.name, position:p.position})),
+    expense_categories: (categories||[]).map(c=>({name:c.name, icon:c.icon, position:c.position})),
+    expenses: (expenses||[]).map(e=>({
+      date: e.date,
+      amount: e.amount,
+      notes: e.notes,
+      is_actual: e.is_actual,
+      paid_by_name: (participants||[]).find(p=>p.id===e.paid_by)?.name||null,
+      category_name: (categories||[]).find(c=>c.id===e.category_id)?.name||null,
+      shares: (e.expense_shares||[]).map(s=>({
+        participant_name: (participants||[]).find(p=>p.id===s.participant_id)?.name||null,
+        percentage: s.percentage
+      }))
+    }))
+  };
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (trip.title||'viaggio').replace(/[^a-zA-Z0-9]/g,'-')+'-export.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('⬇ Esportazione completata');
+}
+
+async function handleImportFile(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  event.target.value = ''; // reset per poter reimportare lo stesso file
+
+  let data;
+  try {
+    data = JSON.parse(await file.text());
+  } catch(e) {
+    alert('File JSON non valido.'); return;
+  }
+
+  if(!data.trip || !data.days){
+    alert('Formato non riconosciuto.'); return;
+  }
+
+  showToast('⬆ Importazione in corso…');
+
+  // Crea il viaggio con nuovo ID
+  const {data: newTrip, error} = await sb.from('trips').insert({
+    user_id: currentUser.id,
+    title: data.trip.title + ' (importato)',
+    dates: data.trip.dates||'',
+    persons: data.trip.persons||'',
+    total_km: data.trip.total_km||'',
+    total_time: data.trip.total_time||''
+  }).select().single();
+
+  if(error||!newTrip){ alert('Errore nella creazione del viaggio.'); return; }
+
+  // Crea i giorni e le tappe
+  for(const day of data.days){
+    const {data: newDay} = await sb.from('days').insert({
+      trip_id: newTrip.id,
+      name: day.name,
+      date: day.date||'',
+      day_km: day.day_km||0,
+      day_time: day.day_time||'',
+      departure_time: day.departure_time||'09:00',
+      label: day.label||null,
+      position: day.position||0
+    }).select().single();
+    if(!newDay) continue;
+
+    for(const stop of day.stops||[]){
+      const {data: newStop} = await sb.from('stops').insert({
+        day_id: newDay.id,
+        name: stop.name,
+        icon: stop.icon||'📍',
+        cat: stop.cat||'',
+        lat: stop.lat||null,
+        lng: stop.lng||null,
+        time: stop.time||'',
+        transit_km: stop.transit_km||null,
+        transit_dur: stop.transit_dur||null,
+        transit_mode: stop.transit_mode||'DRIVING',
+        stay_duration: stop.stay_duration||null,
+        stay_minutes: stop.stay_minutes||0,
+        travel_minutes: stop.travel_minutes||null,
+        is_overnight: stop.is_overnight||false,
+        is_overnight_clone: stop.is_overnight_clone||false,
+        timezone_id: stop.timezone_id||null,
+        position: stop.position||0
+      }).select().single();
+      if(!newStop) continue;
+
+      for(const act of stop.activities||[]){
+        await sb.from('activities').insert({
+          stop_id: newStop.id,
+          text: act.text,
+          done: act.done||false,
+          lat: act.lat||null,
+          lng: act.lng||null,
+          position: act.position||0
+        });
+      }
+    }
+  }
+
+  // Crea partecipanti e mappa nome → nuovo ID
+  const partMap = {};
+  for(const p of data.participants||[]){
+    const {data: np} = await sb.from('participants').insert({
+      trip_id: newTrip.id, name: p.name, position: p.position||0
+    }).select().single();
+    if(np) partMap[p.name] = np.id;
+  }
+
+  // Crea categorie spese e mappa nome → nuovo ID
+  const catMap = {};
+  for(const c of data.expense_categories||[]){
+    const {data: nc} = await sb.from('expense_categories').insert({
+      trip_id: newTrip.id, name: c.name, icon: c.icon||'💰', position: c.position||0
+    }).select().single();
+    if(nc) catMap[c.name] = nc.id;
+  }
+
+  // Crea spese
+  for(const e of data.expenses||[]){
+    const {data: ne} = await sb.from('expenses').insert({
+      trip_id: newTrip.id,
+      date: e.date,
+      amount: e.amount,
+      notes: e.notes||null,
+      is_actual: e.is_actual!==false,
+      paid_by: e.paid_by_name ? partMap[e.paid_by_name]||null : null,
+      category_id: e.category_name ? catMap[e.category_name]||null : null
+    }).select().single();
+    if(!ne) continue;
+    for(const s of e.shares||[]){
+      const pid = s.participant_name ? partMap[s.participant_name]||null : null;
+      if(pid) await sb.from('expense_shares').insert({
+        expense_id: ne.id, participant_id: pid, percentage: s.percentage
+      });
+    }
+  }
+
+  await loadTrips();
+  ti = TRIPS.length - 1;
+  renderAll();
+  showToast('✅ Viaggio importato!');
+  if(window.innerWidth>=720) dv('overview'); else mtab('overview');
 }
 
 /* ═══════════════════════════════════════
@@ -2917,8 +3148,9 @@ function expItemHtml(e, isBudget){
       '<div class="exp-meta">'+e.date+(paidBy?' · pagato da '+paidBy.name:'')+(sharesTxt?' · '+sharesTxt:'')+'</div>' +
     '</div>' +
     '<span class="exp-amount'+(isBudget?' budget':'')+'">€'+parseFloat(e.amount).toFixed(2)+'</span>' +
-    '<span class="exp-del" onclick="deleteExpense(\''+e.id+'\')">✕</span>' +
+    '<span style="font-size:.65rem;color:var(--muted);cursor:pointer;padding:.2rem" title="Duplica" onclick="duplicateExpense(\''+e.id+'\')">⧉</span>' +
     '<span style="font-size:.65rem;color:var(--muted);cursor:pointer;padding:.2rem" onclick="openExpModal(\''+e.id+'\')">✏️</span>' +
+    '<span class="exp-del" onclick="deleteExpense(\''+e.id+'\')">✕</span>' +
   '</div>';
 }
 
@@ -2929,7 +3161,10 @@ function renderExpSummary(){
   const totalActual = actual.reduce((s,e)=>s+parseFloat(e.amount),0);
   const totalBudget = budget.reduce((s,e)=>s+parseFloat(e.amount),0);
 
-  // Per categoria
+  // Spese considerate nel saldo (actual + eventualmente budget)
+  const forBalance = includeBudgetInBalance ? EXP_EXPENSES : actual;
+
+  // Per categoria (sempre solo sostenute)
   let byCat = '<div class="exp-summary-grid">';
   EXP_CATEGORIES.forEach(cat=>{
     const catExps = actual.filter(e=>e.category_id===cat.id);
@@ -2943,14 +3178,26 @@ function renderExpSummary(){
   });
   byCat += '</div>';
 
-  // Per persona — quanto ha pagato vs quanto deve
+  // Toggle preventivi nel saldo
+  const toggleHtml = EXP_PARTICIPANTS.length>0 ? [
+    '<div style="display:flex;align-items:center;justify-content:space-between;',
+    'background:#ebe4d8;border:1px solid var(--border);border-radius:8px;',
+    'padding:.45rem .7rem;margin-bottom:.5rem;cursor:pointer" onclick="toggleBudgetInBalance()">',
+    '<span style="font-size:.78rem;font-weight:500;color:var(--ink)">Includi preventivi nel saldo</span>',
+    '<div style="width:36px;height:20px;border-radius:10px;position:relative;transition:background .2s;flex-shrink:0;background:'+(includeBudgetInBalance?'var(--amber)':'#bbb')+'">',
+    '<div style="position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:white;',
+    'box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s;transform:'+(includeBudgetInBalance?'translateX(16px)':'translateX(0)')+'"></div>',
+    '</div></div>'
+  ].join('') : '';
+
+  // Per persona — saldo
   let balanceHtml = '';
   if(EXP_PARTICIPANTS.length>0){
-    balanceHtml = '<div class="exp-section-title">Saldo per persona</div><div class="exp-balance-card">';
+    balanceHtml = '<div class="exp-section-title">Saldo per persona</div>'+toggleHtml+'<div class="exp-balance-card">';
     EXP_PARTICIPANTS.forEach(p=>{
-      const paid = actual.filter(e=>e.paid_by===p.id).reduce((s,e)=>s+parseFloat(e.amount),0);
+      const paid = forBalance.filter(e=>e.paid_by===p.id).reduce((s,e)=>s+parseFloat(e.amount),0);
       let owes = 0;
-      actual.forEach(e=>{
+      forBalance.forEach(e=>{
         const share = e.shares.find(s=>s.participant_id===p.id);
         if(share) owes += parseFloat(e.amount) * parseFloat(share.percentage) / 100;
       });
@@ -2964,11 +3211,11 @@ function renderExpSummary(){
       '</div>';
     });
 
-    // Sbilanci — chi deve dare a chi
+    // Sbilanci
     const balances = EXP_PARTICIPANTS.map(p=>{
-      const paid = actual.filter(e=>e.paid_by===p.id).reduce((s,e)=>s+parseFloat(e.amount),0);
+      const paid = forBalance.filter(e=>e.paid_by===p.id).reduce((s,e)=>s+parseFloat(e.amount),0);
       let owes = 0;
-      actual.forEach(e=>{
+      forBalance.forEach(e=>{
         const share = e.shares.find(s=>s.participant_id===p.id);
         if(share) owes += parseFloat(e.amount) * parseFloat(share.percentage) / 100;
       });
@@ -2998,6 +3245,11 @@ function renderExpSummary(){
       '<div class="exp-sum-card"><div class="exp-sum-cat">📋 Preventivi</div><div class="exp-sum-val">€'+totalBudget.toFixed(2)+'</div><div class="exp-sum-sub">'+budget.length+' voci</div></div>'+
     '</div>'+
     '<div class="exp-section-title">Per categoria</div>'+byCat+balanceHtml;
+}
+
+function toggleBudgetInBalance(){
+  includeBudgetInBalance = !includeBudgetInBalance;
+  renderExpSummary();
 }
 
 function renderExpSettings(){
@@ -3137,14 +3389,26 @@ function closeExpModal(e){
 function renderShareInputs(){
   const wrap = document.getElementById('fExpShares');
   wrap.innerHTML = EXP_PARTICIPANTS.map(p=>
-    '<div style="display:flex;align-items:center;gap:.4rem;font-size:.8rem">'+
+    '<div style="display:flex;align-items:center;gap:.4rem;font-size:.8rem;padding:.1rem 0">'+
       '<span style="flex:1;font-weight:500">'+p.name+'</span>'+
+      '<button onclick="assignAll(\''+p.id+'\')" title="Tutto a carico di '+p.name+'"'+
+        ' style="font-size:.6rem;padding:.15rem .35rem;border:1px solid var(--border);border-radius:5px;'+
+        'background:var(--paper);color:var(--muted);cursor:pointer;white-space:nowrap;font-family:\'DM Sans\',sans-serif">'+
+        '100%</button>'+
       '<input id="share-'+p.id+'" type="number" min="0" max="100" step="1" value="0"'+
-        ' style="width:62px;padding:.25rem .4rem;border:1.5px solid var(--border);border-radius:6px;font-family:\'DM Mono\',monospace;font-size:.8rem;text-align:center;outline:none"'+
+        ' style="width:58px;padding:.25rem .4rem;border:1.5px solid var(--border);border-radius:6px;font-family:\'DM Mono\',monospace;font-size:.8rem;text-align:center;outline:none"'+
         ' oninput="checkShareTotal()">'+
       '<span style="font-size:.7rem;color:var(--muted)">%</span>'+
     '</div>'
   ).join('');
+}
+
+function assignAll(participantId){
+  EXP_PARTICIPANTS.forEach(p=>{
+    const inp = document.getElementById('share-'+p.id);
+    if(inp) inp.value = p.id===participantId ? 100 : 0;
+  });
+  checkShareTotal();
 }
 
 function equalizeShares(){
@@ -3232,6 +3496,39 @@ async function saveExpense(){
 
   document.getElementById('expModalOverlay').classList.remove('open');
   renderExpBody();
+}
+
+async function duplicateExpense(id){
+  const orig = EXP_EXPENSES.find(e=>e.id===id);
+  if(!orig) return;
+  // Inserisci copia nel DB con data di oggi
+  const today = new Date().toISOString().split('T')[0];
+  const {data} = await sb.from('expenses').insert({
+    trip_id: orig.trip_id,
+    category_id: orig.category_id,
+    date: today,
+    amount: orig.amount,
+    paid_by: orig.paid_by,
+    is_actual: orig.is_actual,
+    notes: orig.notes
+  }).select().single();
+  if(!data) return;
+  // Copia le quote
+  if(orig.shares.length){
+    const shares = orig.shares.map(s=>({
+      expense_id: data.id,
+      participant_id: s.participant_id,
+      percentage: s.percentage
+    }));
+    await sb.from('expense_shares').insert(shares);
+    data.shares = shares;
+  } else {
+    data.shares = [];
+  }
+  EXP_EXPENSES.push(data);
+  // Apri direttamente il modal di modifica sulla copia
+  await loadExpenses();
+  openExpModal(data.id);
 }
 
 async function deleteExpense(id){

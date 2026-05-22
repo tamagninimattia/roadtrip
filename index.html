@@ -6,8 +6,6 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>RoadTrip</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -19,15 +17,15 @@
   --hh:52px;--tbh:64px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
 
 /* ── EXPENSE PANEL ── */
 .exp-body{flex:1;overflow-y:auto;padding:.9rem .95rem 5rem}
-.exp-section-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;
+.exp-section-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;font-size:1rem;font-weight:700;
   margin:.8rem 0 .5rem;color:var(--ink)}
 .exp-toolbar{display:flex;gap:.4rem;margin-bottom:.8rem;flex-wrap:wrap;align-items:center}
 .exp-tool-btn{background:var(--amber);color:var(--ink);border:none;border-radius:8px;
-  padding:.35rem .8rem;font-size:.75rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;
+  padding:.35rem .8rem;font-size:.75rem;font-weight:700;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
   transition:all .15s}
 .exp-tool-btn:hover{background:var(--amber-l)}
 .exp-tool-btn.sec{background:#e8e0d4;border:1px solid var(--border);color:var(--ink)}
@@ -35,7 +33,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .exp-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:.8rem}
 .exp-tab{padding:.45rem .9rem;font-size:.78rem;font-weight:600;color:var(--muted);
   cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;
-  font-family:'DM Sans',sans-serif;background:none;border-top:none;border-left:none;border-right:none}
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;background:none;border-top:none;border-left:none;border-right:none}
 .exp-tab.active{color:var(--amber);border-bottom-color:var(--amber)}
 /* Lista spese */
 .exp-list{display:flex;flex-direction:column;gap:.45rem}
@@ -46,7 +44,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .exp-info{flex:1;min-width:0}
 .exp-name{font-weight:600;font-size:.82rem;color:var(--ink)}
 .exp-meta{font-size:.68rem;color:#6a5a4a;margin-top:.06rem}
-.exp-amount{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:600;color:var(--ink);flex-shrink:0}
+.exp-amount{font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.9rem;font-weight:600;color:var(--ink);flex-shrink:0}
 .exp-amount.budget{color:#6a5a4a}
 .exp-del{font-size:.65rem;color:#6a5a4a;cursor:pointer;padding:.2rem;opacity:0;transition:opacity .12s}
 .exp-item:hover .exp-del{opacity:.7}
@@ -55,7 +53,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .exp-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.8rem}
 .exp-sum-card{background:#ebe4d8;border:1px solid var(--border);border-radius:10px;padding:.6rem .8rem}
 .exp-sum-cat{font-size:.68rem;color:#6a5a4a;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem}
-.exp-sum-val{font-family:'DM Mono',monospace;font-size:.92rem;font-weight:400;color:var(--ink)}
+.exp-sum-val{font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.92rem;font-weight:400;color:var(--ink)}
 .exp-sum-sub{font-size:.63rem;color:#6a5a4a;margin-top:.05rem}
 .exp-balance-card{background:#ebe4d8;border:1px solid var(--border);border-radius:10px;
   padding:.7rem .9rem;margin-top:.5rem}
@@ -63,7 +61,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   padding:.32rem 0;border-bottom:1px dashed var(--border);font-size:.8rem}
 .exp-balance-row:last-child{border-bottom:none}
 .exp-balance-name{font-weight:600;color:var(--ink)}
-.exp-balance-amt{font-family:'DM Mono',monospace;font-weight:400;font-size:.85rem}
+.exp-balance-amt{font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-weight:400;font-size:.85rem}
 .exp-balance-amt.pos{color:var(--sage)}
 .exp-balance-amt.neg{color:var(--red)}
 .exp-balance-detail{font-size:.67rem;color:#6a5a4a;margin-top:.15rem}
@@ -74,7 +72,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .cat-ico-input{width:36px;text-align:center;border:1px solid var(--border);border-radius:6px;
   font-size:.9rem;padding:.15rem;background:var(--paper)}
 .cat-name-input{flex:1;border:none;border-bottom:1px dashed var(--border);background:transparent;
-  font-family:'DM Sans',sans-serif;font-size:.8rem;color:var(--ink);outline:none;padding:.1rem 0}
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.8rem;color:var(--ink);outline:none;padding:.1rem 0}
 .cat-name-input:focus{border-bottom-color:var(--amber)}
 .cat-del{font-size:.65rem;color:#6a5a4a;cursor:pointer;opacity:.6}
 .cat-del:hover{opacity:1;color:var(--red)}
@@ -86,21 +84,21 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .part-chip-del:hover{opacity:1;color:var(--red)}
 .part-add-row{display:flex;gap:.3rem;align-items:center}
 .part-add-input{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:.35rem .6rem;
-  font-family:'DM Sans',sans-serif;font-size:.8rem;outline:none;transition:border-color .15s;
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.8rem;outline:none;transition:border-color .15s;
   background:#ebe4d8;color:var(--ink)}
 .part-add-input:focus{border-color:var(--amber)}
 .auth-screen{position:fixed;inset:0;z-index:9000;background:var(--ink);
   display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:1.5rem}
 .auth-screen.hidden{display:none}
-.auth-logo{font-family:'Playfair Display',serif;font-style:italic;font-size:2.5rem;color:var(--amber-l)}
+.auth-logo{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;font-style:italic;font-size:2.5rem;color:var(--amber-l)}
 .auth-sub{font-size:.85rem;color:rgba(255,255,255,.5);text-align:center;line-height:1.6;max-width:300px}
 .auth-form{width:100%;max-width:320px;display:flex;flex-direction:column;gap:.75rem}
 .auth-input{width:100%;padding:.75rem 1rem;border-radius:10px;border:1.5px solid rgba(255,255,255,.15);
-  background:rgba(255,255,255,.08);color:var(--cream);font-family:'DM Sans',sans-serif;font-size:.95rem;outline:none}
+  background:rgba(255,255,255,.08);color:var(--cream);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.95rem;outline:none}
 .auth-input:focus{border-color:var(--amber)}
 .auth-input::placeholder{color:rgba(255,255,255,.3)}
 .auth-btn{width:100%;padding:.78rem;border-radius:10px;border:none;background:var(--amber);
-  color:var(--ink);font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .18s}
+  color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .18s}
 .auth-btn:hover{background:var(--amber-l)}
 .auth-btn:disabled{opacity:.5;cursor:not-allowed}
 .auth-msg{font-size:.8rem;text-align:center;color:rgba(255,255,255,.6);line-height:1.5}
@@ -111,18 +109,18 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .app-loading{position:fixed;inset:0;z-index:8000;background:var(--paper);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
 .app-loading.hidden{display:none}
-.app-loading .logo{font-family:'Playfair Display',serif;font-style:italic;font-size:2rem;color:var(--amber)}
+.app-loading .logo{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;font-style:italic;font-size:2rem;color:var(--amber)}
 .app-loading .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--amber);
   border-radius:50%;animation:spin .8s linear infinite}
 
 /* HEADER */
 .hdr{position:fixed;inset:0 0 auto;height:var(--hh);z-index:1000;background:var(--ink);
   display:flex;align-items:center;justify-content:space-between;padding:0 1rem 0 1.25rem;box-shadow:var(--sm)}
-.logo{font-family:'Playfair Display',serif;font-style:italic;font-size:1.3rem;color:var(--amber-l);flex-shrink:0}
+.logo{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;font-style:italic;font-size:1.3rem;color:var(--amber-l);flex-shrink:0}
 .hdr-right{display:flex;align-items:center;gap:.5rem}
 .dnav{display:none;gap:.15rem}
 .dnav-btn{background:none;border:none;color:var(--cream);opacity:.45;padding:.35rem .8rem;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;
   border-radius:5px;transition:all .18s}
 .dnav-btn:hover{opacity:.8;background:rgba(255,255,255,.08)}
 .dnav-btn.active{opacity:1;background:var(--amber);color:var(--ink)}
@@ -154,13 +152,13 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   display:flex;gap:.35rem;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;pointer-events:all}
 .map-daybar::-webkit-scrollbar{display:none}
 .mdb{flex-shrink:0;background:rgba(255,255,255,.95);border:1px solid var(--border);border-radius:20px;
-  padding:.35rem .8rem;font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;
+  padding:.35rem .8rem;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.7rem;font-weight:600;cursor:pointer;
   white-space:nowrap;box-shadow:var(--ss);transition:all .15s;backdrop-filter:blur(6px)}
 .mdb.active{background:var(--ink);color:var(--cream);border-color:var(--ink)}
 .map-type-toggle{position:absolute;bottom:5.5rem;left:.7rem;z-index:800;
   display:flex;background:rgba(255,255,255,.95);border-radius:8px;overflow:hidden;
   box-shadow:0 2px 8px rgba(0,0,0,.2);border:1px solid rgba(0,0,0,.12);backdrop-filter:blur(6px)}
-.mtt-btn{padding:.32rem .6rem;font-size:.65rem;font-weight:600;font-family:'DM Sans',sans-serif;
+.mtt-btn{padding:.32rem .6rem;font-size:.65rem;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
   border:none;background:transparent;color:#555;cursor:pointer;transition:all .15s;white-space:nowrap}
 .mtt-btn.active{background:var(--ink);color:white}
 .mtt-btn:first-child{border-right:1px solid rgba(0,0,0,.1)}
@@ -173,14 +171,14 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .loading-txt{font-size:.82rem;opacity:.8}
 
 /* INFOWINDOW */
-.gm-iw{font-family:'DM Sans',sans-serif;min-width:210px;max-width:260px}
-.iw-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:.15rem;line-height:1.25}
+.gm-iw{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;min-width:210px;max-width:260px}
+.iw-name{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;font-size:.95rem;font-weight:700;color:var(--ink);margin-bottom:.15rem;line-height:1.25}
 .iw-cat{font-size:.68rem;color:var(--muted);margin-bottom:.38rem}
-.iw-meta{font-family:'DM Mono',monospace;font-size:.66rem;color:#4a6090;margin-bottom:.5rem;display:flex;gap:.5rem;flex-wrap:wrap}
+.iw-meta{font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.66rem;color:#4a6090;margin-bottom:.5rem;display:flex;gap:.5rem;flex-wrap:wrap}
 .iw-btns{display:flex;gap:.35rem;flex-wrap:wrap}
 .iw-btn{flex:1;min-width:70px;display:inline-flex;align-items:center;justify-content:center;gap:.22rem;
   padding:.45rem .4rem;border-radius:7px;font-weight:600;font-size:.68rem;text-decoration:none;
-  transition:all .15s;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
+  transition:all .15s;cursor:pointer;border:none;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif}
 .iw-btn.pri{background:var(--amber);color:var(--ink)}
 .iw-btn.pri:hover{background:var(--amber-l)}
 .iw-btn.sec{background:#f0f0f0;color:#333}
@@ -196,17 +194,17 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   padding:1.2rem 1.2rem .95rem;position:relative;overflow:hidden;flex-shrink:0}
 .hero::after{content:'🧊';position:absolute;right:.8rem;top:50%;transform:translateY(-50%);font-size:4.5rem;opacity:.07;pointer-events:none}
 .hero-lbl{font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--amber-l);margin-bottom:.22rem}
-.hero-title{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;margin-bottom:.5rem}
+.hero-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;font-size:1.45rem;font-weight:700;margin-bottom:.5rem}
 .hero-meta{display:flex;gap:.85rem;flex-wrap:wrap}
 .hm{font-size:.73rem;opacity:.68;display:flex;align-items:center;gap:.28rem}
 .prog-wrap{height:3px;background:var(--border);flex-shrink:0}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--amber-l));transition:width .4s}
 .stats{display:flex;align-items:center;gap:.4rem;padding:.5rem .85rem;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--cream);flex-wrap:wrap}
-.st-v{font-family:'DM Mono',monospace;font-size:1rem;font-weight:600;color:var(--amber)}
+.st-v{font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:1rem;font-weight:600;color:var(--amber)}
 .st-l{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:.08rem}
 .st{padding:.72rem .5rem;text-align:center;border-right:1px solid var(--border)}
 .st:last-child{border-right:none}
-.st-v{font-family:'DM Mono',monospace;font-size:.92rem;font-weight:500;color:var(--amber)}
+.st-v{font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.92rem;font-weight:500;color:var(--amber)}
 .st-l{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:.08rem}
 .itin-body{padding:.9rem .95rem 1.5rem}
 .sec-ttl{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;display:flex;align-items:center;gap:.45rem}
@@ -219,40 +217,40 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .day-block.collapsed .day-collapsed-summary{display:flex}
 .day-collapsed-summary{display:none;align-items:center;gap:.5rem;flex-wrap:wrap;
   padding:.3rem .5rem .4rem 2.8rem;margin-top:-.3rem;margin-bottom:.2rem}
-.dcs-item{display:flex;align-items:center;gap:.22rem;font-family:'DM Mono',monospace;
+.dcs-item{display:flex;align-items:center;gap:.22rem;font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;
   font-size:.62rem;color:var(--muted)}
 .dcs-label{font-size:.6rem;color:var(--muted)}
-.dcs-desc{font-size:.72rem;font-family:'DM Sans',sans-serif;font-style:italic;
+.dcs-desc{font-size:.72rem;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-style:italic;
   color:var(--ink);flex-basis:100%;padding-left:.05rem;opacity:.75}
 .day-collapse-btn{background:none;border:none;cursor:pointer;font-size:.75rem;color:var(--muted);
   padding:.1rem .25rem;border-radius:4px;transition:all .15s;flex-shrink:0;line-height:1}
 .day-collapse-btn:hover{color:var(--amber);background:var(--amber-pale)}
 .itin-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:.4rem;margin-bottom:.6rem}
 .itin-tool-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:.25rem .6rem;
-  font-size:.65rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;
+  font-size:.65rem;font-weight:600;color:var(--muted);cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
   transition:all .15s}
 .itin-tool-btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-pale)}
 @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .day-hdr{display:flex;align-items:center;gap:.55rem;margin-bottom:0;
   padding:.65rem .75rem;background:#e2d8cc;border-bottom:1px solid var(--border)}
 .day-n{width:27px;height:27px;border-radius:50%;background:var(--ink);color:var(--amber-l);
-  display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.65rem;flex-shrink:0}
+  display:flex;align-items:center;justify-content:center;font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.65rem;flex-shrink:0}
 .day-info{flex:1;min-width:0;overflow:hidden}
 .day-name-row{display:flex;align-items:baseline;gap:.4rem;flex-wrap:nowrap;overflow:hidden}
-.day-name{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;white-space:nowrap;flex-shrink:0}
+.day-name{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;font-size:.9rem;font-weight:700;white-space:nowrap;flex-shrink:0}
 .day-date{font-size:.72rem;color:var(--ink);font-weight:500;opacity:.65;white-space:nowrap;flex-shrink:0}
 .day-note-inline-input{font-size:.7rem;color:var(--ink);font-weight:500;display:block;
   border:none;background:transparent;outline:none;padding:0;margin-top:.08rem;
   border-bottom:1.5px dashed transparent;transition:border-color .15s;
-  width:100%;font-family:'DM Sans',sans-serif}
+  width:100%;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif}
 .day-note-inline-input:hover{border-bottom-color:var(--border)}
 .day-note-inline-input:focus{border-bottom-color:var(--amber)}
 .day-note-inline-input.empty{color:var(--muted);font-style:italic;font-weight:400}
 .day-note-inline-input::placeholder{color:var(--border)}
 .day-km{display:flex;align-items:center;gap:.25rem;flex-shrink:0;flex-wrap:nowrap}
-.day-km-chip{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--ink);background:rgba(26,20,16,.1);
+.day-km-chip{font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.58rem;color:var(--ink);background:rgba(26,20,16,.1);
   padding:.14rem .38rem;border-radius:20px;white-space:nowrap;display:flex;align-items:center;gap:.18rem}
-.stat-chip{font-family:'DM Mono',monospace;font-size:.82rem;font-weight:600;color:var(--ink);
+.stat-chip{font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.82rem;font-weight:600;color:var(--ink);
   background:rgba(26,20,16,.08);padding:.28rem .65rem;border-radius:20px;white-space:nowrap;
   display:flex;align-items:center;gap:.25rem}
 .stop{position:relative;padding-left:.95rem;margin-bottom:.38rem}
@@ -261,7 +259,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .stop::after{content:'';position:absolute;left:.04rem;top:.5rem;width:.4rem;height:.4rem;border-radius:50%;
   background:var(--amber);border:2px solid var(--cream);box-shadow:0 0 0 1px var(--amber)}
 .transit{display:inline-flex;align-items:center;gap:.22rem;padding:.16rem .48rem;border-radius:20px;
-  font-size:.62rem;font-family:'DM Mono',monospace;margin-bottom:.32rem;margin-left:.1rem;border:1px solid;
+  font-size:.62rem;font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;margin-bottom:.32rem;margin-left:.1rem;border:1px solid;
   background:#eef2fa;border-color:#b8c8e8;color:#4a6090}
 .sc{background:white;border:1px solid var(--border);border-radius:10px;padding:.62rem .85rem;
   transition:all .18s;box-shadow:var(--ss);-webkit-user-select:none;user-select:none}
@@ -269,11 +267,11 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .sc-top{display:flex;align-items:flex-start;gap:.45rem;margin-bottom:.18rem;cursor:pointer}
 .sc-ico{font-size:.9rem;flex-shrink:0}
 .sc-name{font-weight:600;font-size:.82rem;flex:1;line-height:1.3}
-.sc-time{font-family:'DM Mono',monospace;font-size:.64rem;color:var(--muted);white-space:nowrap}
+.sc-time{font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.64rem;color:var(--muted);white-space:nowrap}
 .sc-cat{font-size:.65rem;color:var(--muted);margin-bottom:.3rem}
 .sc-actions{display:flex;gap:.3rem;margin-top:.5rem;padding-top:.4rem;border-top:1px dashed var(--border)}
 .sc-btn{display:inline-flex;align-items:center;gap:.2rem;padding:.3rem .6rem;border-radius:6px;
-  font-size:.65rem;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+  font-size:.65rem;font-weight:600;border:none;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;transition:all .15s}
 .sc-btn.edit{background:var(--amber-pale);color:var(--amber)}
 .sc-btn.edit:hover{background:#ecd8b0}
 .sc-btn.del{background:var(--red-pale);color:var(--red)}
@@ -306,14 +304,14 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   background:var(--paper);border-radius:8px;border:1px dashed var(--border);margin-top:.2rem}
 .act-add-row{display:flex;gap:.3rem;align-items:center}
 .act-add-input{flex:1;border:1.5px solid var(--border);border-radius:6px;padding:.35rem .55rem;
-  font-family:'DM Sans',sans-serif;font-size:.78rem;background:white;color:var(--ink);outline:none;transition:border-color .15s}
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.78rem;background:white;color:var(--ink);outline:none;transition:border-color .15s}
 .act-add-input:focus{border-color:var(--amber)}
 .act-loc-toggle{font-size:.75rem;color:var(--muted);cursor:pointer;padding:.2rem .4rem;border-radius:5px;
   border:1px solid var(--border);background:white;transition:all .14s;white-space:nowrap}
 .act-loc-toggle:hover,.act-loc-toggle.active{border-color:var(--amber);color:var(--amber);background:var(--amber-pale)}
 .act-loc-wrap{position:relative}
 .act-loc-input{width:100%;border:1.5px solid var(--border);border-radius:6px;padding:.32rem .55rem;
-  font-family:'DM Sans',sans-serif;font-size:.76rem;background:white;color:var(--ink);outline:none;transition:border-color .15s}
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.76rem;background:white;color:var(--ink);outline:none;transition:border-color .15s}
 .act-loc-input:focus{border-color:var(--amber)}
 .act-loc-results{position:absolute;top:calc(100% + 3px);left:0;right:0;background:white;
   border:1.5px solid var(--amber);border-radius:8px;z-index:300;max-height:140px;overflow-y:auto;
@@ -323,30 +321,30 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .act-loc-result:hover{background:var(--amber-pale)}
 .act-form-btns{display:flex;gap:.3rem;justify-content:flex-end}
 .act-form-btn{padding:.28rem .7rem;border-radius:6px;font-size:.72rem;font-weight:600;
-  border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+  border:none;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;transition:all .15s}
 .act-form-btn.save{background:var(--amber);color:var(--ink)}
 .act-form-btn.save:hover{background:var(--amber-l)}
 .act-form-btn.cancel{background:var(--paper);color:var(--muted)}
 .act-form-btn.cancel:hover{background:var(--border)}
 .add-act-btn{display:flex;align-items:center;gap:.3rem;padding:.22rem .5rem;border-radius:6px;
   font-size:.68rem;color:var(--muted);background:none;border:none;cursor:pointer;
-  font-family:'DM Sans',sans-serif;transition:all .14s;margin-top:.1rem;width:fit-content}
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;transition:all .14s;margin-top:.1rem;width:fit-content}
 .add-act-btn:hover{color:var(--amber);background:var(--amber-pale)}
 .add-stop-btn{display:flex;align-items:center;justify-content:center;gap:.4rem;
   width:100%;padding:.6rem;border:1.5px dashed var(--border);border-radius:10px;
-  background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.78rem;
+  background:none;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.78rem;
   color:var(--muted);transition:all .18s;margin-top:.2rem}
 .add-stop-btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-pale)}
 
 /* TIMES ROW */
 .sc-times{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.32rem;padding-top:.32rem;border-top:1px dashed var(--border)}
-.sc-t{display:flex;align-items:center;gap:.22rem;font-family:'DM Mono',monospace;font-size:.62rem}
+.sc-t{display:flex;align-items:center;gap:.22rem;font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.62rem}
 .sc-t-lbl{color:var(--muted);font-size:.58rem;text-transform:uppercase;letter-spacing:.06em}
 .sc-t-val{color:var(--ink);font-weight:500}
 .sc-t-val.dep{color:var(--amber)}
 .sc-times-sep{color:var(--border);font-size:.7rem}
 .stay-input{width:62px;padding:.1rem .3rem;border:1px solid var(--border);border-radius:5px;
-  font-family:'DM Mono',monospace;font-size:.62rem;color:var(--ink);background:white;
+  font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.62rem;color:var(--ink);background:white;
   text-align:center;outline:none;transition:border-color .15s}
 .stay-input:focus{border-color:var(--amber)}
 .stay-input::placeholder{color:var(--border)}
@@ -354,14 +352,14 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 /* DAY LABEL */
 .day-stops-wrap{padding:.6rem .75rem .5rem;background:#ebe4d8}
 .day-label-input{width:100%;border:none;border-bottom:1.5px dashed transparent;
-  background:transparent;font-family:'DM Sans',sans-serif;font-size:.75rem;
+  background:transparent;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.75rem;
   color:var(--muted);outline:none;padding:.1rem 0;transition:border-color .18s;
   font-style:italic}
 .day-label-input:hover{border-bottom-color:var(--border)}
 .day-label-input:focus{border-bottom-color:var(--amber);color:var(--ink);font-style:normal}
-.day-dep{display:flex;align-items:center;gap:.3rem;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--amber);cursor:pointer;white-space:nowrap}
+.day-dep{display:flex;align-items:center;gap:.3rem;font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.62rem;color:var(--amber);cursor:pointer;white-space:nowrap}
 .day-dep-input{width:58px;padding:.1rem .3rem;border:1px solid var(--border);border-radius:5px;
-  font-family:'DM Mono',monospace;font-size:.62rem;color:var(--amber);background:transparent;
+  font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.62rem;color:var(--amber);background:transparent;
   text-align:center;outline:none;transition:border-color .15s}
 .day-dep-input:focus{border-color:var(--amber);background:white}
 
@@ -372,7 +370,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   margin-bottom:.65rem;cursor:pointer;transition:all .18s;box-shadow:var(--ss)}
 .trip-card:active{transform:scale(.98)}
 .trip-card.active{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-pale)}
-.tc-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:.28rem}
+.tc-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;font-size:1rem;font-weight:700;margin-bottom:.28rem}
 .tc-meta{font-size:.72rem;color:var(--muted);display:flex;gap:.65rem;flex-wrap:wrap}
 
 /* saving indicator */
@@ -395,15 +393,15 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .modal-overlay.open .modal{transform:translateY(0) scale(1)}
 .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 1rem;display:block}
 @media(min-width:480px){.modal-handle{display:none}}
-.modal-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;margin-bottom:1rem}
+.modal-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;font-size:1.15rem;font-weight:700;margin-bottom:1rem}
 .modal-field{margin-bottom:.85rem}
 .modal-field label{display:block;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:.3rem}
 .modal-field input,.modal-field select{width:100%;padding:.6rem .75rem;border:1.5px solid var(--border);border-radius:8px;
-  font-family:'DM Sans',sans-serif;font-size:.88rem;background:white;color:var(--ink);outline:none;transition:border-color .15s}
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.88rem;background:white;color:var(--ink);outline:none;transition:border-color .15s}
 .modal-field input:focus,.modal-field select:focus{border-color:var(--amber)}
 .modal-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
 .modal-actions{display:flex;gap:.5rem;margin-top:1.1rem}
-.modal-btn{flex:1;padding:.7rem;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;border:none;cursor:pointer;transition:all .18s}
+.modal-btn{flex:1;padding:.7rem;border-radius:9px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.85rem;font-weight:600;border:none;cursor:pointer;transition:all .18s}
 .modal-btn.cancel{background:var(--paper);color:var(--muted)}
 .modal-btn.cancel:hover{background:var(--border)}
 .modal-btn.save{background:var(--amber);color:var(--ink)}
@@ -433,27 +431,27 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
   opacity:0;pointer-events:none;transition:opacity .18s}
 .confirm-overlay.open{opacity:1;pointer-events:all}
 .confirm-box{background:var(--cream);border-radius:16px;padding:1.5rem;max-width:320px;width:100%;text-align:center}
-.confirm-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin-bottom:.4rem}
+.confirm-title{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',Arial,sans-serif;font-size:1.05rem;font-weight:700;margin-bottom:.4rem}
 .confirm-sub{font-size:.8rem;color:var(--muted);margin-bottom:1.1rem;line-height:1.5}
 .confirm-acts{display:flex;gap:.5rem}
-.confirm-btn{flex:1;padding:.65rem;border-radius:9px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.85rem;transition:all .18s}
+.confirm-btn{flex:1;padding:.65rem;border-radius:9px;border:none;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-weight:600;font-size:.85rem;transition:all .18s}
 .confirm-btn.no{background:var(--paper);color:var(--muted)}
 .confirm-btn.yes{background:var(--red);color:white}
 
 /* NEW TRIP BTN */
 .new-trip-btn{display:flex;align-items:center;justify-content:center;gap:.4rem;
   width:100%;padding:.75rem;border:1.5px dashed var(--border);border-radius:12px;
-  background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;
+  background:none;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.82rem;
   color:var(--muted);transition:all .18s;margin-top:.25rem}
 .new-trip-btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-pale)}
 .tc-actions{display:flex;gap:.4rem;margin-top:.55rem;padding-top:.45rem;border-top:1px dashed var(--border)}
 .tc-btn{display:inline-flex;align-items:center;gap:.2rem;padding:.3rem .65rem;border-radius:6px;
-  font-size:.66rem;font-weight:600;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+  font-size:.66rem;font-weight:600;border:none;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;transition:all .15s}
 .tc-btn.exp{background:#e8f0e8;color:#2a5a2a}
 .tc-btn.exp:hover{background:#d0e8d0}
 .import-btn{display:flex;align-items:center;gap:.35rem;padding:.38rem .8rem;border-radius:8px;
   font-size:.74rem;font-weight:600;border:1.5px dashed var(--border);background:transparent;
-  color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+  color:var(--muted);cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;transition:all .15s}
 .import-btn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-pale)}
 .tc-btn.open:hover{background:#ecd8b0}
 .tc-btn.del{background:var(--red-pale);color:var(--red)}
@@ -463,7 +461,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .transport-selector{display:flex;gap:.4rem;flex-wrap:wrap}
 .transport-opt{flex:1;min-width:60px;display:flex;flex-direction:column;align-items:center;gap:.25rem;
   padding:.55rem .3rem;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;
-  background:white;transition:all .15s;font-family:'DM Sans',sans-serif}
+  background:white;transition:all .15s;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif}
 .transport-opt:hover{border-color:var(--amber);background:var(--amber-pale)}
 .transport-opt.selected{border-color:var(--amber);background:var(--amber-pale)}
 .transport-opt .t-ico{font-size:1.3rem;line-height:1}
@@ -512,9 +510,9 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .stop-dep-info{flex:1;min-width:0}
 .stop-dep-name{font-weight:600;font-size:.82rem;line-height:1.3;color:var(--ink)}
 .stop-dep-sub{font-size:.62rem;color:var(--muted);margin-top:.08rem}
-.stop-dep-time{display:flex;align-items:center;gap:.25rem;margin-top:.3rem;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--amber)}
+.stop-dep-time{display:flex;align-items:center;gap:.25rem;margin-top:.3rem;font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.65rem;color:var(--amber)}
 .dep-time-input{width:96px;padding:.1rem .35rem;border:1px solid rgba(200,133,58,.4);border-radius:5px;
-  font-family:'DM Mono',monospace;font-size:.65rem;color:var(--amber);background:rgba(200,133,58,.08);
+  font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.65rem;color:var(--amber);background:rgba(200,133,58,.08);
   text-align:center;outline:none;transition:border-color .15s}
 .dep-time-input:focus{border-color:var(--amber);background:white}
 
@@ -548,7 +546,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .stop-dest-name{font-weight:600;font-size:.82rem;line-height:1.3;color:var(--ink)}
 .stop-dest-sub{font-size:.62rem;color:var(--muted);margin-top:.08rem}
 .stop-dest-arr{display:flex;align-items:center;gap:.25rem;margin-top:.3rem;
-  font-family:'DM Mono',monospace;font-size:.65rem;color:var(--amber)}
+  font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace;font-size:.65rem;color:var(--amber)}
 
 /* TOGGLE PERNOTTAMENTO NEL MODAL */
 .overnight-toggle{display:flex;align-items:center;gap:.65rem;padding:.7rem .75rem;
@@ -685,7 +683,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
     </div>
     <div class="modal-field">
       <label>Categoria</label>
-      <select id="fExpCat" style="width:100%;padding:.45rem .6rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none"></select>
+      <select id="fExpCat" style="width:100%;padding:.45rem .6rem;border:1.5px solid var(--border);border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.85rem;outline:none"></select>
     </div>
     <div class="modal-field">
       <label>Note (opzionale)</label>
@@ -693,12 +691,12 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
     </div>
     <div class="modal-field">
       <label>Pagato da</label>
-      <select id="fExpPaidBy" style="width:100%;padding:.45rem .6rem;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none"></select>
+      <select id="fExpPaidBy" style="width:100%;padding:.45rem .6rem;border:1.5px solid var(--border);border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.85rem;outline:none"></select>
     </div>
     <div class="modal-field">
       <label>Quote di competenza</label>
       <div id="fExpShares" style="display:flex;flex-direction:column;gap:.3rem;margin-top:.2rem"></div>
-      <button onclick="equalizeShares()" style="margin-top:.4rem;font-size:.68rem;color:var(--amber);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif">↻ Dividi equamente</button>
+      <button onclick="equalizeShares()" style="margin-top:.4rem;font-size:.68rem;color:var(--amber);background:none;border:none;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif">↻ Dividi equamente</button>
     </div>
     <div class="modal-field">
       <div class="overnight-toggle" id="expActualToggle" onclick="toggleExpActual()" style="background:linear-gradient(90deg,var(--paper),transparent);border-color:var(--border)">
@@ -1839,7 +1837,7 @@ function renderMap(){
           zIndex:2
         });
         actMarker.addListener('click',()=>{
-          iw.setContent(`<div style="font-family:'DM Sans',sans-serif;font-size:.82rem;padding:.2rem .1rem;max-width:180px">
+          iw.setContent(`<div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.82rem;padding:.2rem .1rem;max-width:180px">
             <div style="font-weight:600">${act.text}</div>
             <div style="font-size:.7rem;color:#888;margin-top:.15rem">${stop.name}</div>
           </div>`);
@@ -2041,7 +2039,7 @@ function renderItin(){
           const abbr = new Intl.DateTimeFormat('en', {
             timeZone: stop.timezoneId, timeZoneName:'short'
           }).formatToParts(new Date()).find(p=>p.type==='timeZoneName')?.value||'';
-          return abbr ? ` <span style="font-size:.55rem;color:var(--muted);font-family:'DM Mono',monospace">${abbr}</span>` : '';
+          return abbr ? ` <span style="font-size:.55rem;color:var(--muted);font-family:'SF Mono',SFMono-Regular,ui-monospace,'Courier New',monospace">${abbr}</span>` : '';
         } catch(e){ return ''; }
       }
       const isDestination = (di === trip.days.length-1) && (si === day.stops.length-1);
@@ -3392,10 +3390,10 @@ function renderShareInputs(){
       '<span style="flex:1;font-weight:500">'+p.name+'</span>'+
       '<button onclick="assignAll(\''+p.id+'\')" title="Tutto a carico di '+p.name+'"'+
         ' style="font-size:.6rem;padding:.15rem .35rem;border:1px solid var(--border);border-radius:5px;'+
-        'background:var(--paper);color:var(--muted);cursor:pointer;white-space:nowrap;font-family:\'DM Sans\',sans-serif">'+
+        'background:var(--paper);color:var(--muted);cursor:pointer;white-space:nowrap;font-family:-apple-system,BlinkMacSystemFont,\'SF Pro Text\',\'Helvetica Neue\',Arial,sans-serif">'+
         '100%</button>'+
       '<input id="share-'+p.id+'" type="number" min="0" max="100" step="1" value="0"'+
-        ' style="width:58px;padding:.25rem .4rem;border:1.5px solid var(--border);border-radius:6px;font-family:\'DM Mono\',monospace;font-size:.8rem;text-align:center;outline:none"'+
+        ' style="width:58px;padding:.25rem .4rem;border:1.5px solid var(--border);border-radius:6px;font-family:\'SF Mono\',SFMono-Regular,ui-monospace,\'Courier New\',monospace;font-size:.8rem;text-align:center;outline:none"'+
         ' oninput="checkShareTotal()">'+
       '<span style="font-size:.7rem;color:var(--muted)">%</span>'+
     '</div>'

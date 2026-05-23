@@ -651,14 +651,14 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
     <div class="itin-body" id="itinBody"></div>
   </div>
   <div class="split-divider" id="splitDivider"></div>
-  <div class="panel on" id="pMap">
+  <div class="panel" id="pMap">
     <div class="map-daybar" id="mapDaybar"></div>
     <div class="map-type-toggle">
       <button class="mtt-btn active" id="mttSat" onclick="setMapType('satellite')">🛰 Satellite</button>
       <button class="mtt-btn" id="mttRoad" onclick="setMapType('roadmap')">🗺 Mappa</button>
     </div>
     <div id="gmap"></div>
-    <div class="map-loading" id="mapLoading">
+    <div class="map-loading hidden" id="mapLoading">
       <div class="spinner"></div>
       <div class="loading-txt">Calcolo percorsi stradali…</div>
     </div>

@@ -633,7 +633,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
   </button>
 </aside>
 
-<div class="content vs" id="content">
+<div class="content vm" id="content">
   <div class="panel on" id="pItin">
     <div class="hero">
       <div class="hero-lbl">Prossimo viaggio</div>
@@ -2581,7 +2581,7 @@ function updStats(){
   const allStops = trip.days.flatMap(d=>d.stops);
   const modes = calcModeTotals(allStops);
   document.getElementById('sModes').innerHTML = renderModeBadges(modes, true) || '<span style="color:var(--muted);font-size:.8rem">Nessuna tratta</span>';
-  document.getElementById('chipName').textContent=trip.title;
+  document.getElementById('chipName')&&(document.getElementById('chipName').textContent=trip.title);
 }
 
 function renderOver(){

@@ -265,7 +265,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .day-note-inline-input:focus{border-bottom-color:var(--amber)}
 .day-note-inline-input.empty{color:var(--muted);font-style:italic;font-weight:400}
 .day-note-inline-input::placeholder{color:var(--border)}
-.day-km{display:flex;align-items:center;gap:.25rem;flex-shrink:0;flex-wrap:nowrap}
+.day-km{display:flex;align-items:center;gap:.25rem;flex-wrap:wrap;margin-top:.28rem}
 .day-km-chip{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.58rem;color:var(--ink);background:rgba(26,20,16,.1);
   padding:.14rem .38rem;border-radius:20px;white-space:nowrap;display:flex;align-items:center;gap:.18rem}
 .stat-chip{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.82rem;font-weight:600;color:var(--ink);
@@ -2036,8 +2036,8 @@ function renderItin(){
       '<div class="day-info">'+
         '<div class="day-name-row"><span class="day-name">'+day.name+'</span>'+(day.date?'<span class="day-date">· '+day.date+'</span>':'')+'</div>'+
         noteInline+
+        (badgeHtml?'<div class="day-km">'+badgeHtml+'</div>':'')+
       '</div>'+
-      '<div class="day-km">'+badgeHtml+'</div>'+
     '</div>'+
     '<div class="day-stops-wrap"></div>';
     const stopsWrap = el.querySelector('.day-stops-wrap');

@@ -1069,93 +1069,6 @@ async function loadTrips(){
   }));
 }
 
-/* ═══════════════════════════════════════
-   SUPABASE — SEED ICELAND DATA (first login)
-═══════════════════════════════════════ */
-const ICELAND_SEED = {
-  title:"Islanda — Road Trip", dates:"2–7 Gen 2026",
-  persons:"2 persone", total_km:"1.596 km", total_time:"22h 29min",
-  days:[
-    {name:"Golden Circle & Arrivo",date:"Ven 2 Gen",day_km:184,day_time:"2h 42min",position:0,stops:[
-      {name:"Aeroporto di Keflavik",icon:"✈️",cat:"Aeroporto",lat:63.985,lng:-22.606,time:"12:00",transit_km:null,transit_dur:null,position:0},
-      {name:"Öxarárfoss",icon:"💧",cat:"Cascata — Þingvellir",lat:64.266,lng:-21.12,time:"13:20",transit_km:"92 km",transit_dur:"1h 20min",position:1},
-      {name:"Kerið",icon:"🌋",cat:"Cratere vulcanico",lat:64.042,lng:-20.886,time:"15:27",transit_km:"40 km",transit_dur:"37min",position:2},
-      {name:"Geysir",icon:"💨",cat:"Area geotermica",lat:64.312,lng:-20.302,time:"16:35",transit_km:"46 km",transit_dur:"38min",position:3},
-      {name:"Brù Hoserfarm",icon:"🏡",cat:"Sosta",lat:64.315,lng:-20.28,time:"17:23",transit_km:"3 km",transit_dur:"3min",position:4},
-      {name:"Myrkholt Cabin",icon:"🏕️",cat:"Pernottamento",lat:64.32,lng:-20.26,time:"18:12",transit_km:"3 km",transit_dur:"4min",position:5}
-    ]},
-    {name:"Costa Sud — Cascate & Spiagge Nere",date:"Sab 3 Gen",day_km:306,day_time:"4h 27min",position:1,stops:[
-      {name:"Myrkholt Cabin",icon:"🏕️",cat:"Partenza",lat:64.32,lng:-20.26,time:"08:30",transit_km:null,transit_dur:null,position:0},
-      {name:"Gullfoss",icon:"💧",cat:"Cascata",lat:64.327,lng:-20.121,time:"08:38",transit_km:"6 km",transit_dur:"8min",position:1},
-      {name:"Skogafoss",icon:"💧",cat:"Cascata",lat:63.532,lng:-19.512,time:"11:38",transit_km:"145 km",transit_dur:"2h",position:2},
-      {name:"Kvernufoss",icon:"💧",cat:"Cascata nascosta",lat:63.53,lng:-19.499,time:"12:43",transit_km:"2 km",transit_dur:"5min",position:3},
-      {name:"The Plane Wreck",icon:"🛩️",cat:"Relitto DC-3",lat:63.484,lng:-19.362,time:"13:52",transit_km:"9 km",transit_dur:"9min",position:4},
-      {name:"Dyrhólaey",icon:"🦅",cat:"Promontorio",lat:63.402,lng:-19.129,time:"15:09",transit_km:"18 km",transit_dur:"17min",position:5},
-      {name:"Reynisfjara",icon:"🖤",cat:"Spiaggia nera",lat:63.406,lng:-19.044,time:"16:12",transit_km:"20 km",transit_dur:"23min",position:6},
-      {name:"Fosshotel Nupar",icon:"🏨",cat:"Pernottamento",lat:63.519,lng:-18.262,time:"18:22",transit_km:"106 km",transit_dur:"1h 25min",position:7}
-    ]},
-    {name:"Ghiacciai & Lagune del Sud-Est",date:"Dom 4 Gen",day_km:369,day_time:"4h 50min",position:2,stops:[
-      {name:"Fosshotel Nupar",icon:"🏨",cat:"Partenza",lat:63.519,lng:-18.262,time:"08:30",transit_km:null,transit_dur:null,position:0},
-      {name:"Svartifoss",icon:"💧",cat:"Cascata basaltica",lat:64.027,lng:-16.975,time:"09:03",transit_km:"45 km",transit_dur:"33min",position:1},
-      {name:"Fjallsárlón",icon:"🧊",cat:"Laguna glaciale",lat:64.017,lng:-16.417,time:"11:28",transit_km:"47 km",transit_dur:"40min",position:2},
-      {name:"Jökulsárlón",icon:"🧊",cat:"Laguna glaciale",lat:64.078,lng:-16.231,time:"12:38",transit_km:"11 km",transit_dur:"10min",position:3},
-      {name:"Diamond Beach",icon:"💎",cat:"Spiaggia nera con iceberg",lat:64.066,lng:-16.23,time:"13:40",transit_km:"1 km",transit_dur:"2min",position:4},
-      {name:"Fjaðrárgljúfur",icon:"🏔️",cat:"Canyon",lat:63.777,lng:-18.172,time:"15:50",transit_km:"130 km",transit_dur:"1h 40min",position:5},
-      {name:"Hotel Selja",icon:"🏨",cat:"Pernottamento",lat:63.53,lng:-19.47,time:"19:05",transit_km:"135 km",transit_dur:"1h 45min",position:6}
-    ]},
-    {name:"Penisola di Snæfellsnes",date:"Lun 5 Gen",day_km:384,day_time:"5h 21min",position:3,stops:[
-      {name:"Hotel Selja",icon:"🏨",cat:"Partenza",lat:63.53,lng:-19.47,time:"08:30",transit_km:null,transit_dur:null,position:0},
-      {name:"Seljalandfoss",icon:"💧",cat:"Cascata",lat:63.616,lng:-19.989,time:"08:39",transit_km:"8 km",transit_dur:"9min",position:1},
-      {name:"Gljúfrabúi",icon:"💧",cat:"Cascata nascosta",lat:63.622,lng:-19.987,time:"09:29",transit_km:"1 km",transit_dur:"10min",position:2},
-      {name:"Ytri Tunga",icon:"🦭",cat:"Spiaggia delle foche",lat:64.847,lng:-22.574,time:"13:39",transit_km:"270 km",transit_dur:"3h 30min",position:3},
-      {name:"Búðakirkja",icon:"⛪",cat:"Chiesa nera",lat:64.813,lng:-23.386,time:"14:18",transit_km:"20 km",transit_dur:"19min",position:4},
-      {name:"Kirkjufell",icon:"⛰️",cat:"Montagna iconica",lat:64.941,lng:-23.305,time:"15:11",transit_km:"35 km",transit_dur:"33min",position:5},
-      {name:"Arnarstapi Hotel",icon:"🏨",cat:"Pernottamento",lat:64.767,lng:-23.624,time:"17:21",transit_km:"50 km",transit_dur:"40min",position:6}
-    ]},
-    {name:"Fagradalsfjall & Rientro Reykjavik",date:"Mar 6 Gen",day_km:303,day_time:"4h 17min",position:4,stops:[
-      {name:"Arnarstapi Hotel",icon:"🏨",cat:"Partenza",lat:64.767,lng:-23.624,time:"08:30",transit_km:null,transit_dur:null,position:0},
-      {name:"Fagradalsfjall",icon:"🌋",cat:"Zona vulcanica",lat:63.897,lng:-22.271,time:"11:47",transit_km:"243 km",transit_dur:"3h 17min",position:1},
-      {name:"Hotel Von",icon:"🏨",cat:"Pernottamento",lat:64.133,lng:-21.894,time:"16:47",transit_km:"60 km",transit_dur:"1h",position:2}
-    ]},
-    {name:"Rientro all'Aeroporto",date:"Mer 7 Gen",day_km:50,day_time:"52min",position:5,stops:[
-      {name:"Hotel Von",icon:"🏨",cat:"Partenza",lat:64.133,lng:-21.894,time:"08:00",transit_km:null,transit_dur:null,position:0},
-      {name:"Aeroporto di Keflavik",icon:"✈️",cat:"Aeroporto",lat:63.985,lng:-22.606,time:"08:52",transit_km:"50 km",transit_dur:"52min",position:1}
-    ]}
-  ]
-};
-
-async function seedIceland(){
-  // Insert trip
-  const {data: trip, error: te} = await sb.from('trips').insert({
-    user_id: currentUser.id,
-    title: ICELAND_SEED.title,
-    dates: ICELAND_SEED.dates,
-    persons: ICELAND_SEED.persons,
-    total_km: ICELAND_SEED.total_km,
-    total_time: ICELAND_SEED.total_time
-  }).select().single();
-  if(te){ console.error(te); return; }
-
-  for(const day of ICELAND_SEED.days){
-    const {data: d, error: de} = await sb.from('days').insert({
-      trip_id: trip.id,
-      name: day.name, date: day.date,
-      day_km: day.day_km, day_time: day.day_time,
-      position: day.position
-    }).select().single();
-    if(de){ console.error(de); continue; }
-
-    for(const stop of day.stops){
-      await sb.from('stops').insert({
-        day_id: d.id,
-        name: stop.name, icon: stop.icon, cat: stop.cat,
-        lat: stop.lat, lng: stop.lng, time: stop.time,
-        transit_km: stop.transit_km, transit_dur: stop.transit_dur,
-        position: stop.position
-      });
-    }
-  }
-}
 
 /* ═══════════════════════════════════════
    SUPABASE — SAVE STOP
@@ -3591,12 +3504,6 @@ async function startApp(user){
   initSplitDivider();
 
   await loadTrips();
-
-  // First login: seed Iceland data
-  if(TRIPS.length === 0){
-    await seedIceland();
-    await loadTrips();
-  }
 
   document.getElementById('appLoading').classList.add('hidden');
 

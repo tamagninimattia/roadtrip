@@ -181,6 +181,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
   border:none;background:transparent;color:#555;cursor:pointer;transition:all .15s;white-space:nowrap}
 .mtt-btn.active{background:var(--ink);color:white}
 .mtt-btn:first-child{border-right:1px solid rgba(0,0,0,.1)}
+.map-area{position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
+.map-area #gmap{flex:1;min-height:0}
 .map-loading{position:absolute;inset:0;z-index:50;background:rgba(26,20,16,.55);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;color:var(--cream)}
 .map-loading.hidden{display:none}
@@ -521,6 +523,19 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .split-divider.dragging::after{color:var(--ink)}
 @media(min-width:720px){ .content.vs .split-divider{display:block} }
 
+/* SPLIT MODE — hero condiviso a tutta larghezza, mappa+itinerario sotto */
+.split-hero{display:none}
+.split-body{display:contents}
+@media(min-width:720px){
+  .content.vs{flex-direction:column}
+  .content.vs .split-hero{display:flex;flex-shrink:0;width:100%}
+  .content.vs .itin-hero{display:none}
+  .content.vs .map-hero{display:none}
+  .content.vs .split-body{display:flex;flex:1;min-height:0;overflow:hidden}
+  .content.vs #pItin{position:relative;inset:auto}
+  .content.vs #pMap{position:relative;inset:auto}
+}
+
 /* PRIMA TAPPA GIORNO — card partenza */
 .stop-departure{
   background:linear-gradient(90deg,var(--amber-pale),transparent);
@@ -654,6 +669,16 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
   </div>
   <div class="split-divider" id="splitDivider"></div>
   <div class="panel" id="pMap">
+    <div class="hero map-hero">
+      <div class="hero-lbl">Prossimo viaggio</div>
+      <div class="hero-title" id="hTitleMap">—</div>
+      <div class="hero-meta">
+        <span class="hm">📅 <span id="hDatesMap"></span></span>
+        <span class="hm">👥 <span id="hPersonsMap"></span></span>
+        <span class="hm">📍 <span id="hStopsMap"></span></span>
+      </div>
+    </div>
+    <div class="map-area" id="mapArea">
     <div class="map-daybar" id="mapDaybar"></div>
     <div class="map-type-toggle">
       <button class="mtt-btn active" id="mttSat" onclick="setMapType('satellite')">🛰 Satellite</button>
@@ -664,7 +689,9 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
       <div class="spinner"></div>
       <div class="loading-txt">Calcolo percorsi stradali…</div>
     </div>
+    </div><!-- /map-area -->
   </div>
+  </div><!-- /split-body -->
   <div class="panel" id="pOver">
     <div class="hero">
       <div class="hero-title">What's next?</div>
@@ -2488,10 +2515,21 @@ async function doDelete(){
 function updStats(){
   if(!TRIPS.length) return;
   const trip=TRIPS[ti];
+  const stopsCount=trip.days.flatMap(d=>d.stops).length+' tappe';
   document.getElementById('hTitle').textContent=trip.title;
   document.getElementById('hDates').textContent=trip.dates;
   document.getElementById('hPersons').textContent=trip.persons;
-  document.getElementById('hStops').textContent=trip.days.flatMap(d=>d.stops).length+' tappe';
+  document.getElementById('hStops').textContent=stopsCount;
+  // Sync split hero
+  document.getElementById('hTitleSplit').textContent=trip.title;
+  document.getElementById('hDatesSplit').textContent=trip.dates;
+  document.getElementById('hPersonsSplit').textContent=trip.persons;
+  document.getElementById('hStopsSplit').textContent=stopsCount;
+  // Sync map hero
+  document.getElementById('hTitleMap').textContent=trip.title;
+  document.getElementById('hDatesMap').textContent=trip.dates;
+  document.getElementById('hPersonsMap').textContent=trip.persons;
+  document.getElementById('hStopsMap').textContent=stopsCount;
   const allStops = trip.days.flatMap(d=>d.stops);
   const modes = calcModeTotals(allStops);
   document.getElementById('sModes').innerHTML = renderModeBadges(modes, true) || '<span style="color:var(--muted);font-size:.8rem">Nessuna tratta</span>';

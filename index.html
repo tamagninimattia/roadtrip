@@ -206,7 +206,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .iw-btn.danger:hover{background:#fbd5d0}
 
 /* ITINERARY */
-#pItin{background:var(--cream);overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+#pItin{background:var(--cream);overflow:hidden}
 #pItin::-webkit-scrollbar{width:3px}
 #pItin::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 .hero{background:linear-gradient(135deg,var(--ink) 0%,#2d2318 100%);color:var(--cream);
@@ -226,7 +226,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFo
 .st:last-child{border-right:none}
 .st-v{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;font-size:.92rem;font-weight:500;color:var(--amber)}
 .st-l{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:.08rem}
-.itin-body{padding:.9rem .95rem 1.5rem}
+.itin-body{padding:.9rem .95rem 1.5rem;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .sec-ttl{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;display:flex;align-items:center;gap:.45rem}
 .sec-ttl::after{content:'';flex:1;height:1px;background:var(--border)}
 .day-block{margin-bottom:.85rem;animation:fu .3s ease both;
